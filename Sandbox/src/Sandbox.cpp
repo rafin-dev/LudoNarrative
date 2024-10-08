@@ -7,7 +7,7 @@ class Sandbox : public Purple::Application
 public:
 	Sandbox()
 	{
-		std::cout << "It works!" << std::endl;
+
 	}
 
 	~Sandbox()

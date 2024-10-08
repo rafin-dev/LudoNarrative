@@ -1,6 +1,8 @@
-workspace "PuperEngine"
+workspace "PurpleEngine"
     architecture "x64"
 
+    startproject "Sandbox"
+    
     configurations
     {
         "Debug",
@@ -26,7 +28,8 @@ project "PurpleEngine"
 
     includedirs
     {
-        "%{prj.location}/src"
+        "%{prj.location}/src",
+        "%{prj.location}/vendor/spdlog/include"
     }
 
     defines
@@ -74,7 +77,8 @@ project "Sandbox"
     includedirs
     {
         "%{prj.location}/src",
-        "%{wks.location}/PurpleEngine/src"
+        "%{wks.location}/PurpleEngine/src",
+        "%{wks.location}/PurpleEngine/vendor/spdlog/include"
     }
 
     defines

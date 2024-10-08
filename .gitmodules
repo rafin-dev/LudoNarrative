@@ -1,0 +1,3 @@
+[submodule "PurpleEngine/vendor/spdlog"]
+	path = PurpleEngine/vendor/spdlog
+	url = https://github.com/gabime/spdlog.git
