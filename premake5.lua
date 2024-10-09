@@ -1,4 +1,4 @@
-workspace "PurpleEngine"
+workspace "LudoNarrative"
     architecture "x64"
 
     startproject "Sandbox"
@@ -12,8 +12,8 @@ workspace "PurpleEngine"
 
 outputdir = "%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}"
 
-project "PurpleEngine"
-    location "PurpleEngine"
+project "LudoNarrative"
+    location "LudoNarrative"
     kind "SharedLib"
     language "C++"
 
@@ -35,8 +35,8 @@ project "PurpleEngine"
     defines
     {
         -- Purple Engine is planned to be windows only, but it doenst hurt to be ready just in case
-        "PRPL_PLATFORM_WINDOWS",
-        "PRPL_BUILD_DLL"
+        "LD_PLATFORM_WINDOWS",
+        "LD_BUILD_DLL"
     }
 
     postbuildcommands
@@ -77,18 +77,18 @@ project "Sandbox"
     includedirs
     {
         "%{prj.location}/src",
-        "%{wks.location}/PurpleEngine/src",
-        "%{wks.location}/PurpleEngine/vendor/spdlog/include"
+        "%{wks.location}/LudoNarrative/src",
+        "%{wks.location}/LudoNarrative/vendor/spdlog/include"
     }
 
     defines
     {
-        "PRPL_PLATFORM_WINDOWS"
+        "LD_PLATFORM_WINDOWS"
     }
 
     links
     {
-        "PurpleEngine"
+        "LudoNarrative"
     }
 
     cppdialect "c++20"

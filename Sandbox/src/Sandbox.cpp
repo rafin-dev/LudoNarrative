@@ -1,8 +1,8 @@
-#include <PurpleEngine.h>
+#include <LudoEngine.h>
 
 #include <iostream>
 
-class Sandbox : public Purple::Application
+class Sandbox : public Ludo::Application
 {
 public:
 	Sandbox()
@@ -16,7 +16,8 @@ public:
 	}
 };
 
-Purple::Application* Purple::CreateApplication()
+Ludo::Application* Ludo::CreateApplication()
 {
+
 	return new Sandbox();
 }
