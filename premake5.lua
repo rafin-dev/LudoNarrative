@@ -20,6 +20,9 @@ project "LudoNarrative"
     targetdir ("bin/" .. outputdir .. "/%{prj.name}")
     objdir ("bin-int/" .. outputdir .. "/%{prj.name}")
 
+    pchheader "ldpch.h"
+    pchsource "LudoNarrative/src/ldpch.cpp"
+
     files
     {
         "%{prj.location}/src/**.h",

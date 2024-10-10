@@ -1,11 +1,9 @@
 #pragma once
 
+#include "ldpch.h"
+
 #include "Ludo/Core.h"
 
-#include <string>
-#include <functional>
-#include <sstream>
-#include <type_traits>
 
 namespace Ludo {
 
