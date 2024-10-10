@@ -3,6 +3,9 @@
 #include "WindowsWindow.h"
 
 #include "Ludo/Log.h"
+#include "Ludo/Events/ApplicationEvent.h"
+#include "Ludo/Events/KeyEvent.h"
+#include "Ludo/Events/MouseEvent.h"
 
 namespace Ludo {
 
@@ -27,6 +30,12 @@ namespace Ludo {
 
 	void WindowsWindow::OnUpdate()
 	{
+		MSG msg;
+		while (PeekMessage(&msg, NULL, 0U, 0U, PM_REMOVE) != 0)
+		{
+			TranslateMessage(&msg);
+			DispatchMessage(&msg);
+		}
 	}
 
 	void WindowsWindow::SetVsync(bool enabled)
@@ -45,11 +54,11 @@ namespace Ludo {
 		m_Data.Height = props.Height;
 		m_Data.Vsync = false;
 
-		LD_CORE_INFO("Creating Window: {0} [{1}, {2}]", m_Data.Title, m_Data.Width, m_Data.Height);
+		LD_CORE_TRACE("Creating Window: {0} [{1}, {2}]", m_Data.Title, m_Data.Width, m_Data.Height);
 
 		if (!s_WindowClassInitialized)
 		{
-			InitializeWindowClass();
+			InitializeWinAPI();
 			s_WindowClassInitialized = true;
 		}
 		
@@ -81,16 +90,64 @@ namespace Ludo {
 		DestroyWindow(m_WindowHandle);
 	}
 
-	void WindowsWindow::InitializeWindowClass()
+#define MSGlambda [] (HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) -> bool
+#define ThrowEvent(x) MSGlambda { s_EventCallBack((Event&)(x)); return false; }
+#define ThrowEventAndHandle(x) MSGlambda { s_EventCallBack((Event&)(x)); return true; }
+
+	Window::EventCallBackFn WindowsWindow::s_EventCallBack = [](Event&) {};
+	// Map of functions that process the MSG into LudoNarrative events
+	// Returns true if it has handled everything and false if it should it be sent to DefWindowProc
+	std::unordered_map<UINT, WindowsWindow::WinMsgCallBackFn> WindowsWindow::s_MsgCallBacks
 	{
+		// Window
+		{ WM_SIZE, ThrowEvent(WindowResizeEvent(LOWORD(lParam), HIWORD(lParam))) },
+		{ WM_CLOSE, ThrowEventAndHandle(WindowCloseEvent()) },
+
+		// Input
+		// Keyboard
+		{ WM_KEYDOWN, ThrowEvent(KeyPressedEvent(wParam, lParam & 0xFFFF)) },
+		{ WM_KEYUP, ThrowEvent(KeyReleasedEvent(wParam)) },
+
+		// Mouse
+		{ WM_MOUSEMOVE, ThrowEvent(MouseMovedEvent(GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam))) },
+		{ WM_MOUSEWHEEL, ThrowEvent(MouseScrolledEvent(GET_WHEEL_DELTA_WPARAM(wParam))) },
+
+		{ WM_LBUTTONDOWN, ThrowEvent(MouseButtonPressedEvent(MouseButton::Left)) },
+		{ WM_LBUTTONUP, ThrowEvent(MouseButtonReleasedEvent(MouseButton::Left)) },
+
+		{ WM_RBUTTONDOWN, ThrowEvent(MouseButtonPressedEvent(MouseButton::Right)) },
+		{ WM_RBUTTONUP, ThrowEvent(MouseButtonReleasedEvent(MouseButton::Right)) },
+
+		{ WM_MBUTTONDOWN, ThrowEvent(MouseButtonPressedEvent(MouseButton::Middle)) },
+		{ WM_MBUTTONUP, ThrowEvent(MouseButtonReleasedEvent(MouseButton::Middle)) }
+	};
+
+	void WindowsWindow::InitializeWinAPI()
+	{
+		// Set up window class
 		s_WindowClass = {};
 
 		// TODO: Implement custom window procedure
-		s_WindowClass.lpfnWndProc = DefWindowProc;
+		s_WindowClass.lpfnWndProc = WindowsWindow::WindowProc;
 		s_WindowClass.hInstance = GetModuleHandle(NULL);
 		s_WindowClass.lpszClassName = s_ClassName;
 
 		RegisterClass(&s_WindowClass);
+	}
+
+	LRESULT WindowsWindow::WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+	{
+		auto ite = s_MsgCallBacks.find(uMsg);
+
+		if (ite != s_MsgCallBacks.end())
+		{
+			if (ite->second(hwnd, uMsg, wParam, lParam))
+			{
+				return 0;
+			}
+		}
+
+		return DefWindowProc(hwnd, uMsg, wParam, lParam);
 	}
 
 }

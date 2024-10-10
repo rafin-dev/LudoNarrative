@@ -25,5 +25,6 @@
 // But I also dont want to regret not making it in the future
 #ifdef LD_PLATFORM_WINDOWS
 	#include <Windows.h>
+	#include <windowsx.h>
 #endif
 

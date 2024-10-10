@@ -7,7 +7,7 @@ namespace Ludo {
 	class LUDO_API MouseMovedEvent : public Event
 	{
 	public:
-		MouseMovedEvent(float x, float y)
+		MouseMovedEvent(int x, int y)
 			: m_MouseX(x), m_MouseY(y) {}
 
 		inline float GetX() const { return m_MouseX; }
@@ -24,23 +24,36 @@ namespace Ludo {
 		EVENT_CLASS_CATEGORY(EventCategoryMouse | EventCategoryInput)
 
 	private:
-		float m_MouseX, m_MouseY;
+		int m_MouseX, m_MouseY;
 	};
 
 	class LUDO_API MouseScrolledEvent : public Event
 	{
 	public:
-		MouseScrolledEvent(int offsetX, int offsetY)
-			: m_OffsetX(offsetX), m_OffsetY(offsetY) {}
+		MouseScrolledEvent(int offsetX)
+			: m_OffsetX(offsetX) {}
 
 		inline int GetXOffset() { return m_OffsetX; }
-		inline int GetYOffset() { return m_OffsetY; }
+
+		std::string ToString() const override
+		{
+			std::stringstream stringStream;
+			stringStream << "MouseScrolledEvent: " << m_OffsetX;
+			return stringStream.str();
+		}
 
 		EVENT_CLASS_TYPE(MouseScrolled)
 		EVENT_CLASS_CATEGORY(EventCategoryMouse | EventCategoryInput)
 
 	private:
-		int m_OffsetX, m_OffsetY;
+		int m_OffsetX;
+	};
+
+	enum MouseButton : int
+	{
+		Left,
+		Middle,
+		Right
 	};
 
 	class LUDO_API MouseButtonEvent : public Event

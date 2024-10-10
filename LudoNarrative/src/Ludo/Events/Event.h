@@ -7,9 +7,6 @@
 
 namespace Ludo {
 
-	// Blocking? event system
-	// The <?> is because im not sure if it can be considered blocking because of the way im going to set up the win32 api
-
 	enum class EventType
 	{
 		None = 0,
@@ -68,7 +65,7 @@ namespace Ludo {
 		{
 			static_assert(std::is_base_of_v<Event, T>);
 
-			if (m_Event.GetEventType == T::GetStaticType())
+			if (m_Event.GetEventType() == T::GetStaticType())
 			{
 				m_Event.m_Handled = func(*(T*)&m_Event);
 				return true;
