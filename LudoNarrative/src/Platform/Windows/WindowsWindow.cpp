@@ -7,6 +7,10 @@
 #include "Ludo/Events/KeyEvent.h"
 #include "Ludo/Events/MouseEvent.h"
 
+#include "Platform/DirectX9/imgui/imgui_impl_dx9.h"
+
+extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
+
 namespace Ludo {
 
 	bool WindowsWindow::s_WindowClassInitialized = false;
@@ -30,6 +34,7 @@ namespace Ludo {
 
 	void WindowsWindow::OnUpdate()
 	{
+		// I need to move this to somewhere else ASAP
 		MSG msg;
 		while (PeekMessage(&msg, NULL, 0U, 0U, PM_REMOVE) != 0)
 		{
@@ -102,6 +107,7 @@ namespace Ludo {
 		// Window
 		{ WM_SIZE, ThrowEvent(WindowResizeEvent(LOWORD(lParam), HIWORD(lParam))) },
 		{ WM_CLOSE, ThrowEventAndHandle(WindowCloseEvent()) },
+		{ WM_QUIT, ThrowEventAndHandle(WindowCloseEvent()) },
 
 		// Input
 		// Keyboard
@@ -124,10 +130,8 @@ namespace Ludo {
 
 	void WindowsWindow::InitializeWinAPI()
 	{
-		// Set up window class
 		s_WindowClass = {};
 
-		// TODO: Implement custom window procedure
 		s_WindowClass.lpfnWndProc = WindowsWindow::WindowProc;
 		s_WindowClass.hInstance = GetModuleHandle(NULL);
 		s_WindowClass.lpszClassName = s_ClassName;
@@ -137,6 +141,12 @@ namespace Ludo {
 
 	LRESULT WindowsWindow::WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 	{
+		// TODO: Change this ASAP
+		if (ImGui_ImplWin32_WndProcHandler(hwnd, uMsg, wParam, lParam))
+		{
+			return true;
+		}
+
 		auto ite = s_MsgCallBacks.find(uMsg);
 
 		if (ite != s_MsgCallBacks.end())

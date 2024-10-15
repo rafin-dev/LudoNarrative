@@ -12,6 +12,11 @@ workspace "LudoNarrative"
 
 outputdir = "%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}"
 
+IncludeDir = {}
+IncludeDir["ImGui"] = "%{wks.location}/LudoNarrative/vendor/imgui"
+
+include "imgui_premake5"
+
 project "LudoNarrative"
     location "LudoNarrative"
     kind "SharedLib"
@@ -32,7 +37,8 @@ project "LudoNarrative"
     includedirs
     {
         "%{prj.location}/src",
-        "%{prj.location}/vendor/spdlog/include"
+        "%{prj.location}/vendor/spdlog/include",
+        "%{IncludeDir.ImGui}"
     }
 
     defines
@@ -40,6 +46,11 @@ project "LudoNarrative"
         -- Purple Engine is planned to be windows only, but it doenst hurt to be ready just in case
         "LD_PLATFORM_WINDOWS",
         "LD_BUILD_DLL"
+    }
+
+    links
+    {
+        "ImGui"
     }
 
     postbuildcommands
@@ -54,14 +65,20 @@ project "LudoNarrative"
     filter "configurations:Debug"
         defines "PRPL_DEBUG"
         symbols "On"
+        staticruntime "off"
+        runtime "Debug"
 
     filter "configurations:Release"
         defines "PRPL_RELEASE"
         optimize "On"
+        staticruntime "off"
+        runtime "Release"
 
     filter "configurations:Dist"
         defines "PRPL_DIST"
         optimize "On"
+        staticruntime "off"
+        runtime "Release"
 
 project "Sandbox"
     location "Sandbox"
@@ -101,11 +118,17 @@ project "Sandbox"
     filter "configurations:Debug"
         defines "PRPL_DEBUG"
         symbols "On"
+        staticruntime "off"
+        runtime "Debug"
 
     filter "configurations:Release"
         defines "PRPL_RELEASE"
         optimize "On"
+        staticruntime "off"
+        runtime "Release"
 
     filter "configurations:Dist"
         defines "PRPL_DIST"
         optimize "On"
+        staticruntime "off"
+        runtime "Release"

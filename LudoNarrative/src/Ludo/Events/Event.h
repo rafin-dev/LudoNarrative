@@ -47,6 +47,8 @@ namespace Ludo {
 			return GetCategoryFlags() & category;
 		}
 
+		const bool& Handled = m_Handled;
+
 	protected:
 		bool m_Handled = false;
 	};

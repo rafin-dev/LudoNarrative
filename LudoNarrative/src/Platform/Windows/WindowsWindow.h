@@ -24,6 +24,8 @@ namespace Ludo {
 		void SetVsync(bool enabled) override;
 		bool IsVsync() const override;
 
+		HWND GetHandle() { return m_WindowHandle; }
+
 	private:
 		virtual void Init(const WindowProps& props);
 		virtual void ShutDown();

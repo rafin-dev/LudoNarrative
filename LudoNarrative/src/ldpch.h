@@ -22,9 +22,13 @@
 #include <queue>
 
 // LudoNarrative is planned to be windows only, I feel sily doing things for multiplatform projects
-// But I also dont want to regret not making it in the future
+// But I also dont want to regret not making this way in the future
 #ifdef LD_PLATFORM_WINDOWS
 	#include <Windows.h>
 	#include <windowsx.h>
+
+	#include <windowsx.h>
+	#include <d3d9.h>
+	#pragma comment (lib, "d3d9.lib")
 #endif
 
