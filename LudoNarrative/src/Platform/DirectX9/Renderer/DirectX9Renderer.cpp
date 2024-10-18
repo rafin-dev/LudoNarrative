@@ -19,7 +19,6 @@ namespace Ludo {
 
 		Interface = Direct3DCreate9(D3D_SDK_VERSION);
 
-		D3DPRESENT_PARAMETERS Parameters = {};
 		Parameters.Windowed = TRUE;
 		Parameters.SwapEffect = D3DSWAPEFFECT_DISCARD;
 		Parameters.hDeviceWindow = handle;
@@ -56,6 +55,14 @@ namespace Ludo {
 		Interface->Release();
 	}
 
+	void DirectX9Renderer::Resize(unsigned int width, unsigned int height)
+	{
+		Parameters.BackBufferWidth = width;
+		Parameters.BackBufferHeight = height;
+
+		ResetDevice();
+	}
+
 	void DirectX9Renderer::BeginScene()
 	{
 		Device->Clear(0, NULL, D3DCLEAR_TARGET, D3DCOLOR_XRGB(255, 255, 255), 1.0f, 0);
@@ -63,19 +70,35 @@ namespace Ludo {
 		Device->SetRenderState(D3DRS_ALPHABLENDENABLE, FALSE);
 		Device->SetRenderState(D3DRS_SCISSORTESTENABLE, FALSE);
 		Device->BeginScene();
+
+		ImGui_ImplDX9_NewFrame();
+		ImGui_ImplWin32_NewFrame();
+		ImGui::NewFrame();
 	}
 
 	void DirectX9Renderer::EndScene()
 	{
+		ImGui::EndFrame();
+		ImGui::Render();
 		ImGui_ImplDX9_RenderDrawData(ImGui::GetDrawData());
 
 		Device->EndScene();
 		Device->Present(NULL, NULL, NULL, NULL);
 	}
 
-	InternalRenderer& InternalRenderer::Get()
+	void DirectX9Renderer::ResetDevice()
+	{
+		ImGui_ImplDX9_InvalidateDeviceObjects();
+		if (Device->Reset(&Parameters) == D3DERR_INVALIDCALL)
+		{
+			LD_ASSERT(false, "Failed to reset DirectX device");
+		}
+		ImGui_ImplDX9_CreateDeviceObjects();
+	}
+
+	InternalRenderer* InternalRenderer::Get()
 	{
 		static std::unique_ptr<InternalRenderer> Rend = std::make_unique<DirectX9Renderer>();
-		return *Rend;
+		return Rend.get();
 	}
 }

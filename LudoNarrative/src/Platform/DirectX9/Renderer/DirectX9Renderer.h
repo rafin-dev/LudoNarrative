@@ -10,13 +10,18 @@ namespace Ludo {
 		void Init() override;
 		~DirectX9Renderer() override;
 
+		void Resize(unsigned int width, unsigned int height);
+
 		void BeginScene() override;
 		void EndScene() override;
 
 	private:
 
+		void ResetDevice();
+
 		LPDIRECT3D9 Interface;
 		LPDIRECT3DDEVICE9 Device;
+		D3DPRESENT_PARAMETERS Parameters = {};
 	};
 
 }

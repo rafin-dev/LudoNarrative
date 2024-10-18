@@ -27,6 +27,7 @@ namespace Ludo {
 
 	private:
 		bool CloseWindow(WindowCloseEvent& event);
+		bool ResizeWindow(WindowResizeEvent& event);
 
 		std::unique_ptr<Window> m_Window;
 		bool m_Running = true;

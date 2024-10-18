@@ -13,10 +13,12 @@ namespace Ludo {
 
 		virtual void Init() = 0;
 
+		virtual void Resize(unsigned int width, unsigned int height) = 0;
+
 		virtual void BeginScene() = 0;
 		virtual void EndScene() = 0;
 
-		static InternalRenderer& Get();
+		static InternalRenderer* Get();
 	};
 
 }

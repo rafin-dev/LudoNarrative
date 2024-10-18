@@ -1,28 +1,34 @@
 #include "ldpch.h"
 #include "Application.h"
 
+#include "Core.h"
+
 #include "Log.h"
+#include "Renderer/InternalRenderer.h"
+#include "Input.h"
+
 #include "Events/ApplicationEvent.h"
 #include "Events/KeyEvent.h"
 #include "Events/MouseEvent.h"
 #include "Events/Event.h"
 
-#include "Renderer/InternalRenderer.h"
-
 namespace Ludo {
 
 #define BindFuncFn(x) std::bind(&Application::x, this, std::placeholders::_1)
 
-	Application* Application::s_Instance;
+	Application* Application::s_Instance = nullptr;
+
+	// All references to "InternalRenderer" are temporary
 
 	Application::Application()
 	{
+		LD_CORE_ASSERT(s_Instance == nullptr, "Application was already initialized");
 		s_Instance = this;
 
 		m_Window = std::unique_ptr<Window>(Window::Create());
 		m_Window->SetEventCallBack(BindFuncFn(OnEvent));
 
-		InternalRenderer::Get().Init();
+		InternalRenderer::Get()->Init();
 	}
 
 	Application::~Application()
@@ -31,20 +37,20 @@ namespace Ludo {
 
 	void Application::Run()
 	{
-		auto& Rend = InternalRenderer::Get();
+		auto Rend = InternalRenderer::Get();
 
 		while (m_Running)
 		{
 			m_Window->OnUpdate();
 
-			Rend.BeginScene();
-			
+			Rend->BeginScene();
+
 			for (Layer* layer : m_LayerStack)
 			{
 				layer->OnUpdate();
 			}
 
-			Rend.EndScene();
+			Rend->EndScene();
 		}
 	}
 
@@ -52,6 +58,7 @@ namespace Ludo {
 	{
 		EventDispatcher dispatcher(event);
 		dispatcher.Dispatch<WindowCloseEvent>(BindFuncFn(CloseWindow));
+		dispatcher.Dispatch<WindowResizeEvent>(BindFuncFn(ResizeWindow));
 
 		for (Layer* layer : m_LayerStack)
 		{
@@ -78,6 +85,12 @@ namespace Ludo {
 	{
 		m_Running = false;
 		return true;
+	}
+
+	bool Application::ResizeWindow(WindowResizeEvent& event)
+	{
+		InternalRenderer::Get()->Resize(event.GetWidth(), event.GetHeight());
+		return false;
 	}
 
 }

@@ -15,14 +15,11 @@ namespace Ludo {
 
 	void ImGuiLayer::OnUpdate()
 	{
-		ImGui_ImplDX9_NewFrame();
-		ImGui_ImplWin32_NewFrame();
-		ImGui::NewFrame();
-
-		ImGui::Text("Hi mom, can you understand this?");
-
-		ImGui::EndFrame();
-		ImGui::Render();
+		ImGui::Begin("Test");
+		ImGui::Text("Lorem ipsum dolor sit amet");
+		ImGui::Button("Foo");
+		ImGui::Button("Bar");
+		ImGui::End();
 	}
 
 	void ImGuiLayer::OnEvent(Event& event)

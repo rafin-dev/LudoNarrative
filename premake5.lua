@@ -68,6 +68,8 @@ project "LudoNarrative"
         staticruntime "off"
         runtime "Debug"
 
+        defines { "LD_ENABLE_ASSERTS" }
+
     filter "configurations:Release"
         defines "PRPL_RELEASE"
         optimize "On"
@@ -120,6 +122,7 @@ project "Sandbox"
         symbols "On"
         staticruntime "off"
         runtime "Debug"
+        defines { "LD_ENABLE_ASSERTS" }
 
     filter "configurations:Release"
         defines "PRPL_RELEASE"

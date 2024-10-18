@@ -34,7 +34,6 @@ namespace Ludo {
 
 	void WindowsWindow::OnUpdate()
 	{
-		// I need to move this to somewhere else ASAP
 		MSG msg;
 		while (PeekMessage(&msg, NULL, 0U, 0U, PM_REMOVE) != 0)
 		{
@@ -82,8 +81,8 @@ namespace Ludo {
 			GetModuleHandle(NULL),        // hInstance
 			NULL                          // Adicional data
 		);
-
 		LD_CORE_ASSERT(handle != NULL, "FAILED TO CREATE WINDOW");
+		SetWindowLongPtr(handle, GWLP_USERDATA, (long long)this);
 
 		m_WindowHandle = handle;
 
@@ -105,7 +104,13 @@ namespace Ludo {
 	std::unordered_map<UINT, WindowsWindow::WinMsgCallBackFn> WindowsWindow::s_MsgCallBacks
 	{
 		// Window
-		{ WM_SIZE, ThrowEvent(WindowResizeEvent(LOWORD(lParam), HIWORD(lParam))) },
+		{ WM_SIZE, MSGlambda {	
+			s_EventCallBack((Event&)(WindowResizeEvent(LOWORD(lParam), HIWORD(lParam))));
+			WindowsWindow* wnd = ((WindowsWindow*)GetWindowLongPtr(hwnd, GWLP_USERDATA));
+			wnd->m_Data.Width = LOWORD(lParam);
+			wnd->m_Data.Height = HIWORD(lParam);
+			return false; 
+	} },
 		{ WM_CLOSE, ThrowEventAndHandle(WindowCloseEvent()) },
 		{ WM_QUIT, ThrowEventAndHandle(WindowCloseEvent()) },
 
@@ -137,11 +142,12 @@ namespace Ludo {
 		s_WindowClass.lpszClassName = s_ClassName;
 
 		RegisterClass(&s_WindowClass);
+
+
 	}
 
 	LRESULT WindowsWindow::WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 	{
-		// TODO: Change this ASAP
 		if (ImGui_ImplWin32_WndProcHandler(hwnd, uMsg, wParam, lParam))
 		{
 			return true;

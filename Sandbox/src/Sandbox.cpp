@@ -7,7 +7,8 @@ class ExampleLayer : public Ludo::Layer
 public:
 	ExampleLayer()
 		: Ludo::Layer("Example")
-	{}
+	{
+	}
 
 	void OnUpdate() override
 	{
