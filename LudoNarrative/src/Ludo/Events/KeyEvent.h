@@ -4,6 +4,9 @@
 
 namespace Ludo {
 
+	// Currently some key events will have an undefined keycode
+	// Don't rely on these as they are platform dependent and thus, undefined behaviour
+
 	class LUDO_API KeyEvent : public Event
 	{
 	public:
@@ -54,6 +57,27 @@ namespace Ludo {
 		}
 
 		EVENT_CLASS_TYPE(KeyReleased)
+	};
+
+	class LUDO_API CharTypedEvent : public Event
+	{
+	public:
+		CharTypedEvent(wchar_t charTyped)
+			: m_Char(charTyped) {}
+
+		std::string ToString() const override
+		{
+			std::stringstream stringStream;
+			stringStream << "CharTypedEvent: CharUnicode: " << (uint16_t)m_Char;
+			return stringStream.str();
+		}
+
+		EVENT_CLASS_CATEGORY(EventCategoryKeyboard)
+
+		EVENT_CLASS_TYPE(CharTyped)
+
+	private:
+		wchar_t m_Char;
 	};
 
 }

@@ -4,6 +4,7 @@
 
 #include "Ludo/Core.h"
 
+#include "Ludo/Log.h"
 
 namespace Ludo {
 
@@ -12,7 +13,7 @@ namespace Ludo {
 		None = 0,
 		WindowClose, WindowResize, WindowFocus, WindowLostFocus, WindowMoved,
 		AppTick, AppUpdate, AppRender,
-		KeyPressed, KeyReleased,
+		KeyPressed, KeyReleased, CharTyped,
 		MouseButtonPressed, MouseButtonReleased, MouseMoved, MouseScrolled
 	};
 
@@ -85,3 +86,12 @@ namespace Ludo {
 		return os << event.ToString();
 	}
 }
+
+template<>
+struct fmt::formatter<Ludo::Event> : fmt::formatter<std::string>
+{
+	auto format(Ludo::Event& my, format_context& ctx) const -> decltype(ctx.out())
+	{
+		return fmt::format_to(ctx.out(), "{}", my.ToString());
+	}
+};

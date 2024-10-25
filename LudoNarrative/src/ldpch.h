@@ -30,5 +30,10 @@
 	#include <windowsx.h>
 	#include <d3d9.h>
 	#pragma comment (lib, "d3d9.lib")
+
+	#include <DirectXMath.h>
+	#include <DirectXPackedVector.h>
+	#include <DirectXColors.h>
+	#include <DirectXCollision.h>
 #endif
 

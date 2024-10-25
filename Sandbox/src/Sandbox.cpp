@@ -8,6 +8,7 @@ public:
 	ExampleLayer()
 		: Ludo::Layer("Example")
 	{
+
 	}
 
 	void OnUpdate() override
@@ -36,6 +37,5 @@ public:
 
 Ludo::Application* Ludo::CreateApplication()
 {
-
 	return new Sandbox();
 }

@@ -3,10 +3,10 @@
 
 #include "Ludo/Log.h"
 #include "Ludo/Application.h"
-#include "Platform/Windows/WindowsWindow.h"
+#include "Platform/Windows/Window/WindowsWindow.h"
 
-#include "Platform/DirectX9/imgui/imgui_impl_dx9.h"
-#include "Platform/DirectX9/imgui/imgui_impl_win32.h"
+#include "Platform/DirectX9/ImGui/imgui_impl_dx9.h"
+#include "Platform/Windows/ImGui/imgui_impl_win32.h"
 
 namespace Ludo {
 

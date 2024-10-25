@@ -10,12 +10,12 @@
 // | $$$$$$$$|  $$$$$$/|  $$$$$$$|  $$$$$$/| $$ \  $$|  $$$$$$$| $$      | $$     |  $$$$$$$  |  $$$$/| $$   \  $/  |  $$$$$$$
 // |________/ \______/  \_______/ \______/ |__/  \__/ \_______/|__/      |__/      \_______/   \___/  |__/    \_/    \_______/
 //
-
-
 // Header file for client applications
 
 #include "Ludo/Application.h"
 #include "Ludo/Layer.h"
+#include "Ludo/KeyCodes.h"
+#include "Ludo/Input.h"
 #include "Ludo/Log.h"
 #include "Ludo/imgui/ImGuiLayer.h"
 

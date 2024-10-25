@@ -1,6 +1,7 @@
 #include "ldpch.h"
 #include "WindowsInput.h"
 
+#include "Ludo/KeyCodes.h"
 #include "Ludo/Log.h"
 
 namespace Ludo {

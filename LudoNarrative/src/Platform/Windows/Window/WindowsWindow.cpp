@@ -118,6 +118,7 @@ namespace Ludo {
 		// Keyboard
 		{ WM_KEYDOWN, ThrowEvent(KeyPressedEvent(wParam, lParam & 0xFFFF)) },
 		{ WM_KEYUP, ThrowEvent(KeyReleasedEvent(wParam)) },
+		{ WM_CHAR, ThrowEvent(CharTypedEvent(wParam)) },
 
 		// Mouse
 		{ WM_MOUSEMOVE, ThrowEvent(MouseMovedEvent(GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam))) },
