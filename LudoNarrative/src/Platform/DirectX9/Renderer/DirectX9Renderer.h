@@ -15,6 +15,9 @@ namespace Ludo {
 		void BeginScene() override;
 		void EndScene() override;
 
+		void BeginImGui() override;
+		void EndImGui() override;
+
 	private:
 
 		void ResetDevice();

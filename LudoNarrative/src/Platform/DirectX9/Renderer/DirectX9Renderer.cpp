@@ -5,8 +5,9 @@
 #include "Ludo/Application.h"
 #include "Platform/Windows/Window/WindowsWindow.h"
 
-#include "Platform/DirectX9/ImGui/imgui_impl_dx9.h"
-#include "Platform/Windows/ImGui/imgui_impl_win32.h"
+#define IMGUI_IMPL_API
+#include "imgui/backends/imgui_impl_dx9.h"
+#include "imgui/backends/imgui_impl_win32.h"
 
 namespace Ludo {
 
@@ -37,6 +38,7 @@ namespace Ludo {
 		ImGui::CreateContext();
 		ImGuiIO& io = ImGui::GetIO();
 		io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard | ImGuiConfigFlags_NavEnableGamepad;
+		io.ConfigFlags |= ImGuiConfigFlags_DockingEnable | ImGuiConfigFlags_ViewportsEnable;
 		ImGui::StyleColorsDark();
 
 		ImGui_ImplWin32_Init(handle);
@@ -65,25 +67,41 @@ namespace Ludo {
 
 	void DirectX9Renderer::BeginScene()
 	{
-		Device->Clear(0, NULL, D3DCLEAR_TARGET, D3DCOLOR_XRGB(255, 255, 255), 1.0f, 0);
 		Device->SetRenderState(D3DRS_ZENABLE, FALSE);
 		Device->SetRenderState(D3DRS_ALPHABLENDENABLE, FALSE);
 		Device->SetRenderState(D3DRS_SCISSORTESTENABLE, FALSE);
+		Device->Clear(0, NULL, D3DCLEAR_TARGET, D3DCOLOR_XRGB(255, 255, 255), 1.0f, 0);
 		Device->BeginScene();
+	}
 
+	void DirectX9Renderer::EndScene()
+	{
+		Device->EndScene();
+		Device->Present(NULL, NULL, NULL, NULL);
+	}
+
+	void DirectX9Renderer::BeginImGui()
+	{
 		ImGui_ImplDX9_NewFrame();
 		ImGui_ImplWin32_NewFrame();
 		ImGui::NewFrame();
 	}
 
-	void DirectX9Renderer::EndScene()
+	void DirectX9Renderer::EndImGui()
 	{
+		ImGuiIO& io = ImGui::GetIO();
+		Application& app = Application::Get();
+		io.DisplaySize = ImVec2(app.GetWindow().GetWidth(), app.GetWindow().GetHeight());
+
 		ImGui::EndFrame();
 		ImGui::Render();
 		ImGui_ImplDX9_RenderDrawData(ImGui::GetDrawData());
 
-		Device->EndScene();
-		Device->Present(NULL, NULL, NULL, NULL);
+		if (io.ConfigFlags & ImGuiConfigFlags_DockingEnable)
+		{
+			ImGui::UpdatePlatformWindows();
+			ImGui::RenderPlatformWindowsDefault();
+		}
 	}
 
 	void DirectX9Renderer::ResetDevice()

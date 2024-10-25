@@ -10,8 +10,10 @@ namespace Ludo {
 	public:
 		ImGuiLayer();
 
-		virtual void OnUpdate() override;
-		virtual void OnEvent(Event& event) override;
+		void begin();
+		void End();
+
+		void OnImGuiRender() override;
 
 	private:
 	};

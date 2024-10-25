@@ -6,6 +6,7 @@
 #include "Events/ApplicationEvent.h"
 #include "Layer.h"
 #include "LayerStack.h"
+#include "ImGui/ImGuiLayer.h"
 
 namespace Ludo {
 
@@ -30,6 +31,7 @@ namespace Ludo {
 		bool ResizeWindow(WindowResizeEvent& event);
 
 		std::unique_ptr<Window> m_Window;
+		ImGuiLayer* m_ImGuiLayer;
 		bool m_Running = true;
 
 		LayerStack m_LayerStack;

@@ -7,7 +7,7 @@
 #include "Ludo/Events/KeyEvent.h"
 #include "Ludo/Events/MouseEvent.h"
 
-#include "Platform/DirectX9/imgui/imgui_impl_dx9.h"
+#include "imgui/backends/imgui_impl_win32.h"
 
 extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 

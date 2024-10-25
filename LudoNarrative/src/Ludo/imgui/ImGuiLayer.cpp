@@ -3,6 +3,8 @@
 
 #include <imgui.h>
 
+#include "Ludo/Renderer/InternalRenderer.h"
+
 namespace Ludo {
 
 	ImGuiLayer::ImGuiLayer()
@@ -10,17 +12,20 @@ namespace Ludo {
 	{
 	}
 
-	void ImGuiLayer::OnUpdate()
+	void ImGuiLayer::begin()
 	{
-		ImGui::Begin("Test");
-		ImGui::Text("Lorem ipsum dolor sit amet");
-		ImGui::Button("Foo");
-		ImGui::Button("Bar");
-		ImGui::End();
+		InternalRenderer::Get()->BeginImGui();
 	}
 
-	void ImGuiLayer::OnEvent(Event& event)
+	void ImGuiLayer::End()
 	{
+		InternalRenderer::Get()->EndImGui();
+	}
+
+	void ImGuiLayer::OnImGuiRender()
+	{
+		static bool show = true;
+		ImGui::ShowDemoWindow(&show);
 	}
 
 }

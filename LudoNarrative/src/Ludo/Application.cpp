@@ -28,6 +28,9 @@ namespace Ludo {
 		m_Window = std::unique_ptr<Window>(Window::Create());
 		m_Window->SetEventCallBack(BindFuncFn(OnEvent));
 
+		m_ImGuiLayer = new ImGuiLayer();
+		PushOverlay(m_ImGuiLayer);
+
 		InternalRenderer::Get()->Init();
 	}
 
@@ -49,6 +52,13 @@ namespace Ludo {
 			{
 				layer->OnUpdate();
 			}
+
+			m_ImGuiLayer->begin();
+			for (Layer* l : m_LayerStack)
+			{
+				l->OnImGuiRender();
+			}
+			m_ImGuiLayer->End();
 
 			Rend->EndScene();
 		}

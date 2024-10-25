@@ -13,6 +13,7 @@ workspace "LudoNarrative"
 outputdir = "%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}"
 
 IncludeDir = {}
+IncludeDir["Vendor"] = "%{wks.location}/LudoNarrative/vendor" 
 IncludeDir["ImGui"] = "%{wks.location}/LudoNarrative/vendor/imgui"
 
 include "imgui_premake5"
@@ -38,6 +39,7 @@ project "LudoNarrative"
     {
         "%{prj.location}/src",
         "%{prj.location}/vendor/spdlog/include",
+        "%{IncludeDir.Vendor}",
         "%{IncludeDir.ImGui}"
     }
 

@@ -18,6 +18,9 @@ namespace Ludo {
 		virtual void BeginScene() = 0;
 		virtual void EndScene() = 0;
 
+		virtual void BeginImGui() = 0;
+		virtual void EndImGui() = 0;
+
 		static InternalRenderer* Get();
 	};
 
