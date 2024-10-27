@@ -26,10 +26,15 @@
 #ifdef LD_PLATFORM_WINDOWS
 	#include <Windows.h>
 	#include <windowsx.h>
-
-	#include <windowsx.h>
+	
 	#include <d3d9.h>
+	#include <d3d11.h>
+	#include <d3d11_4.h>
+
+	// include the Direct3D Library file
 	#pragma comment (lib, "d3d9.lib")
+	#pragma comment (lib, "d3d11.lib")
+	#pragma comment (lib, "dxgi.lib")
 
 	#include <DirectXMath.h>
 	#include <DirectXPackedVector.h>

@@ -2,21 +2,15 @@
 
 #include "Ludo/Core.h"
 
-#include <d3d9.h>
-
 namespace Ludo {
 
-	class LUDO_API InternalRenderer
+	class 
+		InternalRenderer
 	{
 	public:
 		virtual ~InternalRenderer() {}
 
-		virtual void Init() = 0;
-
-		virtual void Resize(unsigned int width, unsigned int height) = 0;
-
-		virtual void BeginScene() = 0;
-		virtual void EndScene() = 0;
+		virtual bool Init() = 0;
 
 		virtual void BeginImGui() = 0;
 		virtual void EndImGui() = 0;

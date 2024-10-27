@@ -11,6 +11,7 @@
 #include "Events/KeyEvent.h"
 #include "Events/MouseEvent.h"
 #include "Events/Event.h"
+#include "KeyCodes.h"
 
 namespace Ludo {
 
@@ -25,13 +26,16 @@ namespace Ludo {
 		LD_CORE_ASSERT(s_Instance == nullptr, "Application was already initialized");
 		s_Instance = this;
 
+		if (!InternalRenderer::Get()->Init())
+		{
+			m_Running = false;
+		}
+
 		m_Window = std::unique_ptr<Window>(Window::Create());
 		m_Window->SetEventCallBack(BindFuncFn(OnEvent));
 
 		m_ImGuiLayer = new ImGuiLayer();
 		PushOverlay(m_ImGuiLayer);
-
-		InternalRenderer::Get()->Init();
 	}
 
 	Application::~Application()
@@ -44,9 +48,7 @@ namespace Ludo {
 
 		while (m_Running)
 		{
-			m_Window->OnUpdate();
-
-			Rend->BeginScene();
+			m_Window->NewFrame();
 
 			for (Layer* layer : m_LayerStack)
 			{
@@ -60,7 +62,7 @@ namespace Ludo {
 			}
 			m_ImGuiLayer->End();
 
-			Rend->EndScene();
+			m_Window->OnUpdate();
 		}
 	}
 
@@ -68,7 +70,6 @@ namespace Ludo {
 	{
 		EventDispatcher dispatcher(event);
 		dispatcher.Dispatch<WindowCloseEvent>(BindFuncFn(CloseWindow));
-		dispatcher.Dispatch<WindowResizeEvent>(BindFuncFn(ResizeWindow));
 
 		for (Layer* layer : m_LayerStack)
 		{
@@ -95,12 +96,6 @@ namespace Ludo {
 	{
 		m_Running = false;
 		return true;
-	}
-
-	bool Application::ResizeWindow(WindowResizeEvent& event)
-	{
-		InternalRenderer::Get()->Resize(event.GetWidth(), event.GetHeight());
-		return false;
 	}
 
 }

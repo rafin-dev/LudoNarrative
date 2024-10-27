@@ -10,7 +10,8 @@
 
 namespace Ludo {
 
-	class LUDO_API Application
+	class 
+		Application
 	{
 	public:
 		Application();
@@ -28,7 +29,6 @@ namespace Ludo {
 
 	private:
 		bool CloseWindow(WindowCloseEvent& event);
-		bool ResizeWindow(WindowResizeEvent& event);
 
 		std::unique_ptr<Window> m_Window;
 		ImGuiLayer* m_ImGuiLayer;

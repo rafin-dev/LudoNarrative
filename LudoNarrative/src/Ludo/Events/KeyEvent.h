@@ -7,7 +7,15 @@ namespace Ludo {
 	// Currently some key events will have an undefined keycode
 	// Don't rely on these as they are platform dependent and thus, undefined behaviour
 
-	class LUDO_API KeyEvent : public Event
+	class 
+		
+		
+		
+	
+	
+	
+	
+	KeyEvent : public Event
 	{
 	public:
 		inline int GetKeyCode() const { return m_KeyCode; }
@@ -22,7 +30,7 @@ namespace Ludo {
 	};
 
 	// Might split this into two events: KeyPressedEvent and KeyHoldEvent
-	class LUDO_API KeyPressedEvent : public KeyEvent
+	class KeyPressedEvent : public KeyEvent
 	{
 	public:
 		KeyPressedEvent(int keycode, int repeatCount)
@@ -43,7 +51,7 @@ namespace Ludo {
 		int m_RepeatCount;
 	};
 
-	class LUDO_API KeyReleasedEvent : public KeyEvent
+	class KeyReleasedEvent : public KeyEvent
 	{
 	public:
 		KeyReleasedEvent(int keycode)
@@ -59,7 +67,7 @@ namespace Ludo {
 		EVENT_CLASS_TYPE(KeyReleased)
 	};
 
-	class LUDO_API CharTypedEvent : public Event
+	class CharTypedEvent : public Event
 	{
 	public:
 		CharTypedEvent(wchar_t charTyped)

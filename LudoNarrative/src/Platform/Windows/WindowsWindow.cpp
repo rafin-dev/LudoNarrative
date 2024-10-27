@@ -9,6 +9,8 @@
 
 #include "imgui/backends/imgui_impl_win32.h"
 
+#include "Platform/DirectX11/DirectX11Context.h"
+
 extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
 namespace Ludo {
@@ -40,6 +42,7 @@ namespace Ludo {
 			TranslateMessage(&msg);
 			DispatchMessage(&msg);
 		}
+		m_Context->SwapBuffers();
 	}
 
 	void WindowsWindow::SetVsync(bool enabled)
@@ -51,23 +54,38 @@ namespace Ludo {
 		return m_Data.Vsync;
 	}
 
+	void WindowsWindow::NewFrame()
+	{
+		m_Context->Clear();
+	}
+
+	void WindowsWindow::OnResize()
+	{
+		if (m_Context != nullptr) { m_Context->Resize(m_Data.Width, m_Data.Height); }
+	}
+
 	void WindowsWindow::Init(const WindowProps& props)
 	{
 		m_Data.Title = props.Title;
 		m_Data.Width = props.Width;
 		m_Data.Height = props.Height;
 		m_Data.Vsync = false;
-
+		
 		LD_CORE_TRACE("Creating Window: {0} [{1}, {2}]", m_Data.Title, m_Data.Width, m_Data.Height);
 
+		bool InitImGui = false;
 		if (!s_WindowClassInitialized)
 		{
 			InitializeWinAPI();
 			s_WindowClassInitialized = true;
+			InitImGui = true;
 		}
 		
 		std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> converter;
 		std::wstring wTitle = converter.from_bytes(m_Data.Title);
+
+		RECT wr = { 0, 0, m_Data.Width, m_Data.Height };
+		AdjustWindowRect(&wr, WS_OVERLAPPEDWINDOW, FALSE);
 
 		HWND handle = CreateWindowEx(
 			0,                            // Custom Style
@@ -75,7 +93,8 @@ namespace Ludo {
 			wTitle.c_str(),               // Title
 			WS_OVERLAPPEDWINDOW,          // Style
 			CW_USEDEFAULT, CW_USEDEFAULT, // Posiition
-			m_Data.Width, m_Data.Height,  // Size
+			wr.right - wr.left,           // Width
+			wr.bottom - wr.top,           // Height
 			NULL,                         // Parent window
 			NULL,                         // Menu
 			GetModuleHandle(NULL),        // hInstance
@@ -85,13 +104,22 @@ namespace Ludo {
 		SetWindowLongPtr(handle, GWLP_USERDATA, (long long)this);
 
 		m_WindowHandle = handle;
-
 		ShowWindow(m_WindowHandle, SW_NORMAL);
+
+		m_Context = new DirectX11Context(m_WindowHandle);
+		m_Context->Init();
+
+		if (InitImGui)
+		{
+			ImGui_ImplWin32_Init(m_WindowHandle);
+		}
 	}
 
 	void WindowsWindow::ShutDown()
 	{
+		LD_CORE_TRACE("Closing Window: {0}", m_Data.Title);
 		DestroyWindow(m_WindowHandle);
+		delete m_Context;
 	}
 
 #define MSGlambda [] (HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) -> bool
@@ -109,6 +137,7 @@ namespace Ludo {
 			WindowsWindow* wnd = ((WindowsWindow*)GetWindowLongPtr(hwnd, GWLP_USERDATA));
 			wnd->m_Data.Width = LOWORD(lParam);
 			wnd->m_Data.Height = HIWORD(lParam);
+			wnd->OnResize();
 			return false; 
 	} },
 		{ WM_CLOSE, ThrowEventAndHandle(WindowCloseEvent()) },
@@ -143,8 +172,6 @@ namespace Ludo {
 		s_WindowClass.lpszClassName = s_ClassName;
 
 		RegisterClass(&s_WindowClass);
-
-
 	}
 
 	LRESULT WindowsWindow::WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)

@@ -18,7 +18,7 @@ namespace Ludo {
 	};
 
 	// Interface used to abstract platform specific window creation code (althought LudoNarrative is windows only)
-	class LUDO_API Window
+	class Window
 	{
 	public:
 		using EventCallBackFn = std::function<void(Event&)>;
@@ -33,6 +33,8 @@ namespace Ludo {
 		virtual void SetEventCallBack(const EventCallBackFn& callback) = 0;
 		virtual void SetVsync(bool enbaled) = 0;
 		virtual bool IsVsync() const = 0;
+
+		virtual void NewFrame() = 0;
 
 		static Window* Create(const WindowProps& props = WindowProps());
 	};

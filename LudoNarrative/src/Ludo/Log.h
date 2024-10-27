@@ -5,7 +5,7 @@
 
 namespace Ludo {
 
-	class LUDO_API Log
+	class Log
 	{
 	public:
 		static void Init();

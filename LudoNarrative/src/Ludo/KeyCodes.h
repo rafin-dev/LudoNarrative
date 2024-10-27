@@ -20,6 +20,7 @@
 #define LD_KEY_ALT                  0x12
 #define LD_KEY_PAUSE                0x13
 #define LD_KEY_CAPS_LOCK            0x14
+#define LD_KEY_ESCAPE               0x1B
 #define LD_KEY_PAGE_UP              0x21
 #define LD_KEY_PAGE_DOWN            0x22
 #define LD_KEY_END                  0x23

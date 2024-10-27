@@ -4,14 +4,14 @@
 
 namespace Ludo {
 
-	class LUDO_API MouseMovedEvent : public Event
+	class MouseMovedEvent : public Event
 	{
 	public:
 		MouseMovedEvent(int x, int y)
 			: m_MouseX(x), m_MouseY(y) {}
 
-		inline float GetX() const { return m_MouseX; }
-		inline float GetY() const { return m_MouseY; }
+		inline int GetX() const { return m_MouseX; }
+		inline int GetY() const { return m_MouseY; }
 
 		std::string ToString() const override
 		{
@@ -27,7 +27,7 @@ namespace Ludo {
 		int m_MouseX, m_MouseY;
 	};
 
-	class LUDO_API MouseScrolledEvent : public Event
+	class MouseScrolledEvent : public Event
 	{
 	public:
 		MouseScrolledEvent(int offsetX)
@@ -56,7 +56,7 @@ namespace Ludo {
 		Right
 	};
 
-	class LUDO_API MouseButtonEvent : public Event
+	class MouseButtonEvent : public Event
 	{
 	public:
 		inline int GetMouseButton() const { return m_Button; }
@@ -70,7 +70,7 @@ namespace Ludo {
 		int m_Button;
 	};
 
-	class LUDO_API MouseButtonPressedEvent : public MouseButtonEvent
+	class MouseButtonPressedEvent : public MouseButtonEvent
 	{
 	public:
 		MouseButtonPressedEvent(int button)
@@ -86,7 +86,7 @@ namespace Ludo {
 		EVENT_CLASS_TYPE(MouseButtonPressed)
 	};
 
-	class LUDO_API MouseButtonReleasedEvent : public MouseButtonEvent
+	class MouseButtonReleasedEvent : public MouseButtonEvent
 	{
 	public:
 		MouseButtonReleasedEvent(int button)

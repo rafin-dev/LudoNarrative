@@ -20,8 +20,10 @@ include "imgui_premake5"
 
 project "LudoNarrative"
     location "LudoNarrative"
-    kind "SharedLib"
+    kind "StaticLib"
     language "C++"
+    cppdialect "c++20"
+    staticruntime "on"
 
     targetdir ("bin/" .. outputdir .. "/%{prj.name}")
     objdir ("bin-int/" .. outputdir .. "/%{prj.name}")
@@ -43,51 +45,37 @@ project "LudoNarrative"
         "%{IncludeDir.ImGui}"
     }
 
-    defines
-    {
-        -- Purple Engine is planned to be windows only, but it doenst hurt to be ready just in case
-        "LD_PLATFORM_WINDOWS",
-        "LD_BUILD_DLL"
-    }
-
     links
     {
         "ImGui"
     }
 
-    postbuildcommands
-    {
-        ("{COPY} %{cfg.buildtarget.relpath} ../bin/" .. outputdir .. "/Sandbox")
-    }
-
-    cppdialect "c++20"
-    staticruntime "on"
-    systemversion "latest"
+    filter "system:windows"
+        systemversion "latest"
+        defines "LD_PLATFORM_WINDOWS"
 
     filter "configurations:Debug"
-        defines "PRPL_DEBUG"
-        symbols "On"
-        staticruntime "off"
+        defines "LUDO_DEBUG"
+        symbols "on"
         runtime "Debug"
 
         defines { "LD_ENABLE_ASSERTS" }
 
     filter "configurations:Release"
-        defines "PRPL_RELEASE"
-        optimize "On"
-        staticruntime "off"
+        defines "LUDO_RELEASE"
+        optimize "on"
         runtime "Release"
 
     filter "configurations:Dist"
-        defines "PRPL_DIST"
-        optimize "On"
-        staticruntime "off"
+        defines "LUDO_DIST"
+        optimize "on"
         runtime "Release"
 
 project "Sandbox"
     location "Sandbox"
     kind "ConsoleApp"
     language "C++"
+    staticruntime "on"
 
     targetdir ("bin/" .. outputdir .. "/%{prj.name}")
     objdir ("bin-int/" .. outputdir .. "/%{prj.name}")
@@ -102,7 +90,8 @@ project "Sandbox"
     {
         "%{prj.location}/src",
         "%{wks.location}/LudoNarrative/src",
-        "%{wks.location}/LudoNarrative/vendor/spdlog/include"
+        "%{wks.location}/LudoNarrative/vendor/spdlog/include",
+        "%{IncludeDir.Vendor}"
     }
 
     defines
@@ -120,20 +109,17 @@ project "Sandbox"
     systemversion "latest"
 
     filter "configurations:Debug"
-        defines "PRPL_DEBUG"
+        defines "LUDO_DEBUG"
         symbols "On"
-        staticruntime "off"
         runtime "Debug"
         defines { "LD_ENABLE_ASSERTS" }
 
     filter "configurations:Release"
-        defines "PRPL_RELEASE"
+        defines "LUDO_RELEASE"
         optimize "On"
-        staticruntime "off"
         runtime "Release"
 
     filter "configurations:Dist"
-        defines "PRPL_DIST"
+        defines "LUDO_DIST"
         optimize "On"
-        staticruntime "off"
         runtime "Release"

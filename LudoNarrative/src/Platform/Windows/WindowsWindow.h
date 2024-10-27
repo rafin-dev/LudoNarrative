@@ -5,6 +5,8 @@
 #include "Ludo/Core.h"
 #include "Ludo/Window.h"
 
+#include "Ludo/Renderer/GraphicsContext.h"
+
 namespace Ludo {
 
 	class WindowsWindow : public Window
@@ -24,13 +26,19 @@ namespace Ludo {
 		void SetVsync(bool enabled) override;
 		bool IsVsync() const override;
 
+		void NewFrame() override;
+
+		void OnResize();
+
 		HWND GetHandle() { return m_WindowHandle; }
 
 	private:
 		virtual void Init(const WindowProps& props);
 		virtual void ShutDown();
 
+	private:
 		HWND m_WindowHandle;
+		GraphicsContext* m_Context = nullptr;
 
 		struct WindowData
 		{
