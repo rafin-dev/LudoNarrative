@@ -23,7 +23,7 @@ public:
 
 	void OnImGuiRender() override
 	{
-		ImGui::ShowDemoWindow();
+		//ImGui::ShowDemoWindow();
 	}
 
 };
@@ -34,6 +34,10 @@ public:
 	Sandbox()
 	{
 		PushLayer(new ExampleLayer());
+	}
+
+	void OnUpdate()
+	{
 	}
 
 	~Sandbox()

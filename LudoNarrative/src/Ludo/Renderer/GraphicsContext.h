@@ -10,8 +10,7 @@ namespace Ludo {
 		virtual void SwapBuffers() = 0;
 
 		virtual void Resize(unsigned int width, unsigned int height) = 0;
-
-		virtual void Clear() = 0;
+		virtual void SetFullScreen(bool enabled) = 0;
 	};
 
 }

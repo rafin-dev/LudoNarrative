@@ -29,12 +29,13 @@ namespace Ludo {
 
 		virtual unsigned int GetWidth() const = 0;
 		virtual unsigned int GetHeight() const = 0;
+		virtual bool IsFullScreen() const = 0;
 
 		virtual void SetEventCallBack(const EventCallBackFn& callback) = 0;
 		virtual void SetVsync(bool enbaled) = 0;
 		virtual bool IsVsync() const = 0;
 
-		virtual void NewFrame() = 0;
+		virtual void SetFullScreen(bool enabled) = 0;
 
 		static Window* Create(const WindowProps& props = WindowProps());
 	};

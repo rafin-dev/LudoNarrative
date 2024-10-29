@@ -15,36 +15,39 @@ namespace Ludo {
 		using WinMsgCallBackFn = std::function<bool(HWND, UINT, WPARAM, LPARAM)>;
 
 		WindowsWindow(const WindowProps& props);
-		virtual ~WindowsWindow();
+		~WindowsWindow() override;
 
 		void OnUpdate() override;
 
-		inline unsigned int GetWidth() const override { RECT rect; GetWindowRect(m_WindowHandle, &rect); return rect.right - rect.left; }
-		inline unsigned int GetHeight() const override { RECT rect; GetWindowRect(m_WindowHandle, &rect); return rect.bottom - rect.top; }
+		inline unsigned int GetWidth() const override { return m_Data.Width; }
+		inline unsigned int GetHeight() const override { return m_Data.Height; }
+
+		inline bool IsFullScreen() const override { return m_Data.IsFullScreen; }
 
 		inline void SetEventCallBack(const EventCallBackFn& callback) override { s_EventCallBack = callback; }
 		void SetVsync(bool enabled) override;
 		bool IsVsync() const override;
 
-		void NewFrame() override;
-
-		void OnResize();
+		void SetFullScreen(bool enabled) override;
 
 		HWND GetHandle() { return m_WindowHandle; }
 
 	private:
-		virtual void Init(const WindowProps& props);
-		virtual void ShutDown();
+		void Init(const WindowProps& props);
+		void ShutDown();
+		void Resize();
 
-	private:
 		HWND m_WindowHandle;
 		GraphicsContext* m_Context = nullptr;
 
+		bool m_ShouldResize = false;
+
 		struct WindowData
 		{
-			std::string Title;
-			unsigned int Width, Height;
-			bool Vsync;
+			std::string Title = " ";
+			unsigned int Width, Height = 0;
+			bool IsFullScreen = false;
+			bool Vsync = false;
 		};
 
 		WindowData m_Data;

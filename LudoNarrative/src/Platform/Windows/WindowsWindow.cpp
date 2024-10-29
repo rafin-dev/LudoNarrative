@@ -9,7 +9,7 @@
 
 #include "imgui/backends/imgui_impl_win32.h"
 
-#include "Platform/DirectX11/DirectX11Context.h"
+#include "Platform/DirectX12/DirectX12Context.h"
 
 extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
@@ -42,7 +42,13 @@ namespace Ludo {
 			TranslateMessage(&msg);
 			DispatchMessage(&msg);
 		}
+
 		m_Context->SwapBuffers();
+
+		if (m_ShouldResize)
+		{
+			Resize();
+		}
 	}
 
 	void WindowsWindow::SetVsync(bool enabled)
@@ -54,14 +60,41 @@ namespace Ludo {
 		return m_Data.Vsync;
 	}
 
-	void WindowsWindow::NewFrame()
+	void WindowsWindow::SetFullScreen(bool enabled)
 	{
-		m_Context->Clear();
-	}
+		// Window style
+		DWORD style = WS_OVERLAPPEDWINDOW | WS_VISIBLE;
+		DWORD exStyle = WS_EX_OVERLAPPEDWINDOW | WS_EX_APPWINDOW;
+		if (enabled)
+		{
+			style = WS_POPUP | WS_VISIBLE;
+			exStyle = WS_EX_APPWINDOW;
+		}
 
-	void WindowsWindow::OnResize()
-	{
-		if (m_Context != nullptr) { m_Context->Resize(m_Data.Width, m_Data.Height); }
+		SetWindowLongW(m_WindowHandle, GWL_STYLE, style);
+		SetWindowLongW(m_WindowHandle, GWL_EXSTYLE, exStyle);
+
+		// Window size
+		if (enabled)
+		{
+			HMONITOR monitor = MonitorFromWindow(m_WindowHandle, MONITOR_DEFAULTTONEAREST);
+			MONITORINFO info = {};
+			info.cbSize = sizeof(info);
+			if (GetMonitorInfoW(monitor, &info))
+			{
+				SetWindowPos(m_WindowHandle, nullptr,
+					info.rcMonitor.left, info.rcMonitor.top,
+					info.rcMonitor.right - info.rcMonitor.left,
+					info.rcMonitor.bottom - info.rcMonitor.top,
+					SWP_NOZORDER);
+			}
+		}
+		else
+		{
+			ShowWindow(m_WindowHandle, SW_MAXIMIZE);
+		}
+
+		m_Data.IsFullScreen = enabled;
 	}
 
 	void WindowsWindow::Init(const WindowProps& props)
@@ -71,7 +104,7 @@ namespace Ludo {
 		m_Data.Height = props.Height;
 		m_Data.Vsync = false;
 		
-		LD_CORE_TRACE("Creating Window: {0} [{1}, {2}]", m_Data.Title, m_Data.Width, m_Data.Height);
+		LD_CORE_INFO("Creating Window: {0} [{1}, {2}]", m_Data.Title, m_Data.Width, m_Data.Height);
 
 		bool InitImGui = false;
 		if (!s_WindowClassInitialized)
@@ -104,22 +137,31 @@ namespace Ludo {
 		SetWindowLongPtr(handle, GWLP_USERDATA, (long long)this);
 
 		m_WindowHandle = handle;
-		ShowWindow(m_WindowHandle, SW_NORMAL);
 
-		m_Context = new DirectX11Context(m_WindowHandle);
+		// TODO: Create some function to handle Context creation according to the Rendering API being used
+		// e.g: m_Context = CreateGraphicsContext(m_WindowHandle);
+		m_Context = new DirectX12Context(m_WindowHandle);
 		m_Context->Init();
+
+		ShowWindow(m_WindowHandle, SW_NORMAL);
 
 		if (InitImGui)
 		{
-			ImGui_ImplWin32_Init(m_WindowHandle);
+			//ImGui_ImplWin32_Init(m_WindowHandle);
 		}
 	}
 
 	void WindowsWindow::ShutDown()
 	{
 		LD_CORE_TRACE("Closing Window: {0}", m_Data.Title);
-		DestroyWindow(m_WindowHandle);
 		delete m_Context;
+		DestroyWindow(m_WindowHandle);
+	}
+
+	void WindowsWindow::Resize()
+	{
+		m_ShouldResize = false;
+		m_Context->Resize(m_Data.Width, m_Data.Height);
 	}
 
 #define MSGlambda [] (HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) -> bool
@@ -133,11 +175,14 @@ namespace Ludo {
 	{
 		// Window
 		{ WM_SIZE, MSGlambda {	
-			s_EventCallBack((Event&)(WindowResizeEvent(LOWORD(lParam), HIWORD(lParam))));
 			WindowsWindow* wnd = ((WindowsWindow*)GetWindowLongPtr(hwnd, GWLP_USERDATA));
-			wnd->m_Data.Width = LOWORD(lParam);
-			wnd->m_Data.Height = HIWORD(lParam);
-			wnd->OnResize();
+			if (lParam != 0 && (LOWORD(lParam) != wnd->GetWidth() || HIWORD(lParam) != wnd->GetHeight()))
+			{
+				wnd->m_ShouldResize = true;
+				wnd->m_Data.Width = LOWORD(lParam);
+				wnd->m_Data.Height = HIWORD(lParam);
+			}
+			s_EventCallBack((Event&)(WindowResizeEvent(LOWORD(lParam), HIWORD(lParam))));
 			return false; 
 	} },
 		{ WM_CLOSE, ThrowEventAndHandle(WindowCloseEvent()) },
