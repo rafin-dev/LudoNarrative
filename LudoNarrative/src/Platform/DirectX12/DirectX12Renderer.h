@@ -56,6 +56,8 @@ namespace Ludo {
 		UINT64 m_FenceValue = 0;
 		HANDLE m_FenceEvent = nullptr;
 
+		ID3D12DescriptorHeap* m_ImGuiSrvDescHeap = nullptr;
+
 #ifdef LUDO_DEBUG
 		ID3D12Debug* m_D3D12Debug = nullptr;
 		IDXGIDebug1* m_DXGIDebug = nullptr;

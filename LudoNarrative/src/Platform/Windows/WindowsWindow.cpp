@@ -167,7 +167,7 @@ namespace Ludo {
 
 		if (InitImGui)
 		{
-			//ImGui_ImplWin32_Init(m_WindowHandle);
+			ImGui_ImplWin32_Init(m_WindowHandle);
 		}
 
 		return true;
@@ -243,10 +243,10 @@ namespace Ludo {
 
 	LRESULT WindowsWindow::WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 	{
-		/*if (ImGui_ImplWin32_WndProcHandler(hwnd, uMsg, wParam, lParam))
+		if (ImGui_ImplWin32_WndProcHandler(hwnd, uMsg, wParam, lParam))
 		{
 			return true;
-		}*/
+		}
 
 		auto ite = s_MsgCallBacks.find(uMsg);
 

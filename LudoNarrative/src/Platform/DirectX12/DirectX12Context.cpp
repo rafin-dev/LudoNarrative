@@ -329,7 +329,6 @@ namespace Ludo {
 		return true;
 	}
 
-
 	inline bool DirectX12Context::RetrieveBuffers()
 	{
 		for (size_t i = 0; i < GetSwapChainBufferCount(); i++)
@@ -387,9 +386,11 @@ namespace Ludo {
 		// PipelineState and RootSignature
 		commandList->SetPipelineState(m_PipelineStateObject);
 		commandList->SetGraphicsRootSignature(m_RootSignature);
+
 		// Input Assembler
 		commandList->IASetVertexBuffers(0, 1, &vertexBufferView);
 		commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+
 		// Viewport
 		D3D12_VIEWPORT viewport = {};
 		viewport.TopLeftX = 0;
@@ -398,15 +399,37 @@ namespace Ludo {
 		viewport.Height = m_Window->GetHeight();
 		viewport.MinDepth = 1.0f;
 		viewport.MaxDepth = 0.0f;
+
 		// Scissor rectangle
 		RECT scissorRect = {};
 		scissorRect.left = 0;
 		scissorRect.top = 0;
 		scissorRect.right = viewport.Width;
 		scissorRect.bottom = viewport.Height;
+
 		// Rasterizer
 		commandList->RSSetViewports(1, &viewport);
 		commandList->RSSetScissorRects(1, &scissorRect);
+
+		// Root Arguments
+		static float color[] = { 1.0f, 0.0f, 0.0f };
+		static int pukeState = 0;
+
+		color[pukeState] += 0.01f;
+		if (color[pukeState] > 1.0f)
+		{
+			pukeState++;
+			if (pukeState == 4)
+			{
+				color[0] = 0.0f;
+				color[1] = 0.0f;
+				color[2] = 0.0f;
+				pukeState = 0;
+			}
+		}
+
+		commandList->SetGraphicsRoot32BitConstants(0, 3, color, 0);
+
 		// Draw Call
 		commandList->DrawInstanced(countVerticies, 1, 0, 0);
 	}
@@ -426,9 +449,9 @@ namespace Ludo {
 
 		CommandList->ResourceBarrier(1, &barrier);
 
-		static float clearColor[] = { .0f, .0f, .0f, .0 };
+		static float clearColor[] = { 1.0f, 1.0f, 1.0f, 1.0 };
 		static int count = 0;
-		count++;
+		//count++;
 
 		if (count > 60)
 		{
@@ -460,7 +483,6 @@ namespace Ludo {
 
 	void DirectX12Context::ShutDown()
 	{
-		LD_CORE_INFO("Closing DirectX12(D3D12) Graphics Context");
 		ReleaseBuffers();
 		CHECK_AND_RELEASE_COMPTR(m_PipelineStateObject);
 		CHECK_AND_RELEASE_COMPTR(m_RootSignature);
@@ -468,6 +490,7 @@ namespace Ludo {
 		CHECK_AND_RELEASE_COMPTR(m_VertexBuffer);
 		CHECK_AND_RELEASE_COMPTR(m_rtvDescriptorHeap);
 		CHECK_AND_RELEASE_COMPTR(m_SwapChain);
+		LD_CORE_INFO("Closed DirectX12(D3D12) Graphics Context");
 	}
 
 	void DirectX12Context::ResizeImpl()

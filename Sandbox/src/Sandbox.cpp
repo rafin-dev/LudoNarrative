@@ -23,7 +23,7 @@ public:
 
 	void OnImGuiRender() override
 	{
-		//ImGui::ShowDemoWindow();
+		ImGui::ShowDemoWindow();
 	}
 
 };

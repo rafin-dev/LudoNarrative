@@ -41,8 +41,8 @@ namespace Ludo {
 		}
 		m_Window->SetEventCallBack(BindFuncFn(OnEvent));
 
-		//m_ImGuiLayer = new ImGuiLayer();
-		//PushOverlay(m_ImGuiLayer);
+		m_ImGuiLayer = new ImGuiLayer();
+		PushOverlay(m_ImGuiLayer);
 	}
 
 	Application::~Application()
@@ -60,12 +60,12 @@ namespace Ludo {
 				layer->OnUpdate();
 			}
 
-			/*m_ImGuiLayer->begin();
+			m_ImGuiLayer->begin();
 			for (Layer* l : m_LayerStack)
 			{
 				l->OnImGuiRender();
 			}
-			m_ImGuiLayer->End();*/
+			m_ImGuiLayer->End();
 
 			m_Window->OnUpdate();
 		}

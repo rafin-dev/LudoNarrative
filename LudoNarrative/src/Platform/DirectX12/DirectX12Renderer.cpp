@@ -2,6 +2,8 @@
 #include "DirectX12Renderer.h"
 
 #include "Ludo/Log.h"
+#include "DirectX12Context.h"
+
 #include "imgui/imgui.h"
 #include "imgui/backends/imgui_impl_dx12.h"
 #include "imgui/backends/imgui_impl_win32.h"
@@ -62,6 +64,38 @@ namespace Ludo {
 
         LD_CORE_INFO("Initialized DirectX12(D3D12) Render System");
 
+        // ImGui
+
+        D3D12_DESCRIPTOR_HEAP_DESC imguiSrvDesHeapDescription = {};
+        imguiSrvDesHeapDescription.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
+        imguiSrvDesHeapDescription.NumDescriptors = 1;
+        imguiSrvDesHeapDescription.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
+        hr = m_Device->CreateDescriptorHeap(&imguiSrvDesHeapDescription, IID_PPV_ARGS(&m_ImGuiSrvDescHeap));
+        VALIDATE_DXCALL_SUCCESS(hr, "Failed to create ImGui SRV Descriptor Heap");
+
+        IMGUI_CHECKVERSION();
+        ImGui::CreateContext();
+        ImGuiIO& io = ImGui::GetIO(); (void)io;
+        io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Enable Keyboard Controls
+        io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls
+        io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;         // Enable Dockind
+        io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;       // Enable Multi-Viewport / Platform Windows
+
+        ImGui::StyleColorsDark();
+
+        ImGuiStyle& style = ImGui::GetStyle();
+        if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
+        {
+            style.WindowRounding = 0.0f;
+            style.Colors[ImGuiCol_WindowBg].w = 1.0f;
+        }
+        LD_CORE_INFO("Initalized ImGui");
+
+        ImGui_ImplDX12_Init(m_Device, DirectX12Context::GetSwapChainBufferCount(),
+            DXGI_FORMAT_R8G8B8A8_UNORM, m_ImGuiSrvDescHeap,
+            m_ImGuiSrvDescHeap->GetCPUDescriptorHandleForHeapStart(),
+            m_ImGuiSrvDescHeap->GetGPUDescriptorHandleForHeapStart());
+
         return true;
     }
 
@@ -72,16 +106,33 @@ namespace Ludo {
 
     void DirectX12Renderer::BeginImGui()
     {
-
+        ImGui_ImplDX12_NewFrame();
+        ImGui_ImplWin32_NewFrame();
+        ImGui::NewFrame();
     }
 
     void DirectX12Renderer::EndImGui()
     {
+        ImGui::Render();
+
+        m_CommandList->SetDescriptorHeaps(1, &m_ImGuiSrvDescHeap);
+        ImGui_ImplDX12_RenderDrawData(ImGui::GetDrawData(), m_CommandList);
+
+        ImGuiIO& io = ImGui::GetIO();
+        if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
+        {
+            ImGui::UpdatePlatformWindows();
+            ImGui::RenderPlatformWindowsDefault(nullptr, (void*)m_CommandList);
+        }
     }
 
     void DirectX12Renderer::ShutDown()
     {
-        LD_CORE_INFO("Closing DirectX12(D3D12) Render system");
+        ImGui_ImplDX12_Shutdown();
+        ImGui_ImplWin32_Shutdown();
+        ImGui::DestroyContext();
+        CHECK_AND_RELEASE_COMPTR(m_ImGuiSrvDescHeap);
+        LD_CORE_INFO("Closed ImGui");
 
         CHECK_AND_RELEASE_COMPTR(m_Device);
         CHECK_AND_RELEASE_COMPTR(m_DXGIFactory);
@@ -95,6 +146,7 @@ namespace Ludo {
         {
             CloseHandle(m_FenceEvent);
         }
+        LD_CORE_INFO("Closed DirectX12(D3D12) Render system");
 
 #ifdef LUDO_DEBUG
         if (m_DXGIDebug != nullptr)
