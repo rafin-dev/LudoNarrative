@@ -4,7 +4,7 @@
 
 // Made to be used by any D3D12 implementation class, x is a HRESULT, either a variable or the function call itself
 // Make sure to only use inside methods that return a boolean with the succes value and that the class implements ShutDown()
-#define VALIDATE_DXCALL_SUCCESS(x, ...) \
+#define VALIDATE_DXCALL_SUCCESS(x, ...); \
 	if (FAILED(x))\
 	{\
 		LD_CORE_ERROR(__VA_ARGS__);\

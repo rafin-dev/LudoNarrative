@@ -29,9 +29,16 @@ namespace Ludo {
 		if (!InternalRenderer::Get()->Init())
 		{
 			m_Running = false;
+			return;
 		}
 
-		m_Window = std::unique_ptr<Window>(Window::Create());
+		bool result;
+		m_Window = std::unique_ptr<Window>(Window::Create(&result));
+		if (!result)
+		{
+			m_Running = false;
+			return;
+		}
 		m_Window->SetEventCallBack(BindFuncFn(OnEvent));
 
 		//m_ImGuiLayer = new ImGuiLayer();
@@ -68,6 +75,15 @@ namespace Ludo {
 	{
 		EventDispatcher dispatcher(event);
 		dispatcher.Dispatch<WindowCloseEvent>(BindFuncFn(CloseWindow));
+		dispatcher.Dispatch<KeyPressedEvent>([](KeyPressedEvent& event) -> bool {
+
+			if (event.GetKeyCode() == LD_KEY_F11)
+			{
+				Application::Get().GetWindow().SetFullScreen(!Application::Get().GetWindow().IsFullScreen());
+			}
+
+			return false;
+			});
 
 		for (Layer* layer : m_LayerStack)
 		{

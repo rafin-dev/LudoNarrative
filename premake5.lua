@@ -57,6 +57,7 @@ project "LudoNarrative"
     filter "configurations:Debug"
         defines "LUDO_DEBUG"
         symbols "on"
+        optimize "off"
         runtime "Debug"
 
         defines { "LD_ENABLE_ASSERTS" }
@@ -110,8 +111,10 @@ project "Sandbox"
 
     filter "configurations:Debug"
         defines "LUDO_DEBUG"
-        symbols "On"
+        symbols "on"
+        optimize "off"
         runtime "Debug"
+        
         defines { "LD_ENABLE_ASSERTS" }
 
     filter "configurations:Release"

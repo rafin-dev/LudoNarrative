@@ -19,14 +19,18 @@ namespace Ludo {
 	const wchar_t* WindowsWindow::s_ClassName = L"Ludo Window Class";
 	WNDCLASS WindowsWindow::s_WindowClass;
 
-	Window* Window::Create(const WindowProps& props)
+	Window* Window::Create(bool* output, const WindowProps& props)
 	{
-		return new WindowsWindow(props);
+		return new WindowsWindow(props, output);
 	}
 
-	WindowsWindow::WindowsWindow(const WindowProps& props)
+	WindowsWindow::WindowsWindow(const WindowProps& props, bool* output)
 	{
-		Init(props);
+		bool result = Init(props);
+		if (output != nullptr)
+		{
+			*output = result;
+		}
 	}
 
 	WindowsWindow::~WindowsWindow()
@@ -43,12 +47,12 @@ namespace Ludo {
 			DispatchMessage(&msg);
 		}
 
-		m_Context->SwapBuffers();
-
 		if (m_ShouldResize)
 		{
 			Resize();
 		}
+
+		m_Context->SwapBuffers();
 	}
 
 	void WindowsWindow::SetVsync(bool enabled)
@@ -77,6 +81,8 @@ namespace Ludo {
 		// Window size
 		if (enabled)
 		{
+			GetWindowRect(m_WindowHandle, &m_PreviousRect);
+
 			HMONITOR monitor = MonitorFromWindow(m_WindowHandle, MONITOR_DEFAULTTONEAREST);
 			MONITORINFO info = {};
 			info.cbSize = sizeof(info);
@@ -91,21 +97,24 @@ namespace Ludo {
 		}
 		else
 		{
-			ShowWindow(m_WindowHandle, SW_MAXIMIZE);
+			SetWindowPos(m_WindowHandle, nullptr,
+				m_PreviousRect.left, m_PreviousRect.top,
+				m_PreviousRect.right - m_PreviousRect.left,
+				m_PreviousRect.bottom - m_PreviousRect.top,
+				SWP_NOZORDER);
+			ShowWindow(m_WindowHandle, SW_SHOW);
 		}
 
 		m_Data.IsFullScreen = enabled;
 	}
 
-	void WindowsWindow::Init(const WindowProps& props)
+	bool WindowsWindow::Init(const WindowProps& props)
 	{
 		m_Data.Title = props.Title;
 		m_Data.Width = props.Width;
 		m_Data.Height = props.Height;
 		m_Data.Vsync = false;
 		
-		LD_CORE_INFO("Creating Window: {0} [{1}, {2}]", m_Data.Title, m_Data.Width, m_Data.Height);
-
 		bool InitImGui = false;
 		if (!s_WindowClassInitialized)
 		{
@@ -133,7 +142,11 @@ namespace Ludo {
 			GetModuleHandle(NULL),        // hInstance
 			NULL                          // Adicional data
 		);
-		LD_CORE_ASSERT(handle != NULL, "FAILED TO CREATE WINDOW");
+		if (handle == nullptr)
+		{
+			LD_CORE_ERROR("Failed to create window");
+			return false;
+		}
 		SetWindowLongPtr(handle, GWLP_USERDATA, (long long)this);
 
 		m_WindowHandle = handle;
@@ -141,20 +154,29 @@ namespace Ludo {
 		// TODO: Create some function to handle Context creation according to the Rendering API being used
 		// e.g: m_Context = CreateGraphicsContext(m_WindowHandle);
 		m_Context = new DirectX12Context(m_WindowHandle);
-		m_Context->Init();
+		if (!m_Context->Init())
+		{
+			return false;
+		}
+
+		GetWindowRect(m_WindowHandle, &m_PreviousRect);
 
 		ShowWindow(m_WindowHandle, SW_NORMAL);
+
+		LD_CORE_INFO("Created Window: {0} [{1}, {2}]", m_Data.Title, m_Data.Width, m_Data.Height);
 
 		if (InitImGui)
 		{
 			//ImGui_ImplWin32_Init(m_WindowHandle);
 		}
+
+		return true;
 	}
 
 	void WindowsWindow::ShutDown()
 	{
-		LD_CORE_TRACE("Closing Window: {0}", m_Data.Title);
-		delete m_Context;
+		if (m_Context != nullptr) { delete m_Context; m_Context = nullptr; }
+		LD_CORE_INFO("Closing Window: {0}", m_Data.Title);
 		DestroyWindow(m_WindowHandle);
 	}
 
@@ -221,10 +243,10 @@ namespace Ludo {
 
 	LRESULT WindowsWindow::WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 	{
-		if (ImGui_ImplWin32_WndProcHandler(hwnd, uMsg, wParam, lParam))
+		/*if (ImGui_ImplWin32_WndProcHandler(hwnd, uMsg, wParam, lParam))
 		{
 			return true;
-		}
+		}*/
 
 		auto ite = s_MsgCallBacks.find(uMsg);
 

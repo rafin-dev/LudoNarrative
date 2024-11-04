@@ -8,9 +8,12 @@
 #include <algorithm>
 #include <locale>
 #include <codecvt>
+#include <filesystem>
 
 #include <string>
 #include <sstream>
+#include <fstream>
+#include <string_view>
 #include <vector>
 #include <list>
 #include <map>
@@ -37,6 +40,7 @@
 	// DirectX12
 	#include <d3d12.h>
 	#include <dxgi1_6.h>
+	#include <d3dcompiler.h>	
 
 	#ifdef LUDO_DEBUG
 
@@ -45,11 +49,10 @@
 
 	#endif
 
-	#include <wrl.h>
-
 	#pragma comment(lib, "d3d12.lib")
 	#pragma comment (lib, "dxgi.lib")
 	#pragma comment(lib, "dxguid.lib")
+	#pragma comment(lib, "d3dcompiler.lib")
 
 	#include <DirectXMath.h>
 	#include <DirectXPackedVector.h>

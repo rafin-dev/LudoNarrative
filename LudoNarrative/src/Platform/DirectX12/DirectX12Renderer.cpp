@@ -4,6 +4,7 @@
 #include "Ludo/Log.h"
 #include "imgui/imgui.h"
 #include "imgui/backends/imgui_impl_dx12.h"
+#include "imgui/backends/imgui_impl_win32.h"
 
 #include "DX12Utils.h"
 
@@ -13,7 +14,6 @@ namespace Ludo {
     {
         HRESULT hr = S_OK;
 
-        LD_CORE_INFO("Intializing DirectX12(D3D12) Render System");
 #ifdef LUDO_DEBUG
         // Initialize Debug Layer
         // D3D12 Debug
@@ -60,6 +60,8 @@ namespace Ludo {
         hr = m_Device->CreateCommandList1(0, D3D12_COMMAND_LIST_TYPE_DIRECT, D3D12_COMMAND_LIST_FLAG_NONE, IID_PPV_ARGS(&m_CommandList));
         VALIDATE_DXCALL_SUCCESS(hr, "Failed to create D3D12 Graphics Command List");
 
+        LD_CORE_INFO("Initialized DirectX12(D3D12) Render System");
+
         return true;
     }
 
@@ -70,6 +72,7 @@ namespace Ludo {
 
     void DirectX12Renderer::BeginImGui()
     {
+
     }
 
     void DirectX12Renderer::EndImGui()

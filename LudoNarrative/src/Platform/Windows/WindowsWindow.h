@@ -14,7 +14,7 @@ namespace Ludo {
 	public:
 		using WinMsgCallBackFn = std::function<bool(HWND, UINT, WPARAM, LPARAM)>;
 
-		WindowsWindow(const WindowProps& props);
+		WindowsWindow(const WindowProps& props, bool* output);
 		~WindowsWindow() override;
 
 		void OnUpdate() override;
@@ -33,7 +33,7 @@ namespace Ludo {
 		HWND GetHandle() { return m_WindowHandle; }
 
 	private:
-		void Init(const WindowProps& props);
+		bool Init(const WindowProps& props);
 		void ShutDown();
 		void Resize();
 
@@ -41,6 +41,9 @@ namespace Ludo {
 		GraphicsContext* m_Context = nullptr;
 
 		bool m_ShouldResize = false;
+		
+		// Holdos the size and position a window had before being turned into fullscreen
+		RECT m_PreviousRect = {};
 
 		struct WindowData
 		{

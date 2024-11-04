@@ -15,7 +15,7 @@ namespace Ludo {
 		void BeginImGui() override;
 		void EndImGui() override;
 
-		auto* InitCommandList()
+		auto* const& InitCommandList()
 		{
 			m_CommandAllocator->Reset();
 			m_CommandList->Reset(m_CommandAllocator, nullptr);
@@ -37,6 +37,7 @@ namespace Ludo {
 
 		inline auto* const& GetDevice() { return m_Device; }
 		inline auto* const& GetCommandQueue() { return m_CommandQueue; }
+		inline auto* const& GetCommandList() { return m_CommandList; }
 		inline auto* const& GetDXGIFactory() { return m_DXGIFactory; }
 
 	private:

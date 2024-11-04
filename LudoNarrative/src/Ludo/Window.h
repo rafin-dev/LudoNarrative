@@ -37,7 +37,7 @@ namespace Ludo {
 
 		virtual void SetFullScreen(bool enabled) = 0;
 
-		static Window* Create(const WindowProps& props = WindowProps());
+		static Window* Create(bool* ouput = nullptr, const WindowProps& props = WindowProps());
 	};
 
 }

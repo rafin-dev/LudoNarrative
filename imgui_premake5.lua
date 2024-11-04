@@ -19,13 +19,14 @@ project "ImGui"
 		staticruntime "On"
 
 	filter "configurations:Debug"
-		runtime "Debug"
-		symbols "on"
-
-	filter "configurations:Release"
-		runtime "Release"
-		optimize "on"
+        symbols "on"
+        optimize "off"
+        runtime "Debug"
+        
+    filter "configurations:Release"
+        optimize "On"
+        runtime "Release"
 
     filter "configurations:Dist"
+        optimize "On"
         runtime "Release"
-        optimize "on"
