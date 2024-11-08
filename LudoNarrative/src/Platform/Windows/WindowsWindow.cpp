@@ -176,8 +176,8 @@ namespace Ludo {
 	void WindowsWindow::ShutDown()
 	{
 		if (m_Context != nullptr) { delete m_Context; m_Context = nullptr; }
-		LD_CORE_INFO("Closing Window: {0}", m_Data.Title);
 		DestroyWindow(m_WindowHandle);
+		LD_CORE_INFO("Closed Window: {0}", m_Data.Title);
 	}
 
 	void WindowsWindow::Resize()

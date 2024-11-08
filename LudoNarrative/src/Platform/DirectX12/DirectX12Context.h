@@ -3,6 +3,8 @@
 #include "ldpch.h"
 #include "Ludo/Renderer/GraphicsContext.h"
 
+#include "Ludo/Renderer/Shader.h"
+
 namespace Ludo {
 
 	class WindowsWindow;
@@ -44,14 +46,13 @@ namespace Ludo {
 		ID3D12Resource2* m_UploadBuffer = nullptr;
 		ID3D12Resource2* m_VertexBuffer = nullptr;
 
-		ID3D12RootSignature* m_RootSignature = nullptr;
-		ID3D12PipelineState* m_PipelineStateObject = nullptr;
-
 		bool m_ShouldResize = false;
 		unsigned int m_Nwidth = 0;
 		unsigned int m_Nheight = 0;
 		HWND m_WindowHandle = nullptr;
 		WindowsWindow* m_Window = nullptr;
+
+		Shader* m_Shader = nullptr;
 	};
 
 }

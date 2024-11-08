@@ -6,6 +6,9 @@
 
 #include "Platform/Windows/WindowsWindow.h"
 #include "Ludo/Application.h"
+#include "Ludo/Renderer/Shader.h"
+
+#include "DirectX12Renderer2D.h"
 
 namespace Ludo {
 
@@ -25,12 +28,11 @@ namespace Ludo {
 
 	static D3D12_VERTEX_BUFFER_VIEW vertexBufferView = {};
 	static size_t countVerticies = 0;
-
-	class Shader
+	
+	class SingleShader
 	{
 	public:
-		Shader() {}
-		Shader(std::string_view name)
+		SingleShader(const std::string& name)
 		{
 			wchar_t moduleFileName[MAX_PATH];
 			GetModuleFileNameW(nullptr, moduleFileName, MAX_PATH);
@@ -48,21 +50,24 @@ namespace Ludo {
 				if (m_Data != nullptr)
 				{
 					shaderIn.read((char*)m_Data, m_Size);
-					LD_CORE_TRACE("{0}", m_Size);
 				}
 			}
 		}
-		~Shader()
+
+		~SingleShader()
 		{
-			if (m_Data != nullptr) { free(m_Data); m_Data = nullptr; }
+			if (m_Data != nullptr)
+			{
+				free(m_Data);
+			}
 		}
 
-		inline const void* GetBuffer() { return m_Data; }
-		inline const SIZE_T GetSize() { return m_Size; }
+		void* GetBuffer() const { return m_Data; }
+		size_t GetSize() const { return m_Size; }
 
 	private:
 		void* m_Data = nullptr;
-		SIZE_T m_Size;
+		size_t m_Size = 0;
 	};
 
 	bool DirectX12Context::Init()
@@ -146,9 +151,9 @@ namespace Ludo {
 		};
 		Vertex verticies[] =
 		{
-			{ -1.f, -1.f },
-			{  0.f,  1.f },
-			{  1.f, -1.f }
+			{ -1.0f, -1.0f },
+			{  0.0f,  1.0f },
+			{  1.0f, -1.0f }
 		};
 		countVerticies = _countof(verticies);
 
@@ -219,106 +224,17 @@ namespace Ludo {
 
 		DirectX12Renderer::Get()->ExecuteCommandList();
 
-		Shader RootSignatureShader("RootSignature.cso");
-		Shader VertexShader("VertexShader.cso");
-		Shader PixelShader("PixelShader.cso");
+		SingleShader VertexShader("VertexShader.cso");
+		SingleShader PixelShader("PixelShader.cso");
 
-		// Create Root Signature
-		hr = device->CreateRootSignature(0, RootSignatureShader.GetBuffer(), RootSignatureShader.GetSize(), IID_PPV_ARGS(&m_RootSignature));
-		VALIDATE_DXCALL_SUCCESS(hr, "Failed to create Root Signature");
+		LUDO_SHADER_DESC desc;
+		desc.VertexShaderBlob = VertexShader.GetBuffer();
+		desc.VertexShaderSize = VertexShader.GetSize();
+		desc.PixelShaderBlob = PixelShader.GetBuffer();
+		desc.PixelShaderSize = PixelShader.GetSize();
+		desc.TargetPipeline = LUDO_TARGET_PIPELINE_2D;
 
-		// Pipeline State
-		D3D12_GRAPHICS_PIPELINE_STATE_DESC pipelineStateDescription = {};
-
-		// Root Signature
-		pipelineStateDescription.pRootSignature = m_RootSignature;
-		// Input Layout
-		pipelineStateDescription.InputLayout.NumElements = 1;
-		pipelineStateDescription.InputLayout.pInputElementDescs = vertexLayout;
-		pipelineStateDescription.IBStripCutValue = D3D12_INDEX_BUFFER_STRIP_CUT_VALUE_DISABLED;
-		// Vertex shader
-		pipelineStateDescription.VS.BytecodeLength = VertexShader.GetSize();
-		pipelineStateDescription.VS.pShaderBytecode = VertexShader.GetBuffer();
-		// Pixel shader
-		pipelineStateDescription.PS.BytecodeLength = PixelShader.GetSize();
-		pipelineStateDescription.PS.pShaderBytecode = PixelShader.GetBuffer();
-		// Domain shader
-		pipelineStateDescription.DS.BytecodeLength = 0;
-		pipelineStateDescription.DS.pShaderBytecode = nullptr;
-		// Hull shader
-		pipelineStateDescription.HS.BytecodeLength = 0;
-		pipelineStateDescription.HS.pShaderBytecode = nullptr;
-		// Geometry shader
-		pipelineStateDescription.GS.BytecodeLength = 0;
-		pipelineStateDescription.GS.pShaderBytecode = nullptr;
-		// Rasterizer
-		pipelineStateDescription.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
-		pipelineStateDescription.RasterizerState.FillMode = D3D12_FILL_MODE_SOLID;
-		pipelineStateDescription.RasterizerState.CullMode = D3D12_CULL_MODE_NONE;
-		pipelineStateDescription.RasterizerState.FrontCounterClockwise = FALSE;
-		pipelineStateDescription.RasterizerState.DepthBias = 0;
-		pipelineStateDescription.RasterizerState.DepthBiasClamp = 0.0f;
-		pipelineStateDescription.RasterizerState.SlopeScaledDepthBias = 0.0f;
-		pipelineStateDescription.RasterizerState.DepthClipEnable = FALSE;
-		pipelineStateDescription.RasterizerState.MultisampleEnable = FALSE;
-		pipelineStateDescription.RasterizerState.AntialiasedLineEnable = FALSE;
-		pipelineStateDescription.RasterizerState.ForcedSampleCount = 0;
-		// StreamOutput
-		pipelineStateDescription.StreamOutput.pSODeclaration = nullptr;
-		pipelineStateDescription.StreamOutput.NumEntries = 0;
-		pipelineStateDescription.StreamOutput.pBufferStrides = nullptr;
-		pipelineStateDescription.StreamOutput.NumStrides = 0;
-		pipelineStateDescription.StreamOutput.RasterizedStream = 0;
-		// NumRenderTargets
-		pipelineStateDescription.NumRenderTargets = 1;
-		// RTVFormats
-		pipelineStateDescription.RTVFormats[0] = DXGI_FORMAT_R8G8B8A8_UNORM;
-		// DSVFormat
-		pipelineStateDescription.DSVFormat = DXGI_FORMAT_UNKNOWN;
-		// BlendState
-		pipelineStateDescription.BlendState.AlphaToCoverageEnable = FALSE;
-		pipelineStateDescription.BlendState.IndependentBlendEnable = FALSE;
-		// RenderTarget BlendState
-		pipelineStateDescription.BlendState.RenderTarget[0].BlendEnable = TRUE;
-		pipelineStateDescription.BlendState.RenderTarget[0].SrcBlend = D3D12_BLEND_ONE;
-		pipelineStateDescription.BlendState.RenderTarget[0].DestBlend = D3D12_BLEND_ZERO;
-		pipelineStateDescription.BlendState.RenderTarget[0].BlendOp = D3D12_BLEND_OP_ADD;
-		pipelineStateDescription.BlendState.RenderTarget[0].SrcBlendAlpha = D3D12_BLEND_ZERO;
-		pipelineStateDescription.BlendState.RenderTarget[0].DestBlendAlpha = D3D12_BLEND_ZERO;
-		pipelineStateDescription.BlendState.RenderTarget[0].BlendOpAlpha = D3D12_BLEND_OP_ADD;
-		pipelineStateDescription.BlendState.RenderTarget[0].LogicOpEnable = FALSE;
-		pipelineStateDescription.BlendState.RenderTarget[0].LogicOp = D3D12_LOGIC_OP_NOOP;
-		pipelineStateDescription.BlendState.RenderTarget[0].RenderTargetWriteMask = D3D12_COLOR_WRITE_ENABLE_ALL;
-		// DepthStencilState
-		pipelineStateDescription.DepthStencilState.DepthEnable = FALSE;
-		pipelineStateDescription.DepthStencilState.DepthFunc = D3D12_COMPARISON_FUNC_ALWAYS;
-		pipelineStateDescription.DepthStencilState.DepthWriteMask = D3D12_DEPTH_WRITE_MASK_ZERO;
-		pipelineStateDescription.DepthStencilState.StencilEnable = FALSE;
-		pipelineStateDescription.DepthStencilState.StencilReadMask = 0;
-		pipelineStateDescription.DepthStencilState.StencilWriteMask = 0;
-		pipelineStateDescription.DepthStencilState.FrontFace.StencilFunc = D3D12_COMPARISON_FUNC_ALWAYS;
-		pipelineStateDescription.DepthStencilState.FrontFace.StencilDepthFailOp = D3D12_STENCIL_OP_KEEP;
-		pipelineStateDescription.DepthStencilState.FrontFace.StencilFailOp = D3D12_STENCIL_OP_KEEP;
-		pipelineStateDescription.DepthStencilState.FrontFace.StencilPassOp = D3D12_STENCIL_OP_KEEP;
-		pipelineStateDescription.DepthStencilState.BackFace.StencilFunc = D3D12_COMPARISON_FUNC_ALWAYS;
-		pipelineStateDescription.DepthStencilState.BackFace.StencilDepthFailOp = D3D12_STENCIL_OP_KEEP;
-		pipelineStateDescription.DepthStencilState.BackFace.StencilFailOp = D3D12_STENCIL_OP_KEEP;
-		pipelineStateDescription.DepthStencilState.BackFace.StencilPassOp = D3D12_STENCIL_OP_KEEP;
-		// SampleMask
-		pipelineStateDescription.SampleMask = 0xFFFFFFFF;
-		// SampleDesc
-		pipelineStateDescription.SampleDesc.Count = 1;
-		pipelineStateDescription.SampleDesc.Quality = 0;
-		// NodeMask
-		pipelineStateDescription.NodeMask = 0;
-		// Chached PSO
-		pipelineStateDescription.CachedPSO.CachedBlobSizeInBytes = 0;
-		pipelineStateDescription.CachedPSO.pCachedBlob = nullptr;
-		// Flags
-		pipelineStateDescription.Flags = D3D12_PIPELINE_STATE_FLAG_NONE;
-
-		hr = device->CreateGraphicsPipelineState(&pipelineStateDescription, IID_PPV_ARGS(&m_PipelineStateObject));
-		VALIDATE_DXCALL_SUCCESS(hr, "Failed to create Graphics PipelineState Object");
+		m_Shader = Shader::Create(desc);
 
 		///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		///////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -383,14 +299,6 @@ namespace Ludo {
 		
 		auto& commandList = DirectX12Renderer::Get()->GetCommandList();
 
-		// PipelineState and RootSignature
-		commandList->SetPipelineState(m_PipelineStateObject);
-		commandList->SetGraphicsRootSignature(m_RootSignature);
-
-		// Input Assembler
-		commandList->IASetVertexBuffers(0, 1, &vertexBufferView);
-		commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-
 		// Viewport
 		D3D12_VIEWPORT viewport = {};
 		viewport.TopLeftX = 0;
@@ -410,6 +318,12 @@ namespace Ludo {
 		// Rasterizer
 		commandList->RSSetViewports(1, &viewport);
 		commandList->RSSetScissorRects(1, &scissorRect);
+
+		m_Shader->Use();
+
+		// Input Assembler
+		commandList->IASetVertexBuffers(0, 1, &vertexBufferView);
+		commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
 		// Root Arguments
 		static float color[] = { 1.0f, 0.0f, 0.0f };
@@ -449,18 +363,8 @@ namespace Ludo {
 
 		CommandList->ResourceBarrier(1, &barrier);
 
-		static float clearColor[] = { 1.0f, 1.0f, 1.0f, 1.0 };
-		static int count = 0;
-		//count++;
+		static float clearColor[] = { 1.0f, 1.0f, 1.0f, 1.0f };
 
-		if (count > 60)
-		{
-			count = 0;
-			for (int i = 0; i < 4; i++)
-			{
-				clearColor[i] = std::rand() / double(RAND_MAX);
-			}
-		}
 		CommandList->ClearRenderTargetView(m_rtvCPUhandles[m_CurrentBackBuffer], clearColor, 0, nullptr);
 
 		CommandList->OMSetRenderTargets(1, &m_rtvCPUhandles[m_CurrentBackBuffer], false, nullptr);
@@ -484,8 +388,6 @@ namespace Ludo {
 	void DirectX12Context::ShutDown()
 	{
 		ReleaseBuffers();
-		CHECK_AND_RELEASE_COMPTR(m_PipelineStateObject);
-		CHECK_AND_RELEASE_COMPTR(m_RootSignature);
 		CHECK_AND_RELEASE_COMPTR(m_UploadBuffer);
 		CHECK_AND_RELEASE_COMPTR(m_VertexBuffer);
 		CHECK_AND_RELEASE_COMPTR(m_rtvDescriptorHeap);

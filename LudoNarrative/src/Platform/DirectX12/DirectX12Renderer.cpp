@@ -2,13 +2,14 @@
 #include "DirectX12Renderer.h"
 
 #include "Ludo/Log.h"
+#include "DX12Utils.h"
 #include "DirectX12Context.h"
+#include "DirectX12Shader.h"
 
 #include "imgui/imgui.h"
 #include "imgui/backends/imgui_impl_dx12.h"
 #include "imgui/backends/imgui_impl_win32.h"
 
-#include "DX12Utils.h"
 
 namespace Ludo {
 
@@ -96,6 +97,18 @@ namespace Ludo {
             m_ImGuiSrvDescHeap->GetCPUDescriptorHandleForHeapStart(),
             m_ImGuiSrvDescHeap->GetGPUDescriptorHandleForHeapStart());
 
+        IDXGIAdapter4* Adapter = nullptr;
+        hr = m_DXGIFactory->EnumAdapterByLuid(m_Device->GetAdapterLuid(), IID_PPV_ARGS(&Adapter));
+        VALIDATE_DXCALL_SUCCESS(hr, "retrieved the adapter");
+
+        if (!DirectX12Shader::InitSystem())
+        {
+            ShutDown();
+            return false;
+        }
+
+        Adapter->Release();
+
         return true;
     }
 
@@ -131,6 +144,7 @@ namespace Ludo {
         ImGui_ImplDX12_Shutdown();
         ImGui_ImplWin32_Shutdown();
         ImGui::DestroyContext();
+        DirectX12Shader::CloseSystem();
         CHECK_AND_RELEASE_COMPTR(m_ImGuiSrvDescHeap);
         LD_CORE_INFO("Closed ImGui");
 
