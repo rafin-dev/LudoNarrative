@@ -28,6 +28,7 @@
 // But I also dont want to regret not making this way in the future
 #ifdef LD_PLATFORM_WINDOWS
 	#include <Windows.h>
+	#include <wincodec.h>
 	#include <windowsx.h>
 	
 	/*#include <d3d9.h>

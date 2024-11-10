@@ -1,8 +1,5 @@
 #pragma once
 
-#include <string>
-#include <filesystem>
-
 namespace Ludo {
 
 	enum LUDO_SHADER_TARGET_PIPELINE
@@ -30,7 +27,7 @@ namespace Ludo {
 	public:
 		virtual ~Shader() = default;
 
-		virtual void Use() = 0;
+		virtual void Bind() = 0;
 
 		static Shader* Create(const LUDO_SHADER_DESC& desc);
 	};

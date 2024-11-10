@@ -3,7 +3,9 @@
 #include "ldpch.h"
 #include "Ludo/Renderer/GraphicsContext.h"
 
-#include "Ludo/Renderer/Shader.h"
+#include "DirectX12Shader.h"
+
+#include "DirectX12Buffer.h"
 
 namespace Ludo {
 
@@ -42,9 +44,6 @@ namespace Ludo {
 
 		ID3D12DescriptorHeap* m_rtvDescriptorHeap = nullptr;
 		D3D12_CPU_DESCRIPTOR_HANDLE m_rtvCPUhandles[SwapChainBufferCount] = {};
-
-		ID3D12Resource2* m_UploadBuffer = nullptr;
-		ID3D12Resource2* m_VertexBuffer = nullptr;
 
 		bool m_ShouldResize = false;
 		unsigned int m_Nwidth = 0;

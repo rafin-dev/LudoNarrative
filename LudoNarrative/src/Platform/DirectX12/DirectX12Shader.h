@@ -8,10 +8,11 @@ namespace Ludo {
 	class DirectX12Shader : public Shader
 	{
 	public:
+		DirectX12Shader(const LUDO_SHADER_DESC& desc);
 		bool Init(const LUDO_SHADER_DESC& desc);
 		virtual ~DirectX12Shader() override;
 
-		virtual void Use() override;
+		virtual void Bind() override;
 
 		static bool InitSystem();
 		static void CloseSystem();

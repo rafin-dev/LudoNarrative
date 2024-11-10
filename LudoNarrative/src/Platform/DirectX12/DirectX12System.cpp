@@ -1,5 +1,5 @@
 #include "ldpch.h"
-#include "DirectX12Renderer.h"
+#include "DirectX12System.h"
 
 #include "Ludo/Log.h"
 #include "DX12Utils.h"
@@ -13,7 +13,7 @@
 
 namespace Ludo {
 
-    bool DirectX12Renderer::Init()
+    bool DirectX12System::Init()
     {
         HRESULT hr = S_OK;
 
@@ -112,19 +112,19 @@ namespace Ludo {
         return true;
     }
 
-    DirectX12Renderer::~DirectX12Renderer()
+    DirectX12System::~DirectX12System()
     {
         ShutDown();
     }
 
-    void DirectX12Renderer::BeginImGui()
+    void DirectX12System::BeginImGui()
     {
         ImGui_ImplDX12_NewFrame();
         ImGui_ImplWin32_NewFrame();
         ImGui::NewFrame();
     }
 
-    void DirectX12Renderer::EndImGui()
+    void DirectX12System::EndImGui()
     {
         ImGui::Render();
 
@@ -139,7 +139,7 @@ namespace Ludo {
         }
     }
 
-    void DirectX12Renderer::ShutDown()
+    void DirectX12System::ShutDown()
     {
         ImGui_ImplDX12_Shutdown();
         ImGui_ImplWin32_Shutdown();
@@ -175,7 +175,7 @@ namespace Ludo {
 #endif 
     }
 
-    void DirectX12Renderer::SignalAndWait()
+    void DirectX12System::SignalAndWait()
     {
         m_FenceValue++;
         m_CommandQueue->Signal(m_Fence, m_FenceValue);
@@ -192,7 +192,7 @@ namespace Ludo {
         }
     }
 
-    void DirectX12Renderer::ExecuteCommandList()
+    void DirectX12System::ExecuteCommandListAndWait()
     {
         if (FAILED(m_CommandList->Close()))
         {
@@ -207,7 +207,7 @@ namespace Ludo {
 
     InternalRenderer* InternalRenderer::Get()
     {
-        static DirectX12Renderer instance;
+        static DirectX12System instance;
         return &instance;
     }
 }

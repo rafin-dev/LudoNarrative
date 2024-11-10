@@ -1,14 +1,12 @@
 #include "ldpch.h"
 #include "DirectX12Context.h"
 
-#include "DirectX12Renderer.h"
+#include "DirectX12System.h"
 #include "DX12Utils.h"
 
 #include "Platform/Windows/WindowsWindow.h"
 #include "Ludo/Application.h"
 #include "Ludo/Renderer/Shader.h"
-
-#include "DirectX12Renderer2D.h"
 
 namespace Ludo {
 
@@ -21,65 +19,135 @@ namespace Ludo {
 	DirectX12Context::~DirectX12Context()
 	{
 		EndFrame();
-		DirectX12Renderer::Get()->Flush(GetSwapChainBufferCount());
+		DirectX12System::Get()->Flush(GetSwapChainBufferCount());
 
 		ShutDown();
 	}
 
 	static D3D12_VERTEX_BUFFER_VIEW vertexBufferView = {};
-	static size_t countVerticies = 0;
-	
-	class SingleShader
+	static D3D12_INDEX_BUFFER_VIEW indexBufferView = {};
+	static size_t countIndicies = 0;
+
+	class ImageLoader
 	{
 	public:
-		SingleShader(const std::string& name)
+		struct ImageData
 		{
-			wchar_t moduleFileName[MAX_PATH];
-			GetModuleFileNameW(nullptr, moduleFileName, MAX_PATH);
+			std::vector<char> Data;
+			uint32_t Width;
+			uint32_t Height;
+			uint32_t BitsPerPixel;
+			uint32_t ChanelCount;
 
-			std::filesystem::path shaderPath = moduleFileName;
-			shaderPath.remove_filename();
-			shaderPath += "../LudoNarrative";
-			shaderPath = shaderPath / name;
-			std::ifstream shaderIn(shaderPath, std::ios::binary);
+			GUID PixelFormat;
+			DXGI_FORMAT DxgiPixelFormat;
+		};
 
-			if (shaderIn.is_open())
-			{
-				m_Size = std::filesystem::file_size(shaderPath);
-				m_Data = malloc(m_Size);
-				if (m_Data != nullptr)
-				{
-					shaderIn.read((char*)m_Data, m_Size);
-				}
-			}
-		}
-
-		~SingleShader()
+		static bool LoadImageFromDisc(const std::filesystem::path& imagePath, ImageData& data)
 		{
-			if (m_Data != nullptr)
-			{
-				free(m_Data);
-			}
-		}
+			// Factory
+			IWICImagingFactory* wicFactory = nullptr;
+			HRESULT hr = S_OK;
 
-		void* GetBuffer() const { return m_Data; }
-		size_t GetSize() const { return m_Size; }
+			hr = CoInitializeEx(NULL, COINIT_MULTITHREADED);
+			if (FAILED(hr))
+			{
+				LD_CORE_ERROR("Failed to Initialize COM library");
+				return false;
+			}
+			hr = CoCreateInstance(CLSID_WICImagingFactory, nullptr, CLSCTX_INPROC_SERVER, IID_PPV_ARGS(&wicFactory));
+			if (FAILED(hr))
+			{
+				LD_CORE_ERROR("Failed to create WIC Imaging Factory");
+				return false;
+			}
+
+			// Load Image
+			IWICStream* wicFileStream = nullptr;
+			hr = wicFactory->CreateStream(&wicFileStream);
+			if (FAILED(hr))
+			{
+				LD_CORE_ERROR("Failed to create WIC stream");
+				CHECK_AND_RELEASE_COMPTR(wicFactory);
+				return false;
+			}
+			hr = wicFileStream->InitializeFromFilename(imagePath.wstring().c_str(), GENERIC_READ);
+			if (FAILED(hr))
+			{
+				LD_CORE_ERROR("Failed to initialize WIC stream from image: {0}", imagePath.string());
+				CHECK_AND_RELEASE_COMPTR(wicFileStream);
+				CHECK_AND_RELEASE_COMPTR(wicFactory);
+				return false;
+			}
+			IWICBitmapDecoder* wicBitMapDecoder = nullptr;
+			hr = wicFactory->CreateDecoderFromStream(wicFileStream, nullptr, WICDecodeMetadataCacheOnDemand, &wicBitMapDecoder);
+			if (FAILED(hr))
+			{
+				LD_CORE_ERROR("Failed to create WIC BitMap decoder for image: {0}", imagePath.string());
+				CHECK_AND_RELEASE_COMPTR(wicFileStream);
+				CHECK_AND_RELEASE_COMPTR(wicFactory);
+				return false;
+			}
+			IWICBitmapFrameDecode* wicFrameDecoder = nullptr;
+			if (FAILED(wicBitMapDecoder->GetFrame(0, &wicFrameDecoder)))
+			{
+				LD_CORE_ERROR("Failed to get decode from image: {0}", imagePath.string());
+				CHECK_AND_RELEASE_COMPTR(wicFileStream);
+				CHECK_AND_RELEASE_COMPTR(wicFactory);
+				CHECK_AND_RELEASE_COMPTR(wicBitMapDecoder);
+			}
+
+			// Image Metadata
+			if (FAILED(wicFrameDecoder->GetSize(&data.Width, &data.Height)))
+			{
+				LD_CORE_ERROR("Failed to get size from image: {0}");
+				CHECK_AND_RELEASE_COMPTR(wicFileStream);
+				CHECK_AND_RELEASE_COMPTR(wicFactory);
+				CHECK_AND_RELEASE_COMPTR(wicBitMapDecoder);
+				CHECK_AND_RELEASE_COMPTR(wicFrameDecoder);
+				return false;
+			}
+			if (FAILED(wicFrameDecoder->GetPixelFormat(&data.PixelFormat)))
+			{
+				LD_CORE_ERROR("Failed to get pixel format from image: {0}");
+				CHECK_AND_RELEASE_COMPTR(wicFileStream);
+				CHECK_AND_RELEASE_COMPTR(wicFactory);
+				CHECK_AND_RELEASE_COMPTR(wicBitMapDecoder);
+				CHECK_AND_RELEASE_COMPTR(wicFrameDecoder);
+				return false;
+			}
+
+			// Pixel Format Metadata
+			IWICComponentInfo* wicComponentInfo = nullptr;
+			//if (FAILED(wicFactory->CreateComponentInfo(IID_PPV_ARGS(&wicComponentInfo))))
+			//{
+
+			//}
+
+			CHECK_AND_RELEASE_COMPTR(wicFileStream);
+			CHECK_AND_RELEASE_COMPTR(wicFactory);
+			CHECK_AND_RELEASE_COMPTR(wicBitMapDecoder);
+			CHECK_AND_RELEASE_COMPTR(wicFrameDecoder);
+			CHECK_AND_RELEASE_COMPTR(wicComponentInfo);
+			return true;
+		}
 
 	private:
-		void* m_Data = nullptr;
-		size_t m_Size = 0;
+		ImageLoader() = default;
+		ImageLoader(const ImageLoader&) = default;
+		ImageLoader& operator=(const ImageLoader&) = default;
 	};
 
 	bool DirectX12Context::Init()
 	{
 		HRESULT hr = S_OK;
-		auto& factory = DirectX12Renderer::Get()->GetDXGIFactory();
-		auto& device = DirectX12Renderer::Get()->GetDevice();
+		auto& factory = DirectX12System::Get()->GetDXGIFactory();
+		auto& device = DirectX12System::Get()->GetDevice();
 		m_Window = (WindowsWindow*)GetWindowLongPtr(m_WindowHandle, GWLP_USERDATA);
 		RECT size = {};
 		GetClientRect(m_WindowHandle, &size);
 
-		// SwapChain
+		// ========== SwapChain ==========
 		DXGI_SWAP_CHAIN_DESC1 scd = {};
 		scd.Width = size.right - size.left;
 		scd.Height = size.bottom - size.top;
@@ -100,7 +168,7 @@ namespace Ludo {
 		IDXGISwapChain1* sc1 = nullptr;
 
 		 hr = factory->CreateSwapChainForHwnd(
-			DirectX12Renderer::Get()->GetCommandQueue(),
+			DirectX12System::Get()->GetCommandQueue(),
 			m_WindowHandle,
 			&scd,
 			&scfd,
@@ -112,7 +180,7 @@ namespace Ludo {
 		VALIDATE_DXCALL_SUCCESS(hr, "Failed to retrieve DXGI Swap Chain");
 		sc1->Release();
 
-		// Render Target View Descriptor Heap
+		// ========== Render Target View Descriptor Heap ==========
 		D3D12_DESCRIPTOR_HEAP_DESC descRTVheap = {};
 		descRTVheap.Type = D3D12_DESCRIPTOR_HEAP_TYPE_RTV;
 		descRTVheap.NumDescriptors = GetSwapChainBufferCount();
@@ -122,7 +190,7 @@ namespace Ludo {
 		hr = device->CreateDescriptorHeap(&descRTVheap, IID_PPV_ARGS(&m_rtvDescriptorHeap));
 		VALIDATE_DXCALL_SUCCESS(hr, "Failed to create Render Target View Descriptor Heap");
 
-		// Render Target View CPU Descriptor handle
+		// ========== Render Target View CPU Descriptor handle ==========
 		auto firstHandle = m_rtvDescriptorHeap->GetCPUDescriptorHandleForHeapStart();
 		auto CPUhandleIncrement = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
 		for (int i = 0; i < GetSwapChainBufferCount(); i++)
@@ -139,106 +207,6 @@ namespace Ludo {
 		factory->MakeWindowAssociation(m_WindowHandle, DXGI_MWA_NO_ALT_ENTER);
 
 		LD_CORE_INFO("Created DirectX12(D3D12) Graphics Context: {0}, {1}", m_Window->GetWidth(), m_Window->GetHeight());
-
-		///////////////////////////////////////////////////////////////////////////////////////////////////////////////
-		///////////////////////////////////////////////////////////////////////////////////////////////////////////////
-		///////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-		// Vertex data
-		struct Vertex
-		{
-			float x, y;
-		};
-		Vertex verticies[] =
-		{
-			{ -1.0f, -1.0f },
-			{  0.0f,  1.0f },
-			{  1.0f, -1.0f }
-		};
-		countVerticies = _countof(verticies);
-
-		D3D12_INPUT_ELEMENT_DESC vertexLayout[] =
-		{
-			{ "Position", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 0, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 }
-		};
-
-		D3D12_HEAP_PROPERTIES heapPropertiesUpload = {};
-		heapPropertiesUpload.Type = D3D12_HEAP_TYPE_UPLOAD;
-		heapPropertiesUpload.CPUPageProperty = D3D12_CPU_PAGE_PROPERTY_UNKNOWN;
-		heapPropertiesUpload.MemoryPoolPreference = D3D12_MEMORY_POOL_UNKNOWN;
-		heapPropertiesUpload.CreationNodeMask = 0;
-		heapPropertiesUpload.VisibleNodeMask = 0;
-
-		D3D12_HEAP_PROPERTIES heapPropertiesDefault = {};
-		heapPropertiesDefault.Type = D3D12_HEAP_TYPE_DEFAULT;
-		heapPropertiesDefault.CPUPageProperty = D3D12_CPU_PAGE_PROPERTY_UNKNOWN;
-		heapPropertiesDefault.MemoryPoolPreference = D3D12_MEMORY_POOL_UNKNOWN;
-		heapPropertiesDefault.CreationNodeMask = 0;
-		heapPropertiesDefault.VisibleNodeMask = 0;
-
-		// Upload & vertex buffer
-		D3D12_RESOURCE_DESC resourceDescription = {};
-		resourceDescription.Dimension = D3D12_RESOURCE_DIMENSION_BUFFER;
-		resourceDescription.Alignment = D3D12_DEFAULT_RESOURCE_PLACEMENT_ALIGNMENT;
-		resourceDescription.Width = 1024;
-		resourceDescription.Height = 1;
-		resourceDescription.DepthOrArraySize = 1;
-		resourceDescription.MipLevels = 1;
-		resourceDescription.Format = DXGI_FORMAT_UNKNOWN;
-		resourceDescription.SampleDesc.Count = 1;
-		resourceDescription.SampleDesc.Quality = 0;
-		resourceDescription.Layout = D3D12_TEXTURE_LAYOUT_ROW_MAJOR;
-		resourceDescription.Flags = D3D12_RESOURCE_FLAG_NONE;
-
-		// Create buffers
-		hr = device->CreateCommittedResource(&heapPropertiesUpload, D3D12_HEAP_FLAG_NONE, &resourceDescription, D3D12_RESOURCE_STATE_GENERIC_READ,
-			nullptr, IID_PPV_ARGS(&m_UploadBuffer));
-		VALIDATE_DXCALL_SUCCESS(hr, "Failed to create Upload Buffer");
-
-		hr = device->CreateCommittedResource(&heapPropertiesDefault, D3D12_HEAP_FLAG_NONE, &resourceDescription, D3D12_RESOURCE_STATE_COMMON,
-			nullptr, IID_PPV_ARGS(&m_VertexBuffer));
-		VALIDATE_DXCALL_SUCCESS(hr, "Failed to create Vertex Buffer");
-
-		// Vertex Buffer View
-		vertexBufferView.BufferLocation = m_VertexBuffer->GetGPUVirtualAddress();
-		vertexBufferView.SizeInBytes = _countof(verticies) * sizeof(Vertex);
-		vertexBufferView.StrideInBytes = sizeof(Vertex);
-
-		// Copy void* --> CPU Resource
-		void* uploadBufferAddress;
-		D3D12_RANGE uploadRange = {};
-		uploadRange.Begin = 0;
-		uploadRange.End = 1023;
-
-		hr = m_UploadBuffer->Map(0, &uploadRange, &uploadBufferAddress);
-		VALIDATE_DXCALL_SUCCESS(hr, "Failed to map Resource");
-
-		memcpy(uploadBufferAddress, verticies, sizeof(verticies));
-
-		m_UploadBuffer->Unmap(0, &uploadRange);
-
-		// Copy CPU Resource --> GPU Resource
-		auto& commandList = DirectX12Renderer::Get()->InitCommandList();
-
-		commandList->CopyBufferRegion(m_VertexBuffer, 0, m_UploadBuffer, 0, 1024);
-
-		DirectX12Renderer::Get()->ExecuteCommandList();
-
-		SingleShader VertexShader("VertexShader.cso");
-		SingleShader PixelShader("PixelShader.cso");
-
-		LUDO_SHADER_DESC desc;
-		desc.VertexShaderBlob = VertexShader.GetBuffer();
-		desc.VertexShaderSize = VertexShader.GetSize();
-		desc.PixelShaderBlob = PixelShader.GetBuffer();
-		desc.PixelShaderSize = PixelShader.GetSize();
-		desc.TargetPipeline = LUDO_TARGET_PIPELINE_2D;
-
-		m_Shader = Shader::Create(desc);
-
-		///////////////////////////////////////////////////////////////////////////////////////////////////////////////
-		///////////////////////////////////////////////////////////////////////////////////////////////////////////////
-		///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 		BeginFrame();
 
@@ -258,7 +226,7 @@ namespace Ludo {
 			rtvDesc.Texture2D.MipSlice = 0;
 			rtvDesc.Texture2D.PlaneSlice = 0;
 
-			DirectX12Renderer::Get()->GetDevice()->CreateRenderTargetView(
+			DirectX12System::Get()->GetDevice()->CreateRenderTargetView(
 				m_Buffers[i],
 				&rtvDesc,
 				m_rtvCPUhandles[i]
@@ -289,15 +257,37 @@ namespace Ludo {
 
 		m_SwapChain->Present(1, 0);
 
-		// Resize between frames
+		// ========== Handle Resizing between frames ===========
 		if (m_ShouldResize)
 		{
 			ResizeImpl();
 		}
 
 		BeginFrame();
-		
-		auto& commandList = DirectX12Renderer::Get()->GetCommandList();
+	}
+
+	inline void DirectX12Context::BeginFrame()
+	{
+		auto& commandList = DirectX12System::Get()->InitCommandList();
+		m_CurrentBackBuffer = m_SwapChain->GetCurrentBackBufferIndex();
+
+		// Resource Barrier
+		D3D12_RESOURCE_BARRIER barrier = {};
+		barrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
+		barrier.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;
+		barrier.Transition.pResource = m_Buffers[m_CurrentBackBuffer];
+		barrier.Transition.Subresource = 0;
+		barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_PRESENT;
+		barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_RENDER_TARGET;
+
+		commandList->ResourceBarrier(1, &barrier);
+
+		// Clar and set RenderTarget
+		static float clearColor[] = { 1.0f, 1.0f, 1.0f, 1.0f };
+
+		commandList->ClearRenderTargetView(m_rtvCPUhandles[m_CurrentBackBuffer], clearColor, 0, nullptr);
+
+		commandList->OMSetRenderTargets(1, &m_rtvCPUhandles[m_CurrentBackBuffer], false, nullptr);
 
 		// Viewport
 		D3D12_VIEWPORT viewport = {};
@@ -318,56 +308,6 @@ namespace Ludo {
 		// Rasterizer
 		commandList->RSSetViewports(1, &viewport);
 		commandList->RSSetScissorRects(1, &scissorRect);
-
-		m_Shader->Use();
-
-		// Input Assembler
-		commandList->IASetVertexBuffers(0, 1, &vertexBufferView);
-		commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-
-		// Root Arguments
-		static float color[] = { 1.0f, 0.0f, 0.0f };
-		static int pukeState = 0;
-
-		color[pukeState] += 0.01f;
-		if (color[pukeState] > 1.0f)
-		{
-			pukeState++;
-			if (pukeState == 4)
-			{
-				color[0] = 0.0f;
-				color[1] = 0.0f;
-				color[2] = 0.0f;
-				pukeState = 0;
-			}
-		}
-
-		commandList->SetGraphicsRoot32BitConstants(0, 3, color, 0);
-
-		// Draw Call
-		commandList->DrawInstanced(countVerticies, 1, 0, 0);
-	}
-
-	inline void DirectX12Context::BeginFrame()
-	{
-		auto& CommandList = DirectX12Renderer::Get()->InitCommandList();
-		m_CurrentBackBuffer = m_SwapChain->GetCurrentBackBufferIndex();
-
-		D3D12_RESOURCE_BARRIER barrier = {};
-		barrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
-		barrier.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;
-		barrier.Transition.pResource = m_Buffers[m_CurrentBackBuffer];
-		barrier.Transition.Subresource = 0;
-		barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_PRESENT;
-		barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_RENDER_TARGET;
-
-		CommandList->ResourceBarrier(1, &barrier);
-
-		static float clearColor[] = { 1.0f, 1.0f, 1.0f, 1.0f };
-
-		CommandList->ClearRenderTargetView(m_rtvCPUhandles[m_CurrentBackBuffer], clearColor, 0, nullptr);
-
-		CommandList->OMSetRenderTargets(1, &m_rtvCPUhandles[m_CurrentBackBuffer], false, nullptr);
 	}
 
 	inline void DirectX12Context::EndFrame()
@@ -380,16 +320,15 @@ namespace Ludo {
 		barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_RENDER_TARGET;
 		barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_PRESENT;
 
-		DirectX12Renderer::Get()->GetCommandList()->ResourceBarrier(1, &barrier);
+		DirectX12System::Get()->GetCommandList()->ResourceBarrier(1, &barrier);
 
-		DirectX12Renderer::Get()->ExecuteCommandList();
+		DirectX12System::Get()->ExecuteCommandListAndWait();
 	}
 
 	void DirectX12Context::ShutDown()
 	{
 		ReleaseBuffers();
-		CHECK_AND_RELEASE_COMPTR(m_UploadBuffer);
-		CHECK_AND_RELEASE_COMPTR(m_VertexBuffer);
+		if (m_Shader) { delete m_Shader; m_Shader = nullptr; }
 		CHECK_AND_RELEASE_COMPTR(m_rtvDescriptorHeap);
 		CHECK_AND_RELEASE_COMPTR(m_SwapChain);
 		LD_CORE_INFO("Closed DirectX12(D3D12) Graphics Context");
@@ -398,7 +337,7 @@ namespace Ludo {
 	void DirectX12Context::ResizeImpl()
 	{
 		m_ShouldResize = false;
-		DirectX12Renderer::Get()->Flush(GetSwapChainBufferCount());
+		DirectX12System::Get()->Flush(GetSwapChainBufferCount());
 
 		LD_CORE_TRACE("Resizing D3D12 Graphics Context: {0}, {1}", m_Nwidth, m_Nheight);
 		ReleaseBuffers();

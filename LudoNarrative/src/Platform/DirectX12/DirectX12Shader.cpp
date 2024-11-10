@@ -1,7 +1,7 @@
 #include "ldpch.h"
 #include "DirectX12Shader.h"
 
-#include "DirectX12Renderer.h"
+#include "DirectX12System.h"
 #include "DX12Utils.h"
 
 namespace Ludo {
@@ -45,10 +45,15 @@ namespace Ludo {
 	ID3D12RootSignature* DirectX12Shader::m_2DRootSignature = nullptr;
 	std::array<D3D12_INPUT_ELEMENT_DESC, 1> DirectX12Shader::m_2DElementLayout;
 
+	DirectX12Shader::DirectX12Shader(const LUDO_SHADER_DESC& desc)
+	{
+		Init(desc);
+	}
+
 	bool DirectX12Shader::Init(const LUDO_SHADER_DESC& desc)
 	{
 		HRESULT hr = S_OK;
-		auto& device = DirectX12Renderer::Get()->GetDevice();
+		auto& device = DirectX12System::Get()->GetDevice();
 
 		if (desc.TargetPipeline == LUDO_TARGET_PIPELINE_2D)
 		{
@@ -66,25 +71,32 @@ namespace Ludo {
 
 		// Root Signature
 		pipelineStateDescription.pRootSignature = m_2DRootSignature;
+
 		// Input Layout
 		pipelineStateDescription.InputLayout.NumElements = m_2DElementLayout.size();
 		pipelineStateDescription.InputLayout.pInputElementDescs = m_2DElementLayout.data();
 		pipelineStateDescription.IBStripCutValue = D3D12_INDEX_BUFFER_STRIP_CUT_VALUE_DISABLED;
+		
 		// Vertex shader
 		pipelineStateDescription.VS.BytecodeLength = desc.VertexShaderSize;
 		pipelineStateDescription.VS.pShaderBytecode = desc.VertexShaderBlob;
+		
 		// Pixel shader
 		pipelineStateDescription.PS.BytecodeLength = desc.PixelShaderSize;
 		pipelineStateDescription.PS.pShaderBytecode = desc.PixelShaderBlob;
+		
 		// Domain shader
 		pipelineStateDescription.DS.BytecodeLength = 0;
 		pipelineStateDescription.DS.pShaderBytecode = nullptr;
+		
 		// Hull shader
 		pipelineStateDescription.HS.BytecodeLength = 0;
 		pipelineStateDescription.HS.pShaderBytecode = nullptr;
+		
 		// Geometry shader
 		pipelineStateDescription.GS.BytecodeLength = 0;
 		pipelineStateDescription.GS.pShaderBytecode = nullptr;
+		
 		// Rasterizer
 		pipelineStateDescription.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
 		pipelineStateDescription.RasterizerState.FillMode = D3D12_FILL_MODE_SOLID;
@@ -97,21 +109,27 @@ namespace Ludo {
 		pipelineStateDescription.RasterizerState.MultisampleEnable = FALSE;
 		pipelineStateDescription.RasterizerState.AntialiasedLineEnable = FALSE;
 		pipelineStateDescription.RasterizerState.ForcedSampleCount = 0;
+		
 		// StreamOutput
 		pipelineStateDescription.StreamOutput.pSODeclaration = nullptr;
 		pipelineStateDescription.StreamOutput.NumEntries = 0;
 		pipelineStateDescription.StreamOutput.pBufferStrides = nullptr;
 		pipelineStateDescription.StreamOutput.NumStrides = 0;
 		pipelineStateDescription.StreamOutput.RasterizedStream = 0;
+		
 		// NumRenderTargets
 		pipelineStateDescription.NumRenderTargets = 1;
+		
 		// RTVFormats
 		pipelineStateDescription.RTVFormats[0] = DXGI_FORMAT_R8G8B8A8_UNORM;
+		
 		// DSVFormat
 		pipelineStateDescription.DSVFormat = DXGI_FORMAT_UNKNOWN;
+		
 		// BlendState
 		pipelineStateDescription.BlendState.AlphaToCoverageEnable = FALSE;
 		pipelineStateDescription.BlendState.IndependentBlendEnable = FALSE;
+		
 		// RenderTarget BlendState
 		pipelineStateDescription.BlendState.RenderTarget[0].BlendEnable = TRUE;
 		pipelineStateDescription.BlendState.RenderTarget[0].SrcBlend = D3D12_BLEND_ONE;
@@ -123,6 +141,7 @@ namespace Ludo {
 		pipelineStateDescription.BlendState.RenderTarget[0].LogicOpEnable = FALSE;
 		pipelineStateDescription.BlendState.RenderTarget[0].LogicOp = D3D12_LOGIC_OP_NOOP;
 		pipelineStateDescription.BlendState.RenderTarget[0].RenderTargetWriteMask = D3D12_COLOR_WRITE_ENABLE_ALL;
+		
 		// DepthStencilState
 		pipelineStateDescription.DepthStencilState.DepthEnable = FALSE;
 		pipelineStateDescription.DepthStencilState.DepthFunc = D3D12_COMPARISON_FUNC_ALWAYS;
@@ -138,16 +157,21 @@ namespace Ludo {
 		pipelineStateDescription.DepthStencilState.BackFace.StencilDepthFailOp = D3D12_STENCIL_OP_KEEP;
 		pipelineStateDescription.DepthStencilState.BackFace.StencilFailOp = D3D12_STENCIL_OP_KEEP;
 		pipelineStateDescription.DepthStencilState.BackFace.StencilPassOp = D3D12_STENCIL_OP_KEEP;
+		
 		// SampleMask
 		pipelineStateDescription.SampleMask = 0xFFFFFFFF;
+		
 		// SampleDesc
 		pipelineStateDescription.SampleDesc.Count = 1;
 		pipelineStateDescription.SampleDesc.Quality = 0;
+		
 		// NodeMask
 		pipelineStateDescription.NodeMask = 0;
+		
 		// Chached PSO
 		pipelineStateDescription.CachedPSO.CachedBlobSizeInBytes = 0;
 		pipelineStateDescription.CachedPSO.pCachedBlob = nullptr;
+		
 		// Flags
 		pipelineStateDescription.Flags = D3D12_PIPELINE_STATE_FLAG_NONE;
 
@@ -162,19 +186,20 @@ namespace Ludo {
 		ShutDown();
 	}
 
-	void DirectX12Shader::Use()
+	void DirectX12Shader::Bind()
 	{
-		auto& commandList = DirectX12Renderer::Get()->GetCommandList();
+		auto& commandList = DirectX12System::Get()->GetCommandList();
 
 		commandList->SetPipelineState(m_PipelineStateObject);
 		commandList->SetGraphicsRootSignature(m_2DRootSignature);
+		commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 	}
 
 	bool DirectX12Shader::InitSystem()
 	{
 		ShaderBlob RootSigBlob("RootSignature.cso");
 
-		HRESULT hr = DirectX12Renderer::Get()->GetDevice()->CreateRootSignature(0, RootSigBlob.blob, RootSigBlob.size, IID_PPV_ARGS(&m_2DRootSignature));
+		HRESULT hr = DirectX12System::Get()->GetDevice()->CreateRootSignature(0, RootSigBlob.blob, RootSigBlob.size, IID_PPV_ARGS(&m_2DRootSignature));
 		if (FAILED(hr))
 		{
 			LD_CORE_ERROR("Failed to create Root Signature for the 2D Pipeline");
@@ -199,13 +224,5 @@ namespace Ludo {
 	{
 		CHECK_AND_RELEASE_COMPTR(m_PipelineStateObject);
 		CHECK_AND_RELEASE_COMPTR(m_RootSignature);
-	}
-
-
-	Shader* Shader::Create(const LUDO_SHADER_DESC& desc)
-	{
-		DirectX12Shader* shader = new DirectX12Shader();
-		shader->Init(desc);
-		return shader;
 	}
 }

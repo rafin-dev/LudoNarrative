@@ -33,7 +33,7 @@ namespace Ludo {
 		}
 
 		bool result;
-		m_Window = std::unique_ptr<Window>(Window::Create(&result));
+		m_Window.reset(Window::Create(&result));
 		if (!result)
 		{
 			m_Running = false;
@@ -51,8 +51,6 @@ namespace Ludo {
 
 	void Application::Run()
 	{
-		auto Rend = InternalRenderer::Get();
-
 		while (m_Running)
 		{
 			for (Layer* layer : m_LayerStack)

@@ -6,11 +6,11 @@
 
 namespace Ludo {
 
-	class DirectX12Renderer : public InternalRenderer
+	class DirectX12System : public InternalRenderer
 	{
 	public:
 		bool Init() override;
-		~DirectX12Renderer() override;
+		~DirectX12System() override;
 
 		void BeginImGui() override;
 		void EndImGui() override;
@@ -22,7 +22,7 @@ namespace Ludo {
 			return m_CommandList;
 		}
 
-		void ExecuteCommandList();
+		void ExecuteCommandListAndWait();
 
 		inline void Flush(size_t count)
 		{
@@ -33,7 +33,7 @@ namespace Ludo {
 			}
 		}
 
-		static DirectX12Renderer* Get() { return (DirectX12Renderer*)InternalRenderer::Get(); }
+		static DirectX12System* Get() { return (DirectX12System*)InternalRenderer::Get(); }
 
 		inline auto* const& GetDevice() { return m_Device; }
 		inline auto* const& GetCommandQueue() { return m_CommandQueue; }
