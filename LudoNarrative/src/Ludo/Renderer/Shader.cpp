@@ -14,8 +14,8 @@ namespace Ludo {
     {
         switch (Renderer::GetAPI())
         {
-            case RendererAPI::None: LD_CORE_ASSERT(false, "RenderAPI::None is currently not supported") return nullptr;
-            case RendererAPI::DirectX12: return new DirectX12Shader(desc);
+            case RendererAPI::API::None: LD_CORE_ASSERT(false, "RenderAPI::None is currently not supported") return nullptr;
+            case RendererAPI::API::DirectX12: return new DirectX12Shader(desc);
         }
 
         LD_CORE_ASSERT(false, "Unknown RenderAPI specified, please provide a existing RenderAPI!");

@@ -4,7 +4,8 @@
 #include "Core.h"
 
 #include "Log.h"
-#include "Renderer/InternalRenderer.h"
+#include "Renderer/RendererAPI.h"
+#include "Renderer/Renderer.h"
 #include "Input.h"
 
 #include "Events/ApplicationEvent.h"
@@ -19,14 +20,12 @@ namespace Ludo {
 
 	Application* Application::s_Instance = nullptr;
 
-	// All references to "InternalRenderer" are temporary
-
 	Application::Application()
 	{
 		LD_CORE_ASSERT(s_Instance == nullptr, "Application was already initialized");
 		s_Instance = this;
 
-		if (!InternalRenderer::Get()->Init())
+		if (!Renderer::Init())
 		{
 			m_Running = false;
 			return;
@@ -40,9 +39,6 @@ namespace Ludo {
 			return;
 		}
 		m_Window->SetEventCallBack(BindFuncFn(OnEvent));
-
-		m_ImGuiLayer = new ImGuiLayer();
-		PushOverlay(m_ImGuiLayer);
 	}
 
 	Application::~Application()
@@ -53,17 +49,18 @@ namespace Ludo {
 	{
 		while (m_Running)
 		{
+
 			for (Layer* layer : m_LayerStack)
 			{
 				layer->OnUpdate();
 			}
 
-			m_ImGuiLayer->begin();
+			RenderCommand::BeginImGui();
 			for (Layer* l : m_LayerStack)
 			{
 				l->OnImGuiRender();
 			}
-			m_ImGuiLayer->End();
+			RenderCommand::EndImGui();
 
 			m_Window->OnUpdate();
 		}

@@ -1,8 +1,10 @@
 #include "ldpch.h"
 #include "DirectX12Shader.h"
 
-#include "DirectX12System.h"
+#include "DirectX12API.h"
 #include "DX12Utils.h"
+
+#include "Ludo/Application.h"
 
 namespace Ludo {
 
@@ -47,13 +49,34 @@ namespace Ludo {
 
 	DirectX12Shader::DirectX12Shader(const LUDO_SHADER_DESC& desc)
 	{
+		LD_CORE_ASSERT(desc.Layout.GetElements().size() != 0, "D3D12 Shader cannot be created without Vertex Buffer Layout");
 		Init(desc);
+	}
+
+	static DXGI_FORMAT GetDxgiFormatFromShaderDataType(ShaderDataType type)
+	{
+		switch (type)
+		{
+			case ShaderDataType::Float:   return DXGI_FORMAT_R32_FLOAT;
+			case ShaderDataType::Float2:  return DXGI_FORMAT_R32G32_FLOAT;
+			case ShaderDataType::Float3:  return DXGI_FORMAT_R32G32B32_FLOAT;
+			case ShaderDataType::Float4:  return DXGI_FORMAT_R32G32B32A32_FLOAT;
+			case ShaderDataType::Int:     return DXGI_FORMAT_R32_SINT;
+			case ShaderDataType::Int2:    return DXGI_FORMAT_R32G32_SINT;
+			case ShaderDataType::Int3:    return DXGI_FORMAT_R32G32B32_SINT;
+			case ShaderDataType::Int4:    return DXGI_FORMAT_R32G32B32A32_SINT;
+			case ShaderDataType::Uint:    return DXGI_FORMAT_R32_UINT;
+			case ShaderDataType::Uint2:   return DXGI_FORMAT_R32G32_UINT;
+			case ShaderDataType::Uint3:   return DXGI_FORMAT_R32G32B32_UINT;
+			case ShaderDataType::Uint4:   return DXGI_FORMAT_R32G32B32A32_UINT;
+			case ShaderDataType::Bool:    return DXGI_FORMAT_R8_TYPELESS;
+		}
 	}
 
 	bool DirectX12Shader::Init(const LUDO_SHADER_DESC& desc)
 	{
 		HRESULT hr = S_OK;
-		auto& device = DirectX12System::Get()->GetDevice();
+		auto& device = DirectX12API::Get()->GetDevice();
 
 		if (desc.TargetPipeline == LUDO_TARGET_PIPELINE_2D)
 		{
@@ -66,6 +89,36 @@ namespace Ludo {
 			std::exit(-1);
 		}
 
+		std::vector<D3D12_INPUT_ELEMENT_DESC> ElementLayout;
+		ElementLayout.reserve(desc.Layout.GetElements().size());
+
+		for (auto& element : desc.Layout)
+		{
+			D3D12_INPUT_ELEMENT_DESC desc;
+			if (element.Type == ShaderDataType::Float3x3)
+			{
+				for (uint32_t i = 0; i < 3; i++)
+				{
+					desc =
+					{ element.Name.c_str(), i, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 };
+					ElementLayout.push_back(desc);
+				}
+			}
+			else if (element.Type == ShaderDataType::Float4x4)
+			{
+				for (uint32_t i = 0; i < 4; i++)
+				{
+					desc =
+					{ element.Name.c_str(), i, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 };
+					ElementLayout.push_back(desc);
+				}
+			}
+
+			desc =
+			{ element.Name.c_str(), 0, GetDxgiFormatFromShaderDataType(element.Type), 0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 };
+			ElementLayout.push_back(desc);
+		}
+
 		// Pipeline State
 		D3D12_GRAPHICS_PIPELINE_STATE_DESC pipelineStateDescription = {};
 
@@ -73,8 +126,8 @@ namespace Ludo {
 		pipelineStateDescription.pRootSignature = m_2DRootSignature;
 
 		// Input Layout
-		pipelineStateDescription.InputLayout.NumElements = m_2DElementLayout.size();
-		pipelineStateDescription.InputLayout.pInputElementDescs = m_2DElementLayout.data();
+		pipelineStateDescription.InputLayout.NumElements = ElementLayout.size();
+		pipelineStateDescription.InputLayout.pInputElementDescs = ElementLayout.data();
 		pipelineStateDescription.IBStripCutValue = D3D12_INDEX_BUFFER_STRIP_CUT_VALUE_DISABLED;
 		
 		// Vertex shader
@@ -188,18 +241,24 @@ namespace Ludo {
 
 	void DirectX12Shader::Bind()
 	{
-		auto& commandList = DirectX12System::Get()->GetCommandList();
+		auto& commandList = DirectX12API::Get()->GetCommandList();
 
 		commandList->SetPipelineState(m_PipelineStateObject);
 		commandList->SetGraphicsRootSignature(m_2DRootSignature);
+		uint32_t size[] = { Application::Get().GetWindow().GetWidth(), Application::Get().GetWindow().GetHeight() };
 		commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+	}
+
+	void DirectX12Shader::UploadUniformMat4(const DirectX::XMFLOAT4X4& matrix)
+	{
+		DirectX12API::Get()->GetCommandList()->SetGraphicsRoot32BitConstants(0, 16, &matrix, 0);
 	}
 
 	bool DirectX12Shader::InitSystem()
 	{
 		ShaderBlob RootSigBlob("RootSignature.cso");
 
-		HRESULT hr = DirectX12System::Get()->GetDevice()->CreateRootSignature(0, RootSigBlob.blob, RootSigBlob.size, IID_PPV_ARGS(&m_2DRootSignature));
+		HRESULT hr = DirectX12API::Get()->GetDevice()->CreateRootSignature(0, RootSigBlob.blob, RootSigBlob.size, IID_PPV_ARGS(&m_2DRootSignature));
 		if (FAILED(hr))
 		{
 			LD_CORE_ERROR("Failed to create Root Signature for the 2D Pipeline");

@@ -1,16 +1,21 @@
 #pragma once
 
-#include "Ludo/Renderer/InternalRenderer.h"
+#include "Ludo/Renderer/RendererAPI.h"
 
 #include "Ludo/Log.h"
 
 namespace Ludo {
 
-	class DirectX12System : public InternalRenderer
+	class DirectX12API : public RendererAPI
 	{
 	public:
 		bool Init() override;
-		~DirectX12System() override;
+		~DirectX12API() override;
+
+		virtual void SetClearColor(const DirectX::XMFLOAT4& color) override { m_ClearColor = color; }
+		virtual const DirectX::XMFLOAT4& GetClearColor() override { return m_ClearColor; };
+
+		virtual void DrawIndexed(const std::shared_ptr<VertexBuffer>& vertexBuffer, const std::shared_ptr<IndexBuffer>& indexBuffer) override;
 
 		void BeginImGui() override;
 		void EndImGui() override;
@@ -33,7 +38,7 @@ namespace Ludo {
 			}
 		}
 
-		static DirectX12System* Get() { return (DirectX12System*)InternalRenderer::Get(); }
+		static DirectX12API* Get();
 
 		inline auto* const& GetDevice() { return m_Device; }
 		inline auto* const& GetCommandQueue() { return m_CommandQueue; }
@@ -43,6 +48,8 @@ namespace Ludo {
 	private:
 		void ShutDown();
 		void SignalAndWait();
+
+		DirectX::XMFLOAT4 m_ClearColor = { 1.0f, 1.0f, 1.0f, 1.0f };
 
 		ID3D12Device8* m_Device = nullptr;
 		ID3D12CommandQueue* m_CommandQueue = nullptr;

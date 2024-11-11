@@ -1,7 +1,7 @@
 #include "ldpch.h"
 #include "DirectX12Buffer.h"
 
-#include "DirectX12System.h"
+#include "DirectX12API.h"
 #include "DX12Utils.h"
 
 // Currently, when creating a Vertex or Index Buffer, 2 completely new buffers will be allocated
@@ -13,16 +13,17 @@
 namespace Ludo {
 
 	// ========== Vertex Buffer ==========
-	DirectX12VertexBuffer::DirectX12VertexBuffer(float* verticies, uint32_t size)
+	DirectX12VertexBuffer::DirectX12VertexBuffer(float* verticies, uint32_t size, const BufferLayout& layout)
+		: m_Layout(layout)
 	{
-		Init(verticies, size);
-		LD_CORE_TRACE("Created Vertex Bufffer of size: {0}", size);
+		bool result = Init(verticies, size);
+		LD_CORE_ASSERT(result, "failed to create Vertex Buffer");
 	}
 
 	bool DirectX12VertexBuffer::Init(float* verticies, uint32_t size)
 	{
 		HRESULT hr = S_OK;
-		auto& device = DirectX12System::Get()->GetDevice();
+		auto& device = DirectX12API::Get()->GetDevice();
 
 		// ========== Heap & Resource properties ==========
 		D3D12_HEAP_PROPERTIES heapPropertiesUpload = {};
@@ -67,7 +68,7 @@ namespace Ludo {
 		// ========== Vertex Buffer View ==========
 		m_VertexBufferView.BufferLocation = m_VertexBuffer->GetGPUVirtualAddress();
 		m_VertexBufferView.SizeInBytes = size;
-		m_VertexBufferView.StrideInBytes = sizeof(float) * 2; // TERRIBLE! CHANGE THIS ASAP, CREATE A STRUCT TO DO A sizeof() OR WHATEVER, BUT CHANGE THIS
+		m_VertexBufferView.StrideInBytes = m_Layout.GetStride();
 
 		// ========== Data --> CPU Upload Buffer ==========
 		void* uploadAddress = nullptr;
@@ -83,12 +84,13 @@ namespace Ludo {
 		UploadBuffer->Unmap(0, &uploadRange);
 
 		// ========== CPU Upload Buffer --> GPU Vertex Buffer ==========
-		auto& commandList = DirectX12System::Get()->InitCommandList();
+		DirectX12API::Get()->ExecuteCommandListAndWait();
+		auto& commandList = DirectX12API::Get()->InitCommandList();
 
 		commandList->CopyBufferRegion(m_VertexBuffer, 0, UploadBuffer, 0, size);
 
-		DirectX12System::Get()->ExecuteCommandListAndWait();
-		DirectX12System::Get()->InitCommandList();
+		DirectX12API::Get()->ExecuteCommandListAndWait();
+		DirectX12API::Get()->InitCommandList();
 
 		CHECK_AND_RELEASE_COMPTR(UploadBuffer);
 		return true;
@@ -101,7 +103,7 @@ namespace Ludo {
 
 	void DirectX12VertexBuffer::Bind() const
 	{
-		DirectX12System::Get()->GetCommandList()->IASetVertexBuffers(0, 1, &m_VertexBufferView);
+		DirectX12API::Get()->GetCommandList()->IASetVertexBuffers(0, 1, &m_VertexBufferView);
 	}
 
 	void DirectX12VertexBuffer::ShutDown()
@@ -110,16 +112,16 @@ namespace Ludo {
 	}
 
 	// ========== Index Buffer ==========
-	DirectX12IndexBuffer::DirectX12IndexBuffer(uint32_t* indices, uint32_t size)
+	DirectX12IndexBuffer::DirectX12IndexBuffer(uint32_t* indices, uint32_t count)
 	{
-		Init(indices, size);
-		LD_CORE_TRACE("Created Index Buffer of size: {0}, size");
+		bool result = Init(indices, count);
+		LD_CORE_ASSERT(result, "Failed to create Index Buffer");
 	}
 
 	bool DirectX12IndexBuffer::Init(uint32_t* indices, uint32_t count)
 	{
 		HRESULT hr = S_OK;
-		auto& device = DirectX12System::Get()->GetDevice();
+		auto& device = DirectX12API::Get()->GetDevice();
 		m_Count = count;
 		uint32_t size = count * sizeof(uint32_t);
 
@@ -182,12 +184,13 @@ namespace Ludo {
 		UploadBuffer->Unmap(0, &uploadRange);
 
 		// ========== CPU Upload Buffer --> GPU Index Buffer ==========
-		auto& commandList = DirectX12System::Get()->InitCommandList();
+		DirectX12API::Get()->ExecuteCommandListAndWait();
+		auto& commandList = DirectX12API::Get()->InitCommandList();
 
 		commandList->CopyBufferRegion(m_IndexBuffer, 0, UploadBuffer, 0, size);
 
-		DirectX12System::Get()->ExecuteCommandListAndWait();
-		DirectX12System::Get()->InitCommandList();
+		DirectX12API::Get()->ExecuteCommandListAndWait();
+		DirectX12API::Get()->InitCommandList();
 
 		CHECK_AND_RELEASE_COMPTR(UploadBuffer);
 		return true;
@@ -200,7 +203,7 @@ namespace Ludo {
 
 	void DirectX12IndexBuffer::Bind() const
 	{
-		DirectX12System::Get()->GetCommandList()->IASetIndexBuffer(&m_IndexBufferView);
+		DirectX12API::Get()->GetCommandList()->IASetIndexBuffer(&m_IndexBufferView);
 	}
 
 	uint32_t DirectX12IndexBuffer::GetCount() const

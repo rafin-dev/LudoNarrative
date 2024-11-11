@@ -14,6 +14,8 @@ namespace Ludo {
 
 		virtual void Bind() override;
 
+		virtual void UploadUniformMat4(const DirectX::XMFLOAT4X4& matrix) override;
+
 		static bool InitSystem();
 		static void CloseSystem();
 

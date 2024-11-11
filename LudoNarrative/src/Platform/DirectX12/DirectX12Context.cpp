@@ -1,12 +1,13 @@
 #include "ldpch.h"
 #include "DirectX12Context.h"
 
-#include "DirectX12System.h"
+#include "DirectX12API.h"
 #include "DX12Utils.h"
 
 #include "Platform/Windows/WindowsWindow.h"
 #include "Ludo/Application.h"
 #include "Ludo/Renderer/Shader.h"
+#include "Ludo/Renderer/RenderCommand.h"
 
 namespace Ludo {
 
@@ -19,9 +20,10 @@ namespace Ludo {
 	DirectX12Context::~DirectX12Context()
 	{
 		EndFrame();
-		DirectX12System::Get()->Flush(GetSwapChainBufferCount());
+		DirectX12API::Get()->Flush(GetSwapChainBufferCount());
 
 		ShutDown();
+		LD_CORE_INFO("Closed DirectX12(D3D12) Graphics Context");
 	}
 
 	static D3D12_VERTEX_BUFFER_VIEW vertexBufferView = {};
@@ -141,8 +143,8 @@ namespace Ludo {
 	bool DirectX12Context::Init()
 	{
 		HRESULT hr = S_OK;
-		auto& factory = DirectX12System::Get()->GetDXGIFactory();
-		auto& device = DirectX12System::Get()->GetDevice();
+		auto& factory = DirectX12API::Get()->GetDXGIFactory();
+		auto& device = DirectX12API::Get()->GetDevice();
 		m_Window = (WindowsWindow*)GetWindowLongPtr(m_WindowHandle, GWLP_USERDATA);
 		RECT size = {};
 		GetClientRect(m_WindowHandle, &size);
@@ -168,7 +170,7 @@ namespace Ludo {
 		IDXGISwapChain1* sc1 = nullptr;
 
 		 hr = factory->CreateSwapChainForHwnd(
-			DirectX12System::Get()->GetCommandQueue(),
+			DirectX12API::Get()->GetCommandQueue(),
 			m_WindowHandle,
 			&scd,
 			&scfd,
@@ -226,7 +228,7 @@ namespace Ludo {
 			rtvDesc.Texture2D.MipSlice = 0;
 			rtvDesc.Texture2D.PlaneSlice = 0;
 
-			DirectX12System::Get()->GetDevice()->CreateRenderTargetView(
+			DirectX12API::Get()->GetDevice()->CreateRenderTargetView(
 				m_Buffers[i],
 				&rtvDesc,
 				m_rtvCPUhandles[i]
@@ -268,7 +270,7 @@ namespace Ludo {
 
 	inline void DirectX12Context::BeginFrame()
 	{
-		auto& commandList = DirectX12System::Get()->InitCommandList();
+		auto& commandList = DirectX12API::Get()->InitCommandList();
 		m_CurrentBackBuffer = m_SwapChain->GetCurrentBackBufferIndex();
 
 		// Resource Barrier
@@ -283,9 +285,7 @@ namespace Ludo {
 		commandList->ResourceBarrier(1, &barrier);
 
 		// Clar and set RenderTarget
-		static float clearColor[] = { 1.0f, 1.0f, 1.0f, 1.0f };
-
-		commandList->ClearRenderTargetView(m_rtvCPUhandles[m_CurrentBackBuffer], clearColor, 0, nullptr);
+		commandList->ClearRenderTargetView(m_rtvCPUhandles[m_CurrentBackBuffer], (float*)&RenderCommand::GetClearColor(), 0, nullptr);
 
 		commandList->OMSetRenderTargets(1, &m_rtvCPUhandles[m_CurrentBackBuffer], false, nullptr);
 
@@ -320,9 +320,9 @@ namespace Ludo {
 		barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_RENDER_TARGET;
 		barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_PRESENT;
 
-		DirectX12System::Get()->GetCommandList()->ResourceBarrier(1, &barrier);
+		DirectX12API::Get()->GetCommandList()->ResourceBarrier(1, &barrier);
 
-		DirectX12System::Get()->ExecuteCommandListAndWait();
+		DirectX12API::Get()->ExecuteCommandListAndWait();
 	}
 
 	void DirectX12Context::ShutDown()
@@ -331,13 +331,12 @@ namespace Ludo {
 		if (m_Shader) { delete m_Shader; m_Shader = nullptr; }
 		CHECK_AND_RELEASE_COMPTR(m_rtvDescriptorHeap);
 		CHECK_AND_RELEASE_COMPTR(m_SwapChain);
-		LD_CORE_INFO("Closed DirectX12(D3D12) Graphics Context");
 	}
 
 	void DirectX12Context::ResizeImpl()
 	{
 		m_ShouldResize = false;
-		DirectX12System::Get()->Flush(GetSwapChainBufferCount());
+		DirectX12API::Get()->Flush(GetSwapChainBufferCount());
 
 		LD_CORE_TRACE("Resizing D3D12 Graphics Context: {0}, {1}", m_Nwidth, m_Nheight);
 		ReleaseBuffers();

@@ -1,7 +1,10 @@
 #include "RootSignature.hlsl"
 
+float4x4 ViewProjection : register(b0);
+
 [RootSignature(ROOTSIG)]
-float4 main( float2 pos : Position ) : SV_Position
+float4 main( float3 pos : Position) : SV_Position
 {
-    return float4(pos.x, pos.y, 0.0f, 1.0f);
+    return mul(float4(pos.xyz, 1.0), ViewProjection);
+
 }

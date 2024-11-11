@@ -2,14 +2,14 @@
 // ===========================
 // Root Signature Layout (CPU)
 // ===========================
-// -> 0: float3 "Color"
+// -> 0: uint2 "Size"
 //
 // ===========================
 // Root Signature Layout (GPU)
 // ===========================
-// -> b0: float3 "Color"
+// -> b0: uint2 "Size"
 //
 
 #define ROOTSIG \
 "RootFlags(ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT), " \
-"RootConstants(num32BitConstants=3, b0)"
+"RootConstants(num32BitConstants=16, b0)"

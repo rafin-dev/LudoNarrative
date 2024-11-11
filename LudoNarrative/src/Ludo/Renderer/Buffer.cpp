@@ -10,12 +10,12 @@
 
 namespace Ludo {
 
-    VertexBuffer* VertexBuffer::Create(float* vertices, uint32_t size)
+    VertexBuffer* VertexBuffer::Create(float* vertices, uint32_t size, const BufferLayout& layout)
     {
         switch (Renderer::GetAPI())
         {
-            case RendererAPI::None: LD_CORE_ASSERT(false, "RenderAPI::None is currently not supported") return nullptr;
-            case RendererAPI::DirectX12: return new DirectX12VertexBuffer(vertices, size);
+            case RendererAPI::API::None: LD_CORE_ASSERT(false, "RenderAPI::None is currently not supported") return nullptr;
+            case RendererAPI::API::DirectX12: return new DirectX12VertexBuffer(vertices, size, layout);
         }
 
         LD_CORE_ASSERT(false, "Unknown RenderAPI specified, please provide a existing RenderAPI!");
@@ -26,8 +26,8 @@ namespace Ludo {
     {
         switch (Renderer::GetAPI())
         {
-            case RendererAPI::None: LD_CORE_ASSERT(false, "RenderAPI::None is currently not supported") return nullptr;
-            case RendererAPI::DirectX12: return new DirectX12IndexBuffer(indices, count * sizeof(uint32_t));
+            case RendererAPI::API::None: LD_CORE_ASSERT(false, "RenderAPI::None is currently not supported") return nullptr;
+            case RendererAPI::API::DirectX12: return new DirectX12IndexBuffer(indices, count);
         }
 
         LD_CORE_ASSERT(false, "Unknown RenderAPI specified, please provide a existing RenderAPI!");

@@ -1,5 +1,8 @@
 #pragma once
 
+#include "ldpch.h"
+#include "Buffer.h"
+
 namespace Ludo {
 
 	enum LUDO_SHADER_TARGET_PIPELINE
@@ -20,6 +23,9 @@ namespace Ludo {
 
 		// Target Pipeline
 		LUDO_SHADER_TARGET_PIPELINE TargetPipeline = LUDO_TARGET_PIPELINE_2D;
+
+		// Vertex Buffer Layout
+		BufferLayout Layout = {};
 	};
 
 	class Shader 
@@ -28,6 +34,8 @@ namespace Ludo {
 		virtual ~Shader() = default;
 
 		virtual void Bind() = 0;
+
+		virtual void UploadUniformMat4(const DirectX::XMFLOAT4X4& matrix) = 0;
 
 		static Shader* Create(const LUDO_SHADER_DESC& desc);
 	};

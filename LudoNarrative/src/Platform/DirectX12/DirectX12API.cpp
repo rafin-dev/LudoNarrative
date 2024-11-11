@@ -1,5 +1,5 @@
 #include "ldpch.h"
-#include "DirectX12System.h"
+#include "DirectX12API.h"
 
 #include "Ludo/Log.h"
 #include "DX12Utils.h"
@@ -13,7 +13,7 @@
 
 namespace Ludo {
 
-    bool DirectX12System::Init()
+    bool DirectX12API::Init()
     {
         HRESULT hr = S_OK;
 
@@ -29,6 +29,13 @@ namespace Ludo {
         VALIDATE_DXCALL_SUCCESS(hr, "Failed to retrieve DXGI Debug Interface");
         m_DXGIDebug->EnableLeakTrackingForThread();
 #endif 
+        if (!DirectX::XMVerifyCPUSupport())
+        {
+            LD_CORE_ERROR("CPU does no support DirectXMath required instructions!");
+            ShutDown();
+            return false;
+        }
+
         // DXGI Factory
         hr = CreateDXGIFactory2(0, IID_PPV_ARGS(&m_DXGIFactory));
         VALIDATE_DXCALL_SUCCESS(hr, "Failed to create DXGI FActory");
@@ -74,6 +81,12 @@ namespace Ludo {
         hr = m_Device->CreateDescriptorHeap(&imguiSrvDesHeapDescription, IID_PPV_ARGS(&m_ImGuiSrvDescHeap));
         VALIDATE_DXCALL_SUCCESS(hr, "Failed to create ImGui SRV Descriptor Heap");
 
+        if (!DirectX12Shader::InitSystem())
+        {
+            ShutDown();
+            return false;
+        }
+
         IMGUI_CHECKVERSION();
         ImGui::CreateContext();
         ImGuiIO& io = ImGui::GetIO(); (void)io;
@@ -97,34 +110,30 @@ namespace Ludo {
             m_ImGuiSrvDescHeap->GetCPUDescriptorHandleForHeapStart(),
             m_ImGuiSrvDescHeap->GetGPUDescriptorHandleForHeapStart());
 
-        IDXGIAdapter4* Adapter = nullptr;
-        hr = m_DXGIFactory->EnumAdapterByLuid(m_Device->GetAdapterLuid(), IID_PPV_ARGS(&Adapter));
-        VALIDATE_DXCALL_SUCCESS(hr, "retrieved the adapter");
-
-        if (!DirectX12Shader::InitSystem())
-        {
-            ShutDown();
-            return false;
-        }
-
-        Adapter->Release();
-
         return true;
     }
 
-    DirectX12System::~DirectX12System()
+    DirectX12API::~DirectX12API()
     {
+        ImGui_ImplDX12_Shutdown();
+        ImGui_ImplWin32_Shutdown();
+        ImGui::DestroyContext();
         ShutDown();
     }
 
-    void DirectX12System::BeginImGui()
+    void DirectX12API::DrawIndexed(const std::shared_ptr<VertexBuffer>& vertexBuffer, const std::shared_ptr<IndexBuffer>& indexBuffer)
+    {
+        m_CommandList->DrawIndexedInstanced(indexBuffer->GetCount(), 1, 0, 0, 0);
+    }
+
+    void DirectX12API::BeginImGui()
     {
         ImGui_ImplDX12_NewFrame();
         ImGui_ImplWin32_NewFrame();
         ImGui::NewFrame();
     }
 
-    void DirectX12System::EndImGui()
+    void DirectX12API::EndImGui()
     {
         ImGui::Render();
 
@@ -139,11 +148,8 @@ namespace Ludo {
         }
     }
 
-    void DirectX12System::ShutDown()
+    void DirectX12API::ShutDown()
     {
-        ImGui_ImplDX12_Shutdown();
-        ImGui_ImplWin32_Shutdown();
-        ImGui::DestroyContext();
         DirectX12Shader::CloseSystem();
         CHECK_AND_RELEASE_COMPTR(m_ImGuiSrvDescHeap);
         LD_CORE_INFO("Closed ImGui");
@@ -175,7 +181,7 @@ namespace Ludo {
 #endif 
     }
 
-    void DirectX12System::SignalAndWait()
+    void DirectX12API::SignalAndWait()
     {
         m_FenceValue++;
         m_CommandQueue->Signal(m_Fence, m_FenceValue);
@@ -192,7 +198,7 @@ namespace Ludo {
         }
     }
 
-    void DirectX12System::ExecuteCommandListAndWait()
+    void DirectX12API::ExecuteCommandListAndWait()
     {
         if (FAILED(m_CommandList->Close()))
         {
@@ -205,9 +211,10 @@ namespace Ludo {
         SignalAndWait();
     }
 
-    InternalRenderer* InternalRenderer::Get()
+    DirectX12API* DirectX12API::Get()
     {
-        static DirectX12System instance;
-        return &instance;
+        static DirectX12API system;
+        return &system;
     }
+
 }
