@@ -1,18 +1,20 @@
 #include "ldpch.h"
 #include "Application.h"
 
-#include "Core.h"
+#include "Ludo/Core.h"
 
-#include "Log.h"
-#include "Renderer/RendererAPI.h"
-#include "Renderer/Renderer.h"
-#include "Input.h"
+#include "Ludo/Log.h"
+#include "Ludo/Renderer/RendererAPI.h"
+#include "Ludo/Renderer/Renderer.h"
+#include "Ludo/Input.h"
 
-#include "Events/ApplicationEvent.h"
-#include "Events/KeyEvent.h"
-#include "Events/MouseEvent.h"
-#include "Events/Event.h"
-#include "KeyCodes.h"
+#include "Ludo/Events/ApplicationEvent.h"
+#include "Ludo/Events/KeyEvent.h"
+#include "Ludo/Events/MouseEvent.h"
+#include "Ludo/Events/Event.h"
+#include "Ludo/KeyCodes.h"
+
+#include "imgui/imgui.h"
 
 namespace Ludo {
 
@@ -39,6 +41,7 @@ namespace Ludo {
 			return;
 		}
 		m_Window->SetEventCallBack(BindFuncFn(OnEvent));
+		m_Window->SetVsync(false);
 	}
 
 	Application::~Application()
@@ -49,10 +52,13 @@ namespace Ludo {
 	{
 		while (m_Running)
 		{
+			float time = (float)ImGui::GetTime();
+			TimeStep timeStep = time - m_LastFrameTime;
+			m_LastFrameTime = time;
 
 			for (Layer* layer : m_LayerStack)
 			{
-				layer->OnUpdate();
+				layer->OnUpdate(timeStep);
 			}
 
 			RenderCommand::BeginImGui();

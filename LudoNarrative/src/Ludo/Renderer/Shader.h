@@ -35,7 +35,8 @@ namespace Ludo {
 
 		virtual void Bind() = 0;
 
-		virtual void UploadUniformMat4(const DirectX::XMFLOAT4X4& matrix) = 0;
+		virtual void SetViewProjectionMatrix(const DirectX::XMFLOAT4X4& matrix) = 0;
+		virtual void SetModelMatrix(const DirectX::XMFLOAT4X4& matrix) = 0;
 
 		static Shader* Create(const LUDO_SHADER_DESC& desc);
 	};

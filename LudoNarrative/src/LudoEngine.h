@@ -1,5 +1,4 @@
 #pragma once
-
 //
 //  /$$                       /$$           /$$   /$$                                          /$$     /$$                    
 // | $$                      | $$          | $$$ | $$                                         | $$    |__/                    
@@ -10,14 +9,26 @@
 // | $$$$$$$$|  $$$$$$/|  $$$$$$$|  $$$$$$/| $$ \  $$|  $$$$$$$| $$      | $$     |  $$$$$$$  |  $$$$/| $$   \  $/  |  $$$$$$$
 // |________/ \______/  \_______/ \______/ |__/  \__/ \_______/|__/      |__/      \_______/   \___/  |__/    \_/    \_______/
 //
-// Header file for client applications
 
 #include "Ludo/Application.h"
 #include "Ludo/Layer.h"
-#include "Ludo/KeyCodes.h"
-#include "Ludo/Input.h"
 #include "Ludo/Log.h"
 
-// -------------Entry-Point------------
+#include "Ludo/Input.h"
+#include "Ludo/KeyCodes.h"
+#include "Ludo/Core/TimeStep.h"
+
+// ============ Renderer ===========
+#include "Ludo/Renderer/Renderer.h"
+#include "Ludo/Renderer/RenderCommand.h"
+
+#include "Ludo/Renderer/Shader.h"
+#include "Ludo/Renderer/Buffer.h"
+
+#include "Ludo/Renderer/OrthographicCamera.h"
+#include "Ludo/Renderer/Transform.h"
+// =================================
+
+// ========== Entry-Point ==========
 #include "Ludo/EntryPoint.h"
-// ------------------------------------
+// =================================

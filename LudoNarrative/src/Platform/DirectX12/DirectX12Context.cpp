@@ -257,7 +257,7 @@ namespace Ludo {
 	{
 		EndFrame();
 
-		m_SwapChain->Present(1, 0);
+		m_SwapChain->Present(m_Window->IsVsync(), m_Window->IsVsync() ? 0 : DXGI_PRESENT_ALLOW_TEARING);
 
 		// ========== Handle Resizing between frames ===========
 		if (m_ShouldResize)

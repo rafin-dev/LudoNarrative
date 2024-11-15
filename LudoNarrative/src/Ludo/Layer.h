@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Ludo/Core/TimeStep.h"
 #include "Ludo/Core.h"
 #include "Ludo/Events/Event.h"
 
@@ -16,7 +17,7 @@ namespace Ludo {
 
 		virtual void OnAttach() {}
 		virtual void OnDetach() {}
-		virtual void OnUpdate() {}
+		virtual void OnUpdate(TimeStep time) {}
 		virtual void OnImGuiRender() {}
 		virtual void OnEvent(Event& event) {}
 

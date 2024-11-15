@@ -249,9 +249,14 @@ namespace Ludo {
 		commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 	}
 
-	void DirectX12Shader::UploadUniformMat4(const DirectX::XMFLOAT4X4& matrix)
+	void DirectX12Shader::SetViewProjectionMatrix(const DirectX::XMFLOAT4X4& matrix)
 	{
 		DirectX12API::Get()->GetCommandList()->SetGraphicsRoot32BitConstants(0, 16, &matrix, 0);
+	}
+
+	void DirectX12Shader::SetModelMatrix(const DirectX::XMFLOAT4X4& matrix)
+	{
+		DirectX12API::Get()->GetCommandList()->SetGraphicsRoot32BitConstants(0, 16, &matrix, 16);
 	}
 
 	bool DirectX12Shader::InitSystem()

@@ -4,17 +4,11 @@
 
 #include "imgui/imgui.h"
 
-#include "Ludo/Renderer/Buffer.h"
-#include "Ludo/Renderer/Shader.h"
-
-#include "Ludo/Renderer/Renderer.h"
-#include "Ludo/Renderer/OrthographicCamera.h"
-
 class ExampleLayer : public Ludo::Layer
 {
 public:
 	ExampleLayer()
-	: Ludo::Layer("Example"), Camera(-1.6f, 1.6f, -0.9f, 0.9f)
+	: Ludo::Layer("Example"), m_Camera(-1.6f, 1.6f, -0.9f, 0.9f)
 	{
 		float vertices[] =
 		{
@@ -38,8 +32,8 @@ public:
 			{ "Position", Ludo::ShaderDataType::Float3 }
 		};
 
-		VertexBuffer.reset(Ludo::VertexBuffer::Create(vertices, sizeof(vertices), Layout));
-		IndexBuffer.reset(Ludo::IndexBuffer::Create(indices, sizeof(indices) / sizeof(uint32_t)));
+		m_VertexBuffer.reset(Ludo::VertexBuffer::Create(vertices, sizeof(vertices), Layout));
+		m_IndexBuffer.reset(Ludo::IndexBuffer::Create(indices, sizeof(indices) / sizeof(uint32_t)));
 
 		auto GetShaderBlob = [](const std::string& name) -> std::pair<void*, size_t>
 		{
@@ -77,27 +71,30 @@ public:
 		desc.VertexShaderSize = vertexShader.second;
 		desc.PixelShaderBlob = pixelShader.first;
 		desc.PixelShaderSize = pixelShader.second;
-		desc.Layout = VertexBuffer->GetLayout();
+		desc.Layout = m_VertexBuffer->GetLayout();
 		
-		Shader.reset(Ludo::Shader::Create(desc));
+		m_Shader.reset(Ludo::Shader::Create(desc));
 		free(vertexShader.first);
 		free(pixelShader.first);
 	}
 
-	void OnUpdate() override
+	void OnUpdate(Ludo::TimeStep time) override
 	{
-		auto pos = Camera.GetPosition();
+		auto pos = m_Camera.GetPosition();
 
-		pos.x += (Ludo::Input::IsKeyPressed(LD_KEY_A) - Ludo::Input::IsKeyPressed(LD_KEY_D)) * 0.1f;
-		pos.y += (Ludo::Input::IsKeyPressed(LD_KEY_S) - Ludo::Input::IsKeyPressed(LD_KEY_W)) * 0.1f;
+		pos.x += (Ludo::Input::IsKeyPressed(LD_KEY_D) - Ludo::Input::IsKeyPressed(LD_KEY_A)) * 2.0f * time;
+		pos.y += (Ludo::Input::IsKeyPressed(LD_KEY_W) - Ludo::Input::IsKeyPressed(LD_KEY_S)) * 2.0f * time;
 
-		Camera.SetPosition(pos);
+		m_Camera.SetPosition(pos);
 
-		Camera.SetRotation(Camera.GetRotation() + Ludo::Input::IsMouseButtonDown(LD_MOUSE_BUTTON_LEFT) * 0.1f);
+		m_Camera.SetRotation(m_Camera.GetRotation() + Ludo::Input::IsMouseButtonDown(LD_MOUSE_BUTTON_LEFT) * 2.0f * time);
 
-		Ludo::Renderer::BeginScene(Camera);
+		m_Transform.Position.x += (Ludo::Input::IsKeyPressed(LD_KEY_RIGHT_ARROW) - Ludo::Input::IsKeyPressed(LD_KEY_LEFT_ARROW)) * 2.0f * time;
+		m_Transform.Position.y += (Ludo::Input::IsKeyPressed(LD_KEY_UP_ARROW) - Ludo::Input::IsKeyPressed(LD_KEY_DOWN_ARROW)) * 2.0f * time;
 
-		Ludo::Renderer::Submit(Shader, VertexBuffer, IndexBuffer);
+		Ludo::Renderer::BeginScene(m_Camera);
+
+		Ludo::Renderer::Submit(m_Shader, m_VertexBuffer, m_IndexBuffer, m_Transform.GetModelMarix());
 
 		Ludo::Renderer::EndScene();
 	}
@@ -118,12 +115,16 @@ public:
 		ImGui::End();
 	}
 
-	std::shared_ptr<Ludo::Shader> Shader;
+private:
 
-	std::shared_ptr<Ludo::VertexBuffer> VertexBuffer;
-	std::shared_ptr<Ludo::IndexBuffer> IndexBuffer;
+	std::shared_ptr<Ludo::Shader> m_Shader;
 
-	Ludo::OrthographicCamera Camera;
+	std::shared_ptr<Ludo::VertexBuffer> m_VertexBuffer;
+	std::shared_ptr<Ludo::IndexBuffer> m_IndexBuffer;
+
+	Ludo::OrthographicCamera m_Camera;
+
+	Ludo::Transform m_Transform;
 };
 
 class Sandbox : public Ludo::Application

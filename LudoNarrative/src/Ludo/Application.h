@@ -7,6 +7,7 @@
 #include "Events/KeyEvent.h"
 #include "Layer.h"
 #include "LayerStack.h"
+#include "Ludo/Core/TimeStep.h"
 
 namespace Ludo {
 
@@ -34,6 +35,8 @@ namespace Ludo {
 		bool m_Running = true;
 
 		LayerStack m_LayerStack;
+
+		float m_LastFrameTime = 0.0f;
 
 		static Application* s_Instance;
 	};

@@ -30,7 +30,7 @@ namespace Ludo {
 
 		void SetFullScreen(bool enabled) override;
 
-		HWND GetHandle() { return m_WindowHandle; }
+		HWND GetHandle() const { return m_WindowHandle; }
 
 	private:
 		bool Init(const WindowProps& props);

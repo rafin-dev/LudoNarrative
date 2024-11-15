@@ -57,6 +57,7 @@ namespace Ludo {
 
 	void WindowsWindow::SetVsync(bool enabled)
 	{
+		m_Data.Vsync = enabled;
 	}
 
 	bool WindowsWindow::IsVsync() const
@@ -113,7 +114,7 @@ namespace Ludo {
 		m_Data.Title = props.Title;
 		m_Data.Width = props.Width;
 		m_Data.Height = props.Height;
-		m_Data.Vsync = false;
+		m_Data.Vsync = true;
 		
 		bool InitImGui = false;
 		if (!s_WindowClassInitialized)
@@ -151,9 +152,7 @@ namespace Ludo {
 
 		m_WindowHandle = handle;
 
-		// TODO: Create some function to handle Context creation according to the Rendering API being used
-		// e.g: m_Context = CreateGraphicsContext(m_WindowHandle);
-		m_Context = new DirectX12Context(m_WindowHandle);
+		m_Context = GraphicsContext::Create(this);
 		if (!m_Context->Init())
 		{
 			return false;
