@@ -2,7 +2,7 @@
 #include "DirectX12Shader.h"
 
 #include "DirectX12API.h"
-#include "DX12Utils.h"
+#include "Utils/DX12Utils.h"
 
 #include "Ludo/Application.h"
 
@@ -49,7 +49,7 @@ namespace Ludo {
 
 	DirectX12Shader::DirectX12Shader(const LUDO_SHADER_DESC& desc)
 	{
-		LD_CORE_ASSERT(desc.Layout.GetElements().size() != 0, "D3D12 Shader cannot be created without Vertex Buffer Layout");
+		LD_CORE_ASSERT(desc.VertexBufferLayout.GetElements().size() != 0, "D3D12 Shader cannot be created without Vertex Buffer Layout");
 		Init(desc);
 	}
 
@@ -78,21 +78,13 @@ namespace Ludo {
 		HRESULT hr = S_OK;
 		auto& device = DirectX12API::Get()->GetDevice();
 
-		if (desc.TargetPipeline == LUDO_TARGET_PIPELINE_2D)
-		{
-			m_RootSignature = m_2DRootSignature;
-			m_RootSignature->AddRef();
-		}
-		else if (desc.TargetPipeline == LUDO_TARGET_PIPELINE_3D)
-		{
-			LD_CORE_ERROR("Ludo Narrative does not support 3D yet");
-			std::exit(-1);
-		}
+		m_VertexBufferLayout = desc.VertexBufferLayout;
+		m_MaterialLayout = desc.MaterialDataLayout;
 
 		std::vector<D3D12_INPUT_ELEMENT_DESC> ElementLayout;
-		ElementLayout.reserve(desc.Layout.GetElements().size());
+		ElementLayout.reserve(desc.VertexBufferLayout.GetElements().size());
 
-		for (auto& element : desc.Layout)
+		for (auto& element : desc.VertexBufferLayout)
 		{
 			D3D12_INPUT_ELEMENT_DESC desc;
 			if (element.Type == ShaderDataType::Float3x3)
@@ -118,6 +110,8 @@ namespace Ludo {
 			{ element.Name.c_str(), 0, GetDxgiFormatFromShaderDataType(element.Type), 0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 };
 			ElementLayout.push_back(desc);
 		}
+
+		m_CBVsize = desc.MaterialDataLayout.GetStride();
 
 		// Pipeline State
 		D3D12_GRAPHICS_PIPELINE_STATE_DESC pipelineStateDescription = {};
@@ -241,12 +235,60 @@ namespace Ludo {
 
 	void DirectX12Shader::Bind()
 	{
+		m_CBVswapChain.Swap();
+		auto& CBV = m_CBVswapChain.GetCurrentItem();
+		m_CurrentEntry = 0;
+		if (CBV.BufferSize != m_CBVsize * m_ShaderEntriesCount)
+		{
+			CHECK_AND_RELEASE_COMPTR(CBV.Buffer);
+
+			// ========== Heap & Resource properties ==========
+			D3D12_HEAP_PROPERTIES heapProperties = {};
+			heapProperties.Type = D3D12_HEAP_TYPE_UPLOAD;
+			heapProperties.CPUPageProperty = D3D12_CPU_PAGE_PROPERTY_UNKNOWN;
+			heapProperties.MemoryPoolPreference = D3D12_MEMORY_POOL_UNKNOWN;
+			heapProperties.CreationNodeMask = 0;
+			heapProperties.VisibleNodeMask = 0;
+			
+			D3D12_RESOURCE_DESC resourceDescription = {};
+			resourceDescription.Dimension = D3D12_RESOURCE_DIMENSION_BUFFER;
+			resourceDescription.Alignment = D3D12_DEFAULT_RESOURCE_PLACEMENT_ALIGNMENT;
+			resourceDescription.Width = m_CBVsize * m_ShaderEntriesCount;
+			resourceDescription.Height = 1;
+			resourceDescription.DepthOrArraySize = 1;
+			resourceDescription.MipLevels = 1;
+			resourceDescription.Format = DXGI_FORMAT_UNKNOWN;
+			resourceDescription.SampleDesc.Count = 1;
+			resourceDescription.SampleDesc.Quality = 0;
+			resourceDescription.Layout = D3D12_TEXTURE_LAYOUT_ROW_MAJOR;
+			resourceDescription.Flags = D3D12_RESOURCE_FLAG_NONE;
+
+			DirectX12API::Get()->GetDevice()->CreateCommittedResource(
+				&heapProperties,
+				D3D12_HEAP_FLAG_NONE,
+				&resourceDescription,
+				D3D12_RESOURCE_STATE_GENERIC_READ,
+				nullptr,
+				IID_PPV_ARGS(&CBV.Buffer)
+			);
+			CBV.BufferSize = resourceDescription.Width;
+
+			D3D12_RANGE range = { 0, 0 };
+			CBV.Buffer->Map(0, &range, &CBV.MappedBuffer);
+		}
+
 		auto& commandList = DirectX12API::Get()->GetCommandList();
 
 		commandList->SetPipelineState(m_PipelineStateObject);
 		commandList->SetGraphicsRootSignature(m_2DRootSignature);
 		uint32_t size[] = { Application::Get().GetWindow().GetWidth(), Application::Get().GetWindow().GetHeight() };
 		commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+
+
+		D3D12_GPU_VIRTUAL_ADDRESS gpuAddress = m_CBVswapChain.GetCurrentItem().Buffer->GetGPUVirtualAddress();
+		gpuAddress += m_CBVsize * m_CurrentEntry;
+
+		commandList->SetGraphicsRootConstantBufferView(1, gpuAddress);
 	}
 
 	void DirectX12Shader::SetViewProjectionMatrix(const DirectX::XMFLOAT4X4& matrix)
@@ -257,6 +299,32 @@ namespace Ludo {
 	void DirectX12Shader::SetModelMatrix(const DirectX::XMFLOAT4X4& matrix)
 	{
 		DirectX12API::Get()->GetCommandList()->SetGraphicsRoot32BitConstants(0, 16, &matrix, 16);
+	}
+
+	void DirectX12Shader::AddEntry()
+	{
+		m_ShaderEntriesCount++;
+	}
+
+	void DirectX12Shader::RemoveEntry()
+	{
+		m_ShaderEntriesCount--;
+	}
+
+	void DirectX12Shader::NextEntry()
+	{
+		m_CurrentEntry++;
+		D3D12_GPU_VIRTUAL_ADDRESS gpuAddress = m_CBVswapChain.GetCurrentItem().Buffer->GetGPUVirtualAddress();
+		gpuAddress += m_CBVsize * m_CurrentEntry;
+		DirectX12API::Get()->GetCommandList()->SetGraphicsRootConstantBufferView(1, gpuAddress);
+	}
+
+	void DirectX12Shader::UploadMaterialDataBuffer(void* data)
+	{
+		uint8_t* dest = (uint8_t*)m_CBVswapChain.GetCurrentItem().MappedBuffer;
+		dest += m_CBVsize * m_CurrentEntry;
+
+		memcpy(dest, data, m_CBVsize);
 	}
 
 	bool DirectX12Shader::InitSystem()
@@ -286,7 +354,73 @@ namespace Ludo {
 
 	void DirectX12Shader::ShutDown()
 	{
+		DeleteCBVBuffers();
+
 		CHECK_AND_RELEASE_COMPTR(m_PipelineStateObject);
 		CHECK_AND_RELEASE_COMPTR(m_RootSignature);
+	}
+
+	inline bool DirectX12Shader::CreateCBVBuffers()
+	{
+		// ========== Heap & Resource properties ==========
+		D3D12_HEAP_PROPERTIES heapProperties = {};
+		heapProperties.Type = D3D12_HEAP_TYPE_UPLOAD;
+		heapProperties.CPUPageProperty = D3D12_CPU_PAGE_PROPERTY_UNKNOWN;
+		heapProperties.MemoryPoolPreference = D3D12_MEMORY_POOL_UNKNOWN;
+		heapProperties.CreationNodeMask = 0;
+		heapProperties.VisibleNodeMask = 0;
+
+		D3D12_RESOURCE_DESC resourceDescription = {};
+		resourceDescription.Dimension = D3D12_RESOURCE_DIMENSION_BUFFER;
+		resourceDescription.Alignment = D3D12_DEFAULT_RESOURCE_PLACEMENT_ALIGNMENT;
+		resourceDescription.Width = m_CBVsize * m_ShaderEntriesCount;
+		resourceDescription.Height = 1;
+		resourceDescription.DepthOrArraySize = 1;
+		resourceDescription.MipLevels = 1;
+		resourceDescription.Format = DXGI_FORMAT_UNKNOWN;
+		resourceDescription.SampleDesc.Count = 1;
+		resourceDescription.SampleDesc.Quality = 0;
+		resourceDescription.Layout = D3D12_TEXTURE_LAYOUT_ROW_MAJOR;
+		resourceDescription.Flags = D3D12_RESOURCE_FLAG_NONE;
+
+		bool success = true;
+
+		m_CBVswapChain.ForEachElement([heapProperties, resourceDescription, success](CBVbuffer& buffer) mutable {
+			if (resourceDescription.Width == 0)
+			{
+				return;
+			}
+
+			HRESULT hr = DirectX12API::Get()->GetDevice()->CreateCommittedResource(
+				&heapProperties,
+				D3D12_HEAP_FLAG_NONE,
+				&resourceDescription,
+				D3D12_RESOURCE_STATE_GENERIC_READ,
+				nullptr,
+				IID_PPV_ARGS(&buffer.Buffer)
+				);
+			if (FAILED(hr))
+			{
+				success = false;
+				return;
+			}
+			buffer.BufferSize = resourceDescription.Width;
+
+			D3D12_RANGE range = { 0, 0 };
+			hr = buffer.Buffer->Map(0, &range, &buffer.MappedBuffer);
+			success = SUCCEEDED(hr);
+		});
+
+		return success;
+	}
+
+	inline void DirectX12Shader::DeleteCBVBuffers()
+	{
+		m_CBVswapChain.ForEachElement([](CBVbuffer& buffer) {
+
+			CHECK_AND_RELEASE_COMPTR(buffer.Buffer);
+			buffer.MappedBuffer = nullptr;
+
+		});
 	}
 }

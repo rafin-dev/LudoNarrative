@@ -2,7 +2,7 @@
 #include "DirectX12API.h"
 
 #include "Ludo/Log.h"
-#include "DX12Utils.h"
+#include "Utils/DX12Utils.h"
 #include "DirectX12Context.h"
 #include "DirectX12Shader.h"
 
@@ -73,7 +73,6 @@ namespace Ludo {
         LD_CORE_INFO("Initialized DirectX12(D3D12) Render System");
 
         // ImGui
-
         D3D12_DESCRIPTOR_HEAP_DESC imguiSrvDesHeapDescription = {};
         imguiSrvDesHeapDescription.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
         imguiSrvDesHeapDescription.NumDescriptors = 1;

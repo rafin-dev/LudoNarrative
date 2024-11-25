@@ -5,11 +5,7 @@
 
 namespace Ludo {
 
-	enum LUDO_SHADER_TARGET_PIPELINE
-	{
-		LUDO_TARGET_PIPELINE_2D = 0,
-		LUDO_TARGET_PIPELINE_3D = 1
-	};
+	class MaterialDataLayout;
 
 	struct LUDO_SHADER_DESC
 	{
@@ -21,11 +17,11 @@ namespace Ludo {
 		void* PixelShaderBlob = nullptr;
 		size_t PixelShaderSize = 0;
 
-		// Target Pipeline
-		LUDO_SHADER_TARGET_PIPELINE TargetPipeline = LUDO_TARGET_PIPELINE_2D;
-
 		// Vertex Buffer Layout
-		BufferLayout Layout = {};
+		BufferLayout VertexBufferLayout = {};
+
+		// Material Data Layout
+		BufferLayout MaterialDataLayout = {};
 	};
 
 	class Shader 
@@ -37,6 +33,16 @@ namespace Ludo {
 
 		virtual void SetViewProjectionMatrix(const DirectX::XMFLOAT4X4& matrix) = 0;
 		virtual void SetModelMatrix(const DirectX::XMFLOAT4X4& matrix) = 0;
+
+		virtual void AddEntry() = 0;
+		virtual void RemoveEntry() = 0;
+
+		virtual void UploadMaterialDataBuffer(void* data) = 0;
+
+		virtual void NextEntry() = 0;
+
+		virtual const BufferLayout& GetVertexBufferLayout() = 0;
+		virtual const BufferLayout& GetMaterialLayout() = 0;
 
 		static Shader* Create(const LUDO_SHADER_DESC& desc);
 	};

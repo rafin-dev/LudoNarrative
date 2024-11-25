@@ -41,7 +41,7 @@ namespace Ludo {
 			return;
 		}
 		m_Window->SetEventCallBack(BindFuncFn(OnEvent));
-		m_Window->SetVsync(false);
+		m_Window->SetVsync(true);
 	}
 
 	Application::~Application()

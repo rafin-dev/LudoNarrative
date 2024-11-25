@@ -22,6 +22,7 @@
 #include "Ludo/Renderer/Renderer.h"
 #include "Ludo/Renderer/RenderCommand.h"
 
+#include "Ludo/Renderer/Material.h"
 #include "Ludo/Renderer/Shader.h"
 #include "Ludo/Renderer/Buffer.h"
 

@@ -12,10 +12,10 @@ public:
 	{
 		float vertices[] =
 		{
-			-0.75f, -0.75f, 0.0f,
-			-0.75f,  0.75f, 0.0f,
-			 0.75f,  0.75f, 0.0f,
-			 0.75f, -0.75f, 0.0f
+			-0.05f, -0.05f, 0.0f,
+			-0.05f,  0.05f, 0.0f,
+			 0.05f,  0.05f, 0.0f,
+			 0.05f, -0.05f, 0.0f
 		};
 		uint32_t indices[] =
 		{
@@ -30,6 +30,11 @@ public:
 		Ludo::BufferLayout Layout =
 		{
 			{ "Position", Ludo::ShaderDataType::Float3 }
+		};
+		Ludo::BufferLayout Material =
+		{
+			{ "Foo", Ludo::ShaderDataType::Float4 },
+			{ "Color", Ludo::ShaderDataType::Float4 }
 		};
 
 		m_VertexBuffer.reset(Ludo::VertexBuffer::Create(vertices, sizeof(vertices), Layout));
@@ -66,14 +71,17 @@ public:
 		auto pixelShader = GetShaderBlob("PixelShader.cso");
 
 		Ludo::LUDO_SHADER_DESC desc;
-		desc.TargetPipeline = Ludo::LUDO_TARGET_PIPELINE_2D;
 		desc.VertexShaderBlob = vertexShader.first;
 		desc.VertexShaderSize = vertexShader.second;
 		desc.PixelShaderBlob = pixelShader.first;
 		desc.PixelShaderSize = pixelShader.second;
-		desc.Layout = m_VertexBuffer->GetLayout();
+		desc.VertexBufferLayout = m_VertexBuffer->GetLayout();
+		desc.MaterialDataLayout = Material;
 		
 		m_Shader.reset(Ludo::Shader::Create(desc));
+
+		m_Material.reset(new Ludo::Material(m_Shader));
+
 		free(vertexShader.first);
 		free(pixelShader.first);
 	}
@@ -87,14 +95,30 @@ public:
 
 		m_Camera.SetPosition(pos);
 
-		m_Camera.SetRotation(m_Camera.GetRotation() + Ludo::Input::IsMouseButtonDown(LD_MOUSE_BUTTON_LEFT) * 2.0f * time);
+		m_Camera.SetRotation(m_Camera.GetRotation() + (Ludo::Input::IsKeyPressed(LD_KEY_E) - Ludo::Input::IsKeyPressed(LD_KEY_Q)) * 2.0f * time);
 
 		m_Transform.Position.x += (Ludo::Input::IsKeyPressed(LD_KEY_RIGHT_ARROW) - Ludo::Input::IsKeyPressed(LD_KEY_LEFT_ARROW)) * 2.0f * time;
 		m_Transform.Position.y += (Ludo::Input::IsKeyPressed(LD_KEY_UP_ARROW) - Ludo::Input::IsKeyPressed(LD_KEY_DOWN_ARROW)) * 2.0f * time;
 
 		Ludo::Renderer::BeginScene(m_Camera);
 
-		Ludo::Renderer::Submit(m_Shader, m_VertexBuffer, m_IndexBuffer, m_Transform.GetModelMarix());
+		auto ogPos = m_Transform.Position;
+
+		DirectX::XMFLOAT4 redColor = { 0.8f, 0.2f, 0.3f, 1.0f };
+		DirectX::XMFLOAT4 blueColor = { 0.2f, 0.3f, 0.8f, 1.0f };
+		m_Shader->Bind();
+		m_Material->UploadData();
+		for (int y = 0; y < 20; y++)
+		{
+			m_Transform.Position.x += 0.11f;
+			for (int x = 0; x < 20; x++)
+			{
+				m_Transform.Position.y += 0.11f;
+				Ludo::Renderer::Submit(m_Shader, m_VertexBuffer, m_IndexBuffer, m_Transform.GetModelMarix());
+			}
+			m_Transform.Position.y = ogPos.y;
+		}
+		m_Transform.Position = ogPos;
 
 		Ludo::Renderer::EndScene();
 	}
@@ -112,12 +136,17 @@ public:
 
 		Ludo::RenderCommand::SetClearColor(DirectX::XMFLOAT4(color));
 
+		static float sqcolor[4];
+		ImGui::ColorPicker4("Square Color", sqcolor);
+		m_Material->SetData("Color", sqcolor);
+
 		ImGui::End();
 	}
 
 private:
 
 	std::shared_ptr<Ludo::Shader> m_Shader;
+	std::shared_ptr<Ludo::Material> m_Material;
 
 	std::shared_ptr<Ludo::VertexBuffer> m_VertexBuffer;
 	std::shared_ptr<Ludo::IndexBuffer> m_IndexBuffer;

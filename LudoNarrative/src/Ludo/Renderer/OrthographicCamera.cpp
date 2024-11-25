@@ -13,12 +13,11 @@ namespace Ludo {
 
 	void OrthographicCamera::RecalculateViewMatrix()
 	{
-		DirectX::XMVECTOR pos = DirectX::XMLoadFloat3(&m_Position);
+		DirectX::XMMATRIX tranformation = DirectX::XMMatrixRotationZ(m_Rotation) * DirectX::XMMatrixTranslation(m_Position.x, m_Position.y, m_Position.z);
+		DirectX::XMMATRIX viewMatrix = DirectX::XMMatrixInverse(nullptr, tranformation);
 
-		DirectX::XMMATRIX tranformation = DirectX::XMMatrixRotationZ(m_Rotation) * DirectX::XMMatrixTranslationFromVector(pos);
-		DirectX::XMStoreFloat4x4(&m_ViewMatrix, DirectX::XMMatrixInverse(nullptr, tranformation));
-
-		DirectX::XMStoreFloat4x4(&m_ViewProjectionMatrix, DirectX::XMMatrixTranspose(DirectX::XMLoadFloat4x4(&m_ViewMatrix) * DirectX::XMLoadFloat4x4(&m_ProjectionMatrix)));
+		DirectX::XMStoreFloat4x4(&m_ViewProjectionMatrix, DirectX::XMMatrixTranspose(viewMatrix * DirectX::XMLoadFloat4x4(&m_ProjectionMatrix)));
+		DirectX::XMStoreFloat4x4(&m_ViewMatrix, DirectX::XMMatrixTranspose(viewMatrix));
 	}
 
 }

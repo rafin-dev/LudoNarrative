@@ -2,7 +2,7 @@
 #include "DirectX12Context.h"
 
 #include "DirectX12API.h"
-#include "DX12Utils.h"
+#include "Utils/DX12Utils.h"
 
 #include "Platform/Windows/WindowsWindow.h"
 #include "Ludo/Application.h"
