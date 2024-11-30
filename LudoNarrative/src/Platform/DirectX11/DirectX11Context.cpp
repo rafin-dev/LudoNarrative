@@ -49,13 +49,7 @@ namespace Ludo {
         }
 
         // ========== ViewPort ==========
-        D3D11_VIEWPORT viewport = {};
-        viewport.TopLeftX = 0;
-        viewport.TopLeftY = 0;
-        viewport.Width = m_Window->GetWidth();
-        viewport.Height = m_Window->GetHeight();
-
-        api->GetDeviceContext()->RSSetViewports(1, &viewport);
+        SetViewPort();
 
         api->GetFactory()->MakeWindowAssociation(m_WindowHandle, DXGI_MWA_NO_ALT_ENTER);
 
@@ -99,7 +93,6 @@ namespace Ludo {
 
     bool DirectX11Context::GetBackBuffer()
     {
-        CHECK_AND_RELEASE_COMPTR(m_BackBuffer);
         ID3D11Texture2D* pBackBuffer = nullptr;
         HRESULT hr = m_SwapChain->GetBuffer(0, IID_PPV_ARGS(&pBackBuffer));
         VALIDATE_DX_HRESULT(hr, "Failed to retrieve Back Buffer from Swap Chain");
@@ -117,10 +110,21 @@ namespace Ludo {
     {
         m_ShouldResize = false;
 
-        HRESULT hr = m_SwapChain->ResizeBuffers(1, m_Window->GetWidth(), m_Window->GetHeight(), DXGI_FORMAT_R8G8B8A8_UNORM, DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH | DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING);
+        CHECK_AND_RELEASE_COMPTR(m_BackBuffer);
+        HRESULT hr = m_SwapChain->ResizeBuffers(GetSwapChainBufferCount(), m_Window->GetWidth(), m_Window->GetHeight(), DXGI_FORMAT_R8G8B8A8_UNORM, DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH | DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING);
         LD_CORE_ASSERT(SUCCEEDED(hr), "Failed to resize Swap Chain to size: [{0}, {1}]", m_Window->GetWidth(), m_Window->GetHeight());
-
         GetBackBuffer();
+        SetViewPort();
+    }
+
+    void DirectX11Context::SetViewPort()
+    {
+        D3D11_VIEWPORT viewport = {};
+        viewport.TopLeftX = 0;
+        viewport.TopLeftY = 0;
+        viewport.Width = m_Window->GetWidth();
+        viewport.Height = m_Window->GetHeight();
+        DirectX11API::Get()->GetDeviceContext()->RSSetViewports(1, &viewport);
     }
 
 }
