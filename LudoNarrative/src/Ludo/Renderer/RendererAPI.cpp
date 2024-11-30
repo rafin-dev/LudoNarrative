@@ -5,5 +5,5 @@
 
 namespace Ludo {
 
-    RendererAPI::API RendererAPI::s_API = RendererAPI::API::DirectX12;
+    RendererAPI::API RendererAPI::s_API = RendererAPI::API::DirectX11;
 }

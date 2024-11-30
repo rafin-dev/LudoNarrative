@@ -7,8 +7,8 @@ namespace Ludo {
 	{
 		m_LayerInsertIndex = 0;
 	}
-
-	LayerStack::~LayerStack()
+	
+	void LayerStack::Clear()
 	{
 		for (Layer* layer : m_Layers)
 		{

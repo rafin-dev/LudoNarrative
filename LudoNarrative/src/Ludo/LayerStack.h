@@ -11,7 +11,7 @@ namespace Ludo {
 	{
 	public:
 		LayerStack();
-		~LayerStack();
+		void Clear();
 
 		void PushLayer(Layer* layer);
 		void PushOverlay(Layer* overlay);

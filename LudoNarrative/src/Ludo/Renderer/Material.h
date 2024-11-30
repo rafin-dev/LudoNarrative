@@ -13,7 +13,7 @@ namespace Ludo {
 	
 		void UploadData();
 
-		void SetData(const std::string& elementName, void* data);
+		void SetMaterialData(const std::string& elementName, void* data);
 
 		std::shared_ptr<Shader> GetShader() { return m_Shader; }
 

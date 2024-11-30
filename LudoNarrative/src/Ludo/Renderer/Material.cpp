@@ -29,7 +29,7 @@ namespace Ludo {
 		m_Shader->UploadMaterialDataBuffer(m_MaterialData);
 	}
 
-	void Material::SetData(const std::string& elementName, void* data)
+	void Material::SetMaterialData(const std::string& elementName, void* data)
 	{
 		auto ite = m_MaterialDataInformation.find(elementName);
 

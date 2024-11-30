@@ -13,11 +13,12 @@ namespace Ludo {
 		enum class API
 		{
 			None = 0,
-			DirectX12 = 1
+			DirectX12 = 1,
+			DirectX11 = 2
 		};
 
 	public:
-		virtual ~RendererAPI() {}
+		virtual void ShutDown() = 0;
 
 		virtual bool Init() = 0;
 

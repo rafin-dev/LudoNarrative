@@ -31,7 +31,7 @@ namespace Ludo {
 	private:
 		bool CloseWindow(WindowCloseEvent& event);
 
-		std::unique_ptr<Window> m_Window;
+		Window* m_Window;
 		bool m_Running = true;
 
 		LayerStack m_LayerStack;

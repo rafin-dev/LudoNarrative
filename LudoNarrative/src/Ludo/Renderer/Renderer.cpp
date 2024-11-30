@@ -18,9 +18,9 @@ namespace Ludo {
 
 	void Renderer::Submit(const std::shared_ptr<Shader>& shader, const std::shared_ptr<VertexBuffer>& vertexBuffer, const std::shared_ptr<IndexBuffer> indexBuffer, const DirectX::XMFLOAT4X4& transform)
 	{
-		//shader->Bind();
-		shader->SetViewProjectionMatrix(s_SceneData->ViewProjectionMatrix);
-		shader->SetModelMatrix(transform);
+		shader->Bind();
+		//shader->SetViewProjectionMatrix(s_SceneData->ViewProjectionMatrix);
+		//shader->SetModelMatrix(transform);
 
 		vertexBuffer->Bind();
 		indexBuffer->Bind();

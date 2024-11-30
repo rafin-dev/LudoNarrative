@@ -27,6 +27,7 @@ namespace Ludo {
 
 		virtual void OnUpdate() = 0;
 
+		virtual std::string GetTitle() const = 0;
 		virtual unsigned int GetWidth() const = 0;
 		virtual unsigned int GetHeight() const = 0;
 		virtual bool IsFullScreen() const = 0;

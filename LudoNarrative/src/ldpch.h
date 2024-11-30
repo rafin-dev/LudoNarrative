@@ -55,6 +55,12 @@
 	#pragma comment(lib, "dxguid.lib")
 	#pragma comment(lib, "d3dcompiler.lib")
 
+	// DirectX11
+	#include <d3d11.h>
+	#include <d3d10.h>
+
+	#pragma comment(lib, "d3d11.lib")
+
 	#include <DirectXMath.h>
 	#include <DirectXPackedVector.h>
 	#include <DirectXColors.h>

@@ -12,10 +12,10 @@ public:
 	{
 		float vertices[] =
 		{
-			-0.05f, -0.05f, 0.0f,
-			-0.05f,  0.05f, 0.0f,
-			 0.05f,  0.05f, 0.0f,
-			 0.05f, -0.05f, 0.0f
+			-0.50f, -0.50f, 0.0f,
+			-0.50f,  0.50f, 0.0f,
+			 0.50f,  0.50f, 0.0f,
+			 0.50f, -0.50f, 0.0f
 		};
 		uint32_t indices[] =
 		{
@@ -80,8 +80,6 @@ public:
 		
 		m_Shader.reset(Ludo::Shader::Create(desc));
 
-		m_Material.reset(new Ludo::Material(m_Shader));
-
 		free(vertexShader.first);
 		free(pixelShader.first);
 	}
@@ -102,23 +100,7 @@ public:
 
 		Ludo::Renderer::BeginScene(m_Camera);
 
-		auto ogPos = m_Transform.Position;
-
-		DirectX::XMFLOAT4 redColor = { 0.8f, 0.2f, 0.3f, 1.0f };
-		DirectX::XMFLOAT4 blueColor = { 0.2f, 0.3f, 0.8f, 1.0f };
-		m_Shader->Bind();
-		m_Material->UploadData();
-		for (int y = 0; y < 20; y++)
-		{
-			m_Transform.Position.x += 0.11f;
-			for (int x = 0; x < 20; x++)
-			{
-				m_Transform.Position.y += 0.11f;
-				Ludo::Renderer::Submit(m_Shader, m_VertexBuffer, m_IndexBuffer, m_Transform.GetModelMarix());
-			}
-			m_Transform.Position.y = ogPos.y;
-		}
-		m_Transform.Position = ogPos;
+		Ludo::Renderer::Submit(m_Shader, m_VertexBuffer, m_IndexBuffer, m_Transform.GetModelMarix());
 
 		Ludo::Renderer::EndScene();
 	}
@@ -129,16 +111,11 @@ public:
 
 	void OnImGuiRender() override
 	{
-		ImGui::Begin("Color");
+		ImGui::Begin("Settings");
 
 		static float color[4];
-		ImGui::ColorPicker4("Clear Color", color);
-
+		ImGui::ColorEdit4("Clear Color", color);
 		Ludo::RenderCommand::SetClearColor(DirectX::XMFLOAT4(color));
-
-		static float sqcolor[4];
-		ImGui::ColorPicker4("Square Color", sqcolor);
-		m_Material->SetData("Color", sqcolor);
 
 		ImGui::End();
 	}
@@ -146,7 +123,6 @@ public:
 private:
 
 	std::shared_ptr<Ludo::Shader> m_Shader;
-	std::shared_ptr<Ludo::Material> m_Material;
 
 	std::shared_ptr<Ludo::VertexBuffer> m_VertexBuffer;
 	std::shared_ptr<Ludo::IndexBuffer> m_IndexBuffer;

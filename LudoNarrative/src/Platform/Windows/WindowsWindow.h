@@ -19,6 +19,7 @@ namespace Ludo {
 
 		void OnUpdate() override;
 
+		virtual std::string GetTitle() const override { return m_Data.Title; }
 		inline unsigned int GetWidth() const override { return m_Data.Width; }
 		inline unsigned int GetHeight() const override { return m_Data.Height; }
 

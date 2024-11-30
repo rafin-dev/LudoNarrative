@@ -34,25 +34,28 @@ namespace Ludo {
 		}
 
 		bool result;
-		m_Window.reset(Window::Create(&result));
+		m_Window = Window::Create(&result);
 		if (!result)
 		{
 			m_Running = false;
 			return;
 		}
 		m_Window->SetEventCallBack(BindFuncFn(OnEvent));
-		m_Window->SetVsync(true);
+		m_Window->SetVsync(false);
 	}
 
 	Application::~Application()
 	{
+		delete m_Window;
+		m_LayerStack.Clear();
+		Renderer::ShutDown();
 	}
 
 	void Application::Run()
 	{
 		while (m_Running)
 		{
-			float time = (float)ImGui::GetTime();
+			float time = ImGui::GetTime();
 			TimeStep timeStep = time - m_LastFrameTime;
 			m_LastFrameTime = time;
 

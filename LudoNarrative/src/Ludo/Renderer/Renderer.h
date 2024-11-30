@@ -11,6 +11,7 @@ namespace Ludo {
 	{
 	public:
 		static inline bool Init() { return RenderCommand::Init(); }
+		static inline void ShutDown() { RenderCommand::ShutDown(); }
 
 		static void BeginScene(OrthographicCamera& camera);
 		static void EndScene();

@@ -5,7 +5,7 @@
 #include "Renderer.h"
 
 #ifdef LD_PLATFORM_WINDOWS
-    #include "Platform/DirectX12/DirectX12Shader.h"
+    #include "Platform/DirectX11/DirectX11Shader.h"
 #endif 
 
 namespace Ludo {
@@ -15,7 +15,7 @@ namespace Ludo {
         switch (Renderer::GetAPI())
         {
             case RendererAPI::API::None: LD_CORE_ASSERT(false, "RenderAPI::None is currently not supported") return nullptr;
-            case RendererAPI::API::DirectX12: return new DirectX12Shader(desc);
+            case RendererAPI::API::DirectX11: return new DirectX11Shader(desc);
         }
 
         LD_CORE_ASSERT(false, "Unknown RenderAPI specified, please provide a existing RenderAPI!");

@@ -13,6 +13,11 @@ namespace Ludo {
 			return s_RenderAPI->Init();
 		}
 
+		static inline void ShutDown()
+		{
+			s_RenderAPI->ShutDown();
+		}
+
 		static inline void SetClearColor(const DirectX::XMFLOAT4& color)
 		{
 			s_RenderAPI->SetClearColor(color);
