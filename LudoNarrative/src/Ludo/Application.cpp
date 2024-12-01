@@ -46,8 +46,8 @@ namespace Ludo {
 
 	Application::~Application()
 	{
-		delete m_Window;
 		m_LayerStack.Clear();
+		delete m_Window;
 		Renderer::ShutDown();
 	}
 

@@ -6,7 +6,7 @@
 #ifdef LD_ENABLE_ASSERTS
 
 	#define LD_ASSERT(x, ...) { if(!(x)) { LD_ERROR("Assertion failed: {0}", __VA_ARGS__); __debugbreak(); } }
-	#define LD_CORE_ASSERT(x, ...) { if(!(x)) { LD_CORE_ERROR("Assertion failed: {0}", __VA_ARGS__); __debugbreak(); } }
+	#define LD_CORE_ASSERT(x, ...) { if(!(x)) { LD_CORE_ERROR("Assertion failed: " __VA_ARGS__); __debugbreak(); } }
 
 #else
 

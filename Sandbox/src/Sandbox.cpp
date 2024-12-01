@@ -88,7 +88,8 @@ public:
 		free(vertexShader.first);
 		free(pixelShader.first);
 
-		m_Texture = Ludo::Texture2D::Create("assets/textures/Checkerboard.png");
+		m_BoardTexture = Ludo::Texture2D::Create("assets/textures/Checkerboard.png");
+		m_ChernoTexture = Ludo::Texture2D::Create("assets/textures/ChernoLogo.png");
 	}
 
 	~ExampleLayer()
@@ -112,7 +113,11 @@ public:
 		Ludo::Renderer::BeginScene(m_Camera);
 
 		m_Material->UploadMaterialData();
-		m_Texture->Bind();
+
+		m_BoardTexture->Bind();
+		Ludo::Renderer::Submit(m_Shader, m_VertexBuffer, m_IndexBuffer, m_Transform.GetModelMarix());
+
+		m_ChernoTexture->Bind();
 		Ludo::Renderer::Submit(m_Shader, m_VertexBuffer, m_IndexBuffer, m_Transform.GetModelMarix());
 
 		Ludo::Renderer::EndScene();
@@ -140,7 +145,8 @@ public:
 private:
 	Ludo::Ref<Ludo::Shader> m_Shader;
 	Ludo::Ref<Ludo::Material> m_Material;
-	Ludo::Ref<Ludo::Texture2D> m_Texture;
+	Ludo::Ref<Ludo::Texture2D> m_BoardTexture;
+	Ludo::Ref<Ludo::Texture2D> m_ChernoTexture;
 
 	Ludo::Ref<Ludo::VertexBuffer> m_VertexBuffer;
 	Ludo::Ref<Ludo::IndexBuffer> m_IndexBuffer;

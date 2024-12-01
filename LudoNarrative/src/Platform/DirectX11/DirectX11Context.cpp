@@ -68,7 +68,6 @@ namespace Ludo {
         // End Last frame
         m_SwapChain->Present(0, 0);
         DirectX11API::Get()->GetDeviceContext()->OMSetRenderTargets(1, &m_BackBuffer, nullptr);
-        GetBackBuffer();
 
         if (m_ShouldResize)
         {

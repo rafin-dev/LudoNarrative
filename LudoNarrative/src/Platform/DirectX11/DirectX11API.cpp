@@ -21,7 +21,6 @@ namespace Ludo {
         flag = D3D11_CREATE_DEVICE_DEBUG;
 #endif // LUDO_DEBUG
 
-
         hr = D3D11CreateDevice(
             NULL,
             D3D_DRIVER_TYPE_HARDWARE,
@@ -36,6 +35,26 @@ namespace Ludo {
         VALIDATE_DX_HRESULT(hr, "Failed to create D3D11 Device/Device Context");
 
         LD_CORE_INFO("Initalized DirectX11 Render API");
+
+        D3D11_RENDER_TARGET_BLEND_DESC rtBlendDesc = {};
+        rtBlendDesc.BlendEnable = true;
+        rtBlendDesc.SrcBlend = D3D11_BLEND_SRC_ALPHA;
+        rtBlendDesc.DestBlend = D3D11_BLEND_INV_SRC_ALPHA;
+        rtBlendDesc.BlendOp = D3D11_BLEND_OP_ADD;
+        rtBlendDesc.SrcBlendAlpha = D3D11_BLEND_ONE;
+        rtBlendDesc.DestBlendAlpha = D3D11_BLEND_INV_SRC_ALPHA;
+        rtBlendDesc.BlendOpAlpha = D3D11_BLEND_OP_ADD;
+        rtBlendDesc.RenderTargetWriteMask = D3D11_COLOR_WRITE_ENABLE_ALL;
+
+        D3D11_BLEND_DESC BlendDesc = {};
+        BlendDesc.AlphaToCoverageEnable = true;
+        BlendDesc.IndependentBlendEnable = false;
+        BlendDesc.RenderTarget[0] = rtBlendDesc;
+
+        hr = m_Device->CreateBlendState(&BlendDesc, &m_BlendState);
+        VALIDATE_DX_HRESULT(hr, "Failed to create Blend State");
+
+        m_DeviceContext->OMSetBlendState(m_BlendState, nullptr, 0xffffffff);
 
         // ImGui
         IMGUI_CHECKVERSION();
@@ -67,6 +86,8 @@ namespace Ludo {
         ImGui_ImplWin32_Shutdown();
         ImGui::DestroyContext();
         LD_CORE_INFO("Closed ImGui");
+
+        CHECK_AND_RELEASE_COMPTR(m_BlendState);
 
         CHECK_AND_RELEASE_COMPTR(m_Device);
         CHECK_AND_RELEASE_COMPTR(m_DeviceContext);

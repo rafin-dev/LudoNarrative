@@ -24,9 +24,10 @@ namespace Ludo {
 		HRESULT hr = S_OK;
 		auto device = DirectX11API::Get()->GetDevice();
 
+		int channelCount = 4;
 		int width, height, channels;
 		stbi_set_flip_vertically_on_load(true);
-		stbi_uc* data = stbi_load(m_Path.c_str(), &width, &height, &channels, 4);
+		stbi_uc* data = stbi_load(m_Path.c_str(), &width, &height, &channels, channelCount);
 		LD_CORE_ASSERT(data != nullptr, "Failed to load Image: {0}", m_Path);
 		m_Width = width;
 		m_Height = height;
@@ -36,7 +37,7 @@ namespace Ludo {
 		textureDesc.Height = m_Height;
 		textureDesc.MipLevels = 1;
 		textureDesc.ArraySize = 1;
-		textureDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM_SRGB;
+		textureDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
 		textureDesc.SampleDesc.Count = 1;
 		textureDesc.SampleDesc.Quality = 0;
 		textureDesc.Usage = D3D11_USAGE_IMMUTABLE;
@@ -44,7 +45,7 @@ namespace Ludo {
 
 		D3D11_SUBRESOURCE_DATA TextureSubresourceData = {};
 		TextureSubresourceData.pSysMem = data;
-		TextureSubresourceData.SysMemPitch = m_Width * 4;
+		TextureSubresourceData.SysMemPitch = m_Width * channelCount;
 
 		hr = device->CreateTexture2D(&textureDesc, &TextureSubresourceData, &m_Texture);
 		stbi_image_free(data);

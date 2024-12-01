@@ -19,8 +19,8 @@ namespace Ludo {
 		bool Init();
 		void ShutDown();
 
-		std::string m_Path;
-		uint32_t m_Width, m_Height;
+		std::string m_Path = "None";
+		uint32_t m_Width = 0, m_Height = 0;
 		
 		ID3D11Texture2D* m_Texture = nullptr;
 		ID3D11ShaderResourceView* m_ShaderResourceView = nullptr;

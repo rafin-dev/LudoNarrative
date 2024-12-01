@@ -32,6 +32,8 @@ namespace Ludo {
 		ID3D11DeviceContext* m_DeviceContext = nullptr;
 		IDXGIFactory2* m_Factory = nullptr;
 
+		ID3D11BlendState* m_BlendState = nullptr;
+
 		DirectX::XMFLOAT4 m_ClearColor = { 0.0f, 0.0f, 0.0f, 1.0f };
 	};
 
