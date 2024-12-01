@@ -1,52 +1,34 @@
 #include "ldpch.h"
-#include "Material.h"
+#include "material.h"
 
 namespace Ludo {
+
+	void Material::SetMaterialItemData(const std::string& name, void* data)
+	{
+		auto& item = m_Items.at(name);
+
+		uint8_t* dest = m_Buffer;
+		dest += item.Offset;
+
+		memcpy(dest, data, item.Size);
+	}
 
 	Material::Material(std::shared_ptr<Shader> shader)
 		: m_Shader(shader)
 	{
-		m_Shader->AddEntry();
+		m_Buffer = (uint8_t*)std::malloc(shader->GetMaterialLayout().GetStride());
+		LD_CORE_ASSERT(m_Buffer, "Failed to create buffer for material");
+		memset(m_Buffer, 0, shader->GetMaterialLayout().GetStride());
 
-		for (auto& element : m_Shader->GetMaterialLayout())
+		for (auto& item : m_Shader->GetMaterialLayout())
 		{
-			m_MaterialDataInformation.insert(std::pair(element.Name, std::pair(element.Size, element.Offset)));
+			m_Items.insert(std::pair<std::string, MaterialItemData>(item.Name, { item.Size, item.Offset }));
 		}
-
-		m_MaterialData = (uint8_t*)malloc(m_MaterialLayout.GetStride());
 	}
 
 	Material::~Material()
 	{
-		LD_CORE_TRACE("Destroyed material");
-		m_Shader->RemoveEntry();
-		free(m_MaterialData);
-		m_MaterialData = nullptr;
-	}
-
-	void Material::UploadData()
-	{
-		m_Shader->UploadMaterialDataBuffer(m_MaterialData);
-	}
-
-	void Material::SetMaterialData(const std::string& elementName, void* data)
-	{
-		auto ite = m_MaterialDataInformation.find(elementName);
-
-#ifdef LUDO_DEBUG
-		if (ite == m_MaterialDataInformation.end())
-		{
-			LD_CORE_ERROR("Material Element {0} not found!", elementName);
-			return;
-		}
-#endif
-
-		auto& [size, offset] = ite->second;
-
-		uint8_t* dest = m_MaterialData;
-		dest += offset;
-
-		memcpy(dest, data, size);
+		std::free(m_Buffer);
 	}
 
 }

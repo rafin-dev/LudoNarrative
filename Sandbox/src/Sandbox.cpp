@@ -33,7 +33,6 @@ public:
 		};
 		Ludo::BufferLayout Material =
 		{
-			{ "Foo", Ludo::ShaderDataType::Float4 },
 			{ "Color", Ludo::ShaderDataType::Float4 }
 		};
 
@@ -79,9 +78,16 @@ public:
 		desc.MaterialDataLayout = Material;
 		
 		m_Shader.reset(Ludo::Shader::Create(desc));
+		m_Material = Ludo::Material::Create(m_Shader);
+		float color[4] = { 1.0f, 0.0f, 0.0f, 1.0f };
+		m_Material->SetMaterialItemData("Color", color);
 
 		free(vertexShader.first);
 		free(pixelShader.first);
+	}
+
+	~ExampleLayer()
+	{
 	}
 
 	void OnUpdate(Ludo::TimeStep time) override
@@ -100,6 +106,7 @@ public:
 
 		Ludo::Renderer::BeginScene(m_Camera);
 
+		m_Material->UploadMaterialData();
 		Ludo::Renderer::Submit(m_Shader, m_VertexBuffer, m_IndexBuffer, m_Transform.GetModelMarix());
 
 		Ludo::Renderer::EndScene();
@@ -117,12 +124,17 @@ public:
 		ImGui::ColorEdit4("Clear Color", color);
 		Ludo::RenderCommand::SetClearColor(DirectX::XMFLOAT4(color));
 
+		static float sqColor[4];
+		ImGui::ColorEdit4("Square Color", sqColor);
+		m_Material->SetMaterialItemData("Color", sqColor);
+
 		ImGui::End();
 	}
 
 private:
-
 	std::shared_ptr<Ludo::Shader> m_Shader;
+
+	std::shared_ptr<Ludo::Material> m_Material;
 
 	std::shared_ptr<Ludo::VertexBuffer> m_VertexBuffer;
 	std::shared_ptr<Ludo::IndexBuffer> m_IndexBuffer;

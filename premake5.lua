@@ -23,7 +23,6 @@ project "LudoNarrative"
     kind "StaticLib"
     language "C++"
     cppdialect "c++20"
-    staticruntime "on"
 
     targetdir ("bin/" .. outputdir .. "/%{prj.name}")
     objdir ("bin-int/" .. outputdir .. "/%{prj.name}")
@@ -76,7 +75,6 @@ project "Sandbox"
     location "Sandbox"
     kind "ConsoleApp"
     language "C++"
-    staticruntime "on"
 
     targetdir ("bin/" .. outputdir .. "/%{prj.name}")
     objdir ("bin-int/" .. outputdir .. "/%{prj.name}")
@@ -106,7 +104,6 @@ project "Sandbox"
     }
 
     cppdialect "c++20"
-    staticruntime "on"
     systemversion "latest"
 
     filter "configurations:Debug"

@@ -34,12 +34,7 @@ namespace Ludo {
 		virtual void SetViewProjectionMatrix(const DirectX::XMFLOAT4X4& matrix) = 0;
 		virtual void SetModelMatrix(const DirectX::XMFLOAT4X4& matrix) = 0;
 
-		virtual void AddEntry() = 0;
-		virtual void RemoveEntry() = 0;
-
-		virtual void UploadMaterialDataBuffer(void* data) = 0;
-
-		virtual void NextEntry() = 0;
+		virtual void UploadMaterialData(void* data) = 0;
 
 		virtual const BufferLayout& GetVertexBufferLayout() = 0;
 		virtual const BufferLayout& GetMaterialLayout() = 0;

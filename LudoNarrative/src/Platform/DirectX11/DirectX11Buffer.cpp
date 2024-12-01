@@ -29,7 +29,7 @@ namespace Ludo {
 		D3D11_MAPPED_SUBRESOURCE mapped = {};
 		hr = deviceContext->Map(m_VertexBuffer, 0, D3D11_MAP_WRITE_DISCARD, NULL, &mapped);
 		VALIDATE_DX_HRESULT(hr, "Failed to Map Vertex Buffer of size: {0}", size);
-		memcpy(mapped.pData, verticies, size);
+		std::memcpy(mapped.pData, verticies, size);
 		deviceContext->Unmap(m_VertexBuffer, 0);
 
 		LD_CORE_TRACE("Created Vertex Buffer of size: {0}", size);
@@ -83,7 +83,7 @@ namespace Ludo {
 		D3D11_MAPPED_SUBRESOURCE mapped = {};
 		hr = deviceContext->Map(m_IndexBuffer, 0, D3D11_MAP_WRITE_DISCARD, NULL, &mapped);
 		VALIDATE_DX_HRESULT(hr, "Failed to Map Index Buffer of count: {0}", count);
-		memcpy(mapped.pData, indices, size);
+		std::memcpy(mapped.pData, indices, size);
 		deviceContext->Unmap(m_IndexBuffer, 0);
 
 		LD_CORE_TRACE("Created Index Buffer of count: {0}", count);

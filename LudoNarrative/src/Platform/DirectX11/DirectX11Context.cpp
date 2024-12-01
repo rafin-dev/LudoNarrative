@@ -68,15 +68,16 @@ namespace Ludo {
         // End Last frame
         m_SwapChain->Present(0, 0);
         DirectX11API::Get()->GetDeviceContext()->OMSetRenderTargets(1, &m_BackBuffer, nullptr);
+        GetBackBuffer();
 
         if (m_ShouldResize)
         {
+            m_ShouldResize = false;
             ResizeImpl();
         }
 
-        // Begin new
-        auto color = DirectX11API::Get()->GetClearColor();
-        deviceContext->ClearRenderTargetView(m_BackBuffer, (float*)&color);
+        // Begin new frame
+        deviceContext->ClearRenderTargetView(m_BackBuffer, (float*)&DirectX11API::Get()->GetClearColor());
     }
 
     void DirectX11Context::Resize(unsigned int width, unsigned int height)
@@ -93,6 +94,7 @@ namespace Ludo {
 
     bool DirectX11Context::GetBackBuffer()
     {
+        CHECK_AND_RELEASE_COMPTR(m_BackBuffer);
         ID3D11Texture2D* pBackBuffer = nullptr;
         HRESULT hr = m_SwapChain->GetBuffer(0, IID_PPV_ARGS(&pBackBuffer));
         VALIDATE_DX_HRESULT(hr, "Failed to retrieve Back Buffer from Swap Chain");
@@ -108,8 +110,6 @@ namespace Ludo {
 
     void DirectX11Context::ResizeImpl()
     {
-        m_ShouldResize = false;
-
         CHECK_AND_RELEASE_COMPTR(m_BackBuffer);
         HRESULT hr = m_SwapChain->ResizeBuffers(GetSwapChainBufferCount(), m_Window->GetWidth(), m_Window->GetHeight(), DXGI_FORMAT_R8G8B8A8_UNORM, DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH | DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING);
         LD_CORE_ASSERT(SUCCEEDED(hr), "Failed to resize Swap Chain to size: [{0}, {1}]", m_Window->GetWidth(), m_Window->GetHeight());

@@ -16,12 +16,7 @@ namespace Ludo {
 		virtual void SetViewProjectionMatrix(const DirectX::XMFLOAT4X4& matrix) override;
 		virtual void SetModelMatrix(const DirectX::XMFLOAT4X4& matrix) override;
 
-		virtual void AddEntry() override;
-		virtual void RemoveEntry() override;
-
-		virtual void UploadMaterialDataBuffer(void* data) override;
-
-		virtual void NextEntry() override;
+		virtual void UploadMaterialData(void* data) override;
 
 		virtual const BufferLayout& GetVertexBufferLayout() override;
 		virtual const BufferLayout& GetMaterialLayout() override;
@@ -33,7 +28,12 @@ namespace Ludo {
 		ID3D11PixelShader* m_PixelShader = nullptr;
 		ID3D11InputLayout* m_InputLayout = nullptr;
 
+		ID3D11Buffer* m_ViewProjectionBuffer = nullptr;
+		ID3D11Buffer* m_ModelMatrixBuffer = nullptr;
+		ID3D11Buffer* m_MaterialBuffer = nullptr;
+
 		BufferLayout m_VertexBufferLayout;
+		BufferLayout m_MaterialDataLayout;
 	};
 
 }

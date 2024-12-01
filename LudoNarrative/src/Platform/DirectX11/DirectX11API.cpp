@@ -16,11 +16,17 @@ namespace Ludo {
         hr = CreateDXGIFactory2(0, IID_PPV_ARGS(&m_Factory));
         VALIDATE_DX_HRESULT(hr, "Failed to create DXGI Factory");
 
+        UINT flag = NULL;
+#ifdef LUDO_DEBUG
+        flag = D3D11_CREATE_DEVICE_DEBUG;
+#endif // LUDO_DEBUG
+
+
         hr = D3D11CreateDevice(
             NULL,
             D3D_DRIVER_TYPE_HARDWARE,
             NULL,
-            D3D11_CREATE_DEVICE_DEBUG,
+            flag,
             NULL,
             NULL,
             D3D11_SDK_VERSION,
