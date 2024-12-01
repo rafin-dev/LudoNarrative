@@ -10,9 +10,9 @@ namespace Ludo {
 	class Material
 	{
 	public:
-		static std::shared_ptr<Material> Create(std::shared_ptr<Shader> shader)
+		static Ref<Material> Create(Ref<Shader> shader)
 		{
-			return std::shared_ptr<Material>(new Material(shader));
+			return Ref<Material>(new Material(shader));
 		}
 
 		void SetMaterialItemData(const std::string& name, void* data);
@@ -24,12 +24,12 @@ namespace Ludo {
 
 		~Material();
 
-		std::shared_ptr<Shader> GetShader() { return m_Shader; }
+		Ref<Shader> GetShader() { return m_Shader; }
 
 	private:
-		Material(std::shared_ptr<Shader> shader);
+		Material(Ref<Shader> shader);
 
-		std::shared_ptr<Shader> m_Shader;
+		Ref<Shader> m_Shader;
 
 		struct MaterialItemData
 		{

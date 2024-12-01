@@ -15,6 +15,7 @@ outputdir = "%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}"
 IncludeDir = {}
 IncludeDir["Vendor"] = "%{wks.location}/LudoNarrative/vendor" 
 IncludeDir["ImGui"] = "%{wks.location}/LudoNarrative/vendor/imgui"
+IncludeDir["stb_image"] = "%{wks.location}/LudoNarrative/vendor/stb_image"
 
 include "imgui_premake5"
 
@@ -33,7 +34,9 @@ project "LudoNarrative"
     files
     {
         "%{prj.location}/src/**.h",
-        "%{prj.location}/src/**.cpp"
+        "%{prj.location}/src/**.cpp",
+        "%{prj.location}/vendor/stb_image/**.h",
+        "%{prj.location}/vendor/stb_image/**.cpp"
     }
 
     includedirs
@@ -41,7 +44,8 @@ project "LudoNarrative"
         "%{prj.location}/src",
         "%{prj.location}/vendor/spdlog/include",
         "%{IncludeDir.Vendor}",
-        "%{IncludeDir.ImGui}"
+        "%{IncludeDir.ImGui}",
+        "%{IncludeDir.stb_image}"
     }
 
     links

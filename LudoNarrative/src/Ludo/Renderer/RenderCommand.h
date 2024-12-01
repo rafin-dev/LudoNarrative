@@ -28,7 +28,7 @@ namespace Ludo {
 			return s_RenderAPI->GetClearColor();
 		}
 
-		static inline void DrawIndexed(const std::shared_ptr<VertexBuffer>& vertexBuffer, const std::shared_ptr<IndexBuffer>& indexBuffer)
+		static inline void DrawIndexed(const Ref<VertexBuffer>& vertexBuffer, const Ref<IndexBuffer>& indexBuffer)
 		{
 			s_RenderAPI->DrawIndexed(vertexBuffer, indexBuffer);
 		}

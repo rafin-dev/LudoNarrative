@@ -12,10 +12,10 @@ public:
 	{
 		float vertices[] =
 		{
-			-0.50f, -0.50f, 0.0f,
-			-0.50f,  0.50f, 0.0f,
-			 0.50f,  0.50f, 0.0f,
-			 0.50f, -0.50f, 0.0f
+			-0.50f, -0.50f, 0.0f, 0.0f, 0.0f,
+			-0.50f,  0.50f, 0.0f, 0.0f, 1.0f,
+			 0.50f,  0.50f, 0.0f, 1.0f, 1.0f,
+			 0.50f, -0.50f, 0.0f, 1.0f, 0.0f
 		};
 		uint32_t indices[] =
 		{
@@ -29,15 +29,16 @@ public:
 
 		Ludo::BufferLayout Layout =
 		{
-			{ "Position", Ludo::ShaderDataType::Float3 }
+			{ "Position", Ludo::ShaderDataType::Float3 },
+			{ "TexCoord", Ludo::ShaderDataType::Float2 }
 		};
 		Ludo::BufferLayout Material =
 		{
 			{ "Color", Ludo::ShaderDataType::Float4 }
 		};
 
-		m_VertexBuffer.reset(Ludo::VertexBuffer::Create(vertices, sizeof(vertices), Layout));
-		m_IndexBuffer.reset(Ludo::IndexBuffer::Create(indices, sizeof(indices) / sizeof(uint32_t)));
+		m_VertexBuffer = Ludo::VertexBuffer::Create(vertices, sizeof(vertices), Layout);
+		m_IndexBuffer = Ludo::IndexBuffer::Create(indices, sizeof(indices) / sizeof(uint32_t));
 
 		auto GetShaderBlob = [](const std::string& name) -> std::pair<void*, size_t>
 		{
@@ -77,13 +78,17 @@ public:
 		desc.VertexBufferLayout = m_VertexBuffer->GetLayout();
 		desc.MaterialDataLayout = Material;
 		
-		m_Shader.reset(Ludo::Shader::Create(desc));
+		m_Shader = Ludo::Shader::Create(desc);
 		m_Material = Ludo::Material::Create(m_Shader);
 		float color[4] = { 1.0f, 0.0f, 0.0f, 1.0f };
 		m_Material->SetMaterialItemData("Color", color);
 
+		m_Camera.SetPosition({ 0.0f, 0.0f, 0.0f });
+
 		free(vertexShader.first);
 		free(pixelShader.first);
+
+		m_Texture = Ludo::Texture2D::Create("assets/textures/Checkerboard.png");
 	}
 
 	~ExampleLayer()
@@ -107,6 +112,7 @@ public:
 		Ludo::Renderer::BeginScene(m_Camera);
 
 		m_Material->UploadMaterialData();
+		m_Texture->Bind();
 		Ludo::Renderer::Submit(m_Shader, m_VertexBuffer, m_IndexBuffer, m_Transform.GetModelMarix());
 
 		Ludo::Renderer::EndScene();
@@ -132,12 +138,12 @@ public:
 	}
 
 private:
-	std::shared_ptr<Ludo::Shader> m_Shader;
+	Ludo::Ref<Ludo::Shader> m_Shader;
+	Ludo::Ref<Ludo::Material> m_Material;
+	Ludo::Ref<Ludo::Texture2D> m_Texture;
 
-	std::shared_ptr<Ludo::Material> m_Material;
-
-	std::shared_ptr<Ludo::VertexBuffer> m_VertexBuffer;
-	std::shared_ptr<Ludo::IndexBuffer> m_IndexBuffer;
+	Ludo::Ref<Ludo::VertexBuffer> m_VertexBuffer;
+	Ludo::Ref<Ludo::IndexBuffer> m_IndexBuffer;
 
 	Ludo::OrthographicCamera m_Camera;
 

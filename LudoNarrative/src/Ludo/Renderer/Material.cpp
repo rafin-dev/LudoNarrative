@@ -13,7 +13,7 @@ namespace Ludo {
 		memcpy(dest, data, item.Size);
 	}
 
-	Material::Material(std::shared_ptr<Shader> shader)
+	Material::Material(Ref<Shader> shader)
 		: m_Shader(shader)
 	{
 		m_Buffer = (uint8_t*)std::malloc(shader->GetMaterialLayout().GetStride());

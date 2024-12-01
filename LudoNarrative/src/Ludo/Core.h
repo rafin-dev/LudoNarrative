@@ -1,5 +1,6 @@
 #pragma once
 
+#include <memory>
 #include "Log.h"
 
 #ifdef LD_ENABLE_ASSERTS
@@ -15,3 +16,13 @@
 #endif
 
 #define BIT(x) (1 << x)
+
+namespace Ludo {
+
+	template<typename T>
+	using Scope = std::unique_ptr<T>;
+
+	template <typename T>
+	using Ref = std::shared_ptr<T>;
+
+}

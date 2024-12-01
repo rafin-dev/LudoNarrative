@@ -10,12 +10,12 @@
 
 namespace Ludo {
 
-    Shader* Shader::Create(const LUDO_SHADER_DESC& desc)
+    Ref<Shader> Shader::Create(const LUDO_SHADER_DESC& desc)
     {
         switch (Renderer::GetAPI())
         {
             case RendererAPI::API::None: LD_CORE_ASSERT(false, "RenderAPI::None is currently not supported") return nullptr;
-            case RendererAPI::API::DirectX11: return new DirectX11Shader(desc);
+            case RendererAPI::API::DirectX11: return Ref<Shader>(new DirectX11Shader(desc));
         }
 
         LD_CORE_ASSERT(false, "Unknown RenderAPI specified, please provide a existing RenderAPI!");

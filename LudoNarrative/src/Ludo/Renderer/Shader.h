@@ -39,7 +39,7 @@ namespace Ludo {
 		virtual const BufferLayout& GetVertexBufferLayout() = 0;
 		virtual const BufferLayout& GetMaterialLayout() = 0;
 
-		static Shader* Create(const LUDO_SHADER_DESC& desc);
+		static Ref<Shader> Create(const LUDO_SHADER_DESC& desc);
 	};
 
 }

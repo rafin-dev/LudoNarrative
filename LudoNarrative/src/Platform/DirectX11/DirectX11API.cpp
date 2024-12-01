@@ -84,7 +84,7 @@ namespace Ludo {
         return m_ClearColor;
     }
 
-    void DirectX11API::DrawIndexed(const std::shared_ptr<VertexBuffer>& vertexBuffer, const std::shared_ptr<IndexBuffer>& indexBuffer)
+    void DirectX11API::DrawIndexed(const Ref<VertexBuffer>& vertexBuffer, const Ref<IndexBuffer>& indexBuffer)
     {
         m_DeviceContext->DrawIndexed(indexBuffer->GetCount(), 0, 0);
     }

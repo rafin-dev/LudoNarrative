@@ -16,7 +16,7 @@ namespace Ludo {
 		virtual void SetClearColor(const DirectX::XMFLOAT4& color) override;
 		virtual const DirectX::XMFLOAT4& GetClearColor() override;
 
-		virtual void DrawIndexed(const std::shared_ptr<VertexBuffer>& vertexBuffer, const std::shared_ptr<IndexBuffer>& indexBuffer) override;
+		virtual void DrawIndexed(const Ref<VertexBuffer>& vertexBuffer, const Ref<IndexBuffer>& indexBuffer) override;
 
 		virtual void BeginImGui() override;
 		virtual void EndImGui() override;

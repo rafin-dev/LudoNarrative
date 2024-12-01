@@ -1,3 +1,5 @@
+#include "Header.hlsli"
+
 cbuffer ViewProjection : register(b0)
 {
     float4x4 ViewProjection;
@@ -8,7 +10,10 @@ cbuffer Model : register(b1)
     float4x4 ModelMatrix;
 };
 
-float4 main( float3 pos : POSITION ) : SV_POSITION
+VS_OUTPUT main( VS_INPUT input )
 {
-    return mul(mul(float4(pos.xyz, 1.0f), ModelMatrix), ViewProjection);
+    VS_OUTPUT output;
+    output.Position = mul(mul(float4(input.Pos.xyz, 1.0f), ModelMatrix), ViewProjection);
+    output.TexPos = input.TexPos;
+    return output;
 }

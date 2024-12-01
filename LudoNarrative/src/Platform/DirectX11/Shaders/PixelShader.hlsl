@@ -1,9 +1,14 @@
+#include "Header.hlsli"
+
 cbuffer Material : register(b0)
 {
     float4 Color;
 }
 
-float4 main( float4 pos : SV_Position ) : SV_Target
+Texture2D Texture;
+SamplerState Sampler;
+
+float4 main( VS_OUTPUT input ) : SV_Target
 {
-    return Color;
+    return Texture.Sample(Sampler, input.TexPos);
 }
