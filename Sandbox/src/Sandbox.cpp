@@ -39,54 +39,11 @@ public:
 
 		m_VertexBuffer = Ludo::VertexBuffer::Create(vertices, sizeof(vertices), Layout);
 		m_IndexBuffer = Ludo::IndexBuffer::Create(indices, sizeof(indices) / sizeof(uint32_t));
-
-		auto GetShaderBlob = [](const std::string& name) -> std::pair<void*, size_t>
-		{
-			void* data = nullptr;
-			size_t size = 0;
-
-			wchar_t moduleFileName[MAX_PATH];
-			GetModuleFileNameW(nullptr, moduleFileName, MAX_PATH);
-
-			std::filesystem::path shaderPath = moduleFileName;
-			shaderPath.remove_filename();
-			shaderPath += "../LudoNarrative";
-			shaderPath = shaderPath / name;
-			std::ifstream shaderIn(shaderPath, std::ios::binary);
-
-			if (shaderIn.is_open())
-			{
-				size = std::filesystem::file_size(shaderPath);
-				data = malloc(size);
-				if (data != nullptr)
-				{
-					shaderIn.read((char*)data, size);
-				}
-			}
-
-			return std::pair<void*, size_t>(data, size);
-		};
-
-		auto vertexShader = GetShaderBlob("VertexShader.cso");
-		auto pixelShader = GetShaderBlob("PixelShader.cso");
-
-		Ludo::LUDO_SHADER_DESC desc;
-		desc.VertexShaderBlob = vertexShader.first;
-		desc.VertexShaderSize = vertexShader.second;
-		desc.PixelShaderBlob = pixelShader.first;
-		desc.PixelShaderSize = pixelShader.second;
-		desc.VertexBufferLayout = m_VertexBuffer->GetLayout();
-		desc.MaterialDataLayout = Material;
 		
-		m_Shader = Ludo::Shader::Create(desc);
+		m_Shader = m_ShaderLibrary.Load("TextureShader", "assets/shaders/VertexShader.hlsl", "assets/shaders/PixelShader.hlsl", m_VertexBuffer->GetLayout(), Material);
 		m_Material = Ludo::Material::Create(m_Shader);
 		float color[4] = { 1.0f, 0.0f, 0.0f, 1.0f };
 		m_Material->SetMaterialItemData("Color", color);
-
-		m_Camera.SetPosition({ 0.0f, 0.0f, 0.0f });
-
-		free(vertexShader.first);
-		free(pixelShader.first);
 
 		m_BoardTexture = Ludo::Texture2D::Create("assets/textures/Checkerboard.png");
 		m_ChernoTexture = Ludo::Texture2D::Create("assets/textures/ChernoLogo.png");
@@ -143,7 +100,9 @@ public:
 	}
 
 private:
+	Ludo::ShaderLibrary m_ShaderLibrary;
 	Ludo::Ref<Ludo::Shader> m_Shader;
+
 	Ludo::Ref<Ludo::Material> m_Material;
 	Ludo::Ref<Ludo::Texture2D> m_BoardTexture;
 	Ludo::Ref<Ludo::Texture2D> m_ChernoTexture;

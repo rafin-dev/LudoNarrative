@@ -10,16 +10,70 @@
 
 namespace Ludo {
 
-    Ref<Shader> Shader::Create(const LUDO_SHADER_DESC& desc)
+    Ref<Shader> Shader::Create(
+        const std::string& name,
+        void* vertexShaderBuffer, size_t vertexShaderSize,
+        void* pixelShaderBuffer, size_t pixelShaderSize,
+        const BufferLayout& vertexLayout, const BufferLayout& materialDataLayout)
     {
         switch (Renderer::GetAPI())
         {
             case RendererAPI::API::None: LD_CORE_ASSERT(false, "RenderAPI::None is currently not supported") return nullptr;
-            case RendererAPI::API::DirectX11: return Ref<Shader>(new DirectX11Shader(desc));
+            case RendererAPI::API::DirectX11: return Ref<Shader>(new DirectX11Shader(name, vertexShaderBuffer, vertexShaderSize, pixelShaderBuffer, pixelShaderSize, vertexLayout, materialDataLayout));
         }
 
         LD_CORE_ASSERT(false, "Unknown RenderAPI specified, please provide a existing RenderAPI!");
         return nullptr;
+    }
+
+    Ref<Shader> Shader::Create(
+        const std::string& name, const std::filesystem::path& vertexSrcPath, const std::filesystem::path& pixelSrcPath, const BufferLayout& vertexLayout, const BufferLayout& materialDataLayout)
+    {
+        switch (Renderer::GetAPI())
+        {
+            case RendererAPI::API::None: LD_CORE_ASSERT(false, "RenderAPI::None is currently not supported") return nullptr;
+            case RendererAPI::API::DirectX11: return Ref<Shader>(new DirectX11Shader(name, vertexSrcPath, pixelSrcPath, vertexLayout, materialDataLayout));
+        }
+
+        LD_CORE_ASSERT(false, "Unknown RenderAPI specified, please provide a existing RenderAPI!");
+        return nullptr;
+    }
+
+    // ========== Shader Library ===========
+    void ShaderLibrary::Add(const Ref<Shader>& shader)
+    {
+        auto& name = shader->GetName();
+        LD_CORE_ASSERT(!Exists(name), "Shader '{0}' already exists in Shader Library", name);
+        m_Shaders[name] = shader;
+    }
+
+    Ref<Shader> ShaderLibrary::Load(const std::string& name, const std::filesystem::path& vertexSrc, const std::filesystem::path& pixelSrc,
+        const BufferLayout& vertexLayout, const BufferLayout& materialDataLayout)
+    {
+        Ref<Shader> shader = Shader::Create(name, vertexSrc, pixelSrc, vertexLayout, materialDataLayout);
+        Add(shader);
+        return shader;
+    }
+
+    Ref<Shader> ShaderLibrary::Load(const std::string& name,
+        void* vertexShaderBuffer, size_t vertexShaderSize,
+        void* pixelShaderBuffer, size_t pixelShaderSize,
+        const BufferLayout& vertexLayout, const BufferLayout& materialDataLayout)
+    {
+        Ref<Shader> shader = Shader::Create(name, vertexShaderBuffer, vertexShaderSize, pixelShaderBuffer, pixelShaderSize, vertexLayout, materialDataLayout);
+        Add(shader);
+        return shader;
+    }
+
+    Ref<Shader> ShaderLibrary::Get(const std::string& name)
+    {
+        LD_CORE_ASSERT(Exists(name), "Failed to find Shader '{0}' in Shader Library", name);
+        return m_Shaders[name];
+    }
+
+    bool ShaderLibrary::Exists(const std::string& name) const
+    {
+        return m_Shaders.find(name) != m_Shaders.end();
     }
 
 }

@@ -6,10 +6,68 @@
 
 namespace Ludo {
 
-	DirectX11Shader::DirectX11Shader(const LUDO_SHADER_DESC& desc)
-		: m_VertexBufferLayout(desc.VertexBufferLayout), m_MaterialDataLayout(desc.MaterialDataLayout)
+	DirectX11Shader::DirectX11Shader(
+		const std::string& name,
+		void* vertexShaderBuffer, size_t vertexShaderSize,
+		void* pixelShaderBuffer, size_t pixelShaderSize,
+		const BufferLayout& vertexLayout, const BufferLayout& materialDataLayout)
+		: m_Name(name), m_VertexBufferLayout(vertexLayout), m_MaterialDataLayout(materialDataLayout)
 	{
-		Init(desc);
+		Init(vertexShaderBuffer, vertexShaderSize,
+			pixelShaderBuffer, pixelShaderSize);
+	}
+
+	DirectX11Shader::DirectX11Shader(const std::string& name, 
+		const std::filesystem::path& vertexSrcPath, const std::filesystem::path& pixelSrcPath, 
+		const BufferLayout& vertexLayout, const BufferLayout& materialDataLayout)
+		: m_Name(name), m_VertexBufferLayout(vertexLayout), m_MaterialDataLayout(materialDataLayout)
+	{
+		UINT flags = NULL;
+#ifdef LUDO_DEBUG
+		flags |= D3DCOMPILE_DEBUG;
+#endif
+
+		ID3DBlob* vertexShaderBlob = nullptr;
+		ID3DBlob* pixelShaderBlob = nullptr;
+
+		HRESULT hr = D3DCompileFromFile(
+			vertexSrcPath.wstring().c_str(),
+			nullptr,
+			D3D_COMPILE_STANDARD_FILE_INCLUDE,
+			"main",
+			"vs_5_0",
+			flags,
+			NULL,
+			&vertexShaderBlob,
+			nullptr
+		);
+		if (FAILED(hr))
+		{
+			CHECK_AND_RELEASE_COMPTR(vertexShaderBlob);
+			LD_CORE_ASSERT(false, "Failed to compile Vertex Shader: {0}", vertexSrcPath.string());
+		}
+		hr = D3DCompileFromFile(
+			pixelSrcPath.wstring().c_str(),
+			nullptr,
+			D3D_COMPILE_STANDARD_FILE_INCLUDE,
+			"main",
+			"ps_5_0",
+			flags,
+			NULL,
+			&pixelShaderBlob,
+			nullptr
+		);
+		if (FAILED(hr))
+		{
+			CHECK_AND_RELEASE_COMPTR(vertexShaderBlob); CHECK_AND_RELEASE_COMPTR(pixelShaderBlob);
+			LD_CORE_ASSERT(false, "Failed to compile Pixel Shader: {0}", pixelSrcPath.string());
+		}
+
+		Init(
+			vertexShaderBlob->GetBufferPointer(), vertexShaderBlob->GetBufferSize(),
+			pixelShaderBlob->GetBufferPointer(), pixelShaderBlob->GetBufferSize());
+
+		CHECK_AND_RELEASE_COMPTR(vertexShaderBlob); CHECK_AND_RELEASE_COMPTR(pixelShaderBlob);
 	}
 
 	static DXGI_FORMAT GetDxgiFormatFromShaderDataType(ShaderDataType type)
@@ -32,21 +90,23 @@ namespace Ludo {
 		}
 	}
 
-	bool DirectX11Shader::Init(const LUDO_SHADER_DESC& desc)
+	bool DirectX11Shader::Init(
+		void* vertexShaderBuffer, size_t vertexShaderSize,
+		void* pixelShaderBuffer, size_t pixelShaderSize)
 	{
 		HRESULT hr = S_OK;
 		auto device = DirectX11API::Get()->GetDevice();
 
 		// ========== Shaders ==========
-		hr = device->CreateVertexShader(desc.VertexShaderBlob, desc.VertexShaderSize, NULL, &m_VertexShader);
+		hr = device->CreateVertexShader(vertexShaderBuffer, vertexShaderSize, NULL, &m_VertexShader);
 		VALIDATE_DX_HRESULT(hr, "Failed to create Vertex Shader");
-		hr = device->CreatePixelShader(desc.PixelShaderBlob, desc.PixelShaderSize, NULL, &m_PixelShader);
+		hr = device->CreatePixelShader(pixelShaderBuffer, pixelShaderSize, NULL, &m_PixelShader);
 		VALIDATE_DX_HRESULT(hr, "Failed to create Pixel Shader");
 
-		// ========== Vertex Buffer Layout ==========
+		// ========== Vertex Buffer Layout & Material Data Layout ==========
 		std::vector<D3D11_INPUT_ELEMENT_DESC> ElementLayout;
-		ElementLayout.reserve(desc.VertexBufferLayout.GetElements().size());
-		for (auto& element : desc.VertexBufferLayout)
+		ElementLayout.reserve(m_VertexBufferLayout.GetElements().size());
+		for (auto& element : m_VertexBufferLayout)
 		{
 			D3D11_INPUT_ELEMENT_DESC desc;
 			if (element.Type == ShaderDataType::Float3x3)
@@ -72,7 +132,7 @@ namespace Ludo {
 			{ element.Name.c_str(), 0, GetDxgiFormatFromShaderDataType(element.Type), 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 };
 			ElementLayout.push_back(desc);
 		}
-		hr = device->CreateInputLayout(ElementLayout.data(), ElementLayout.size(), desc.VertexShaderBlob, desc.VertexShaderSize, &m_InputLayout);
+		hr = device->CreateInputLayout(ElementLayout.data(), ElementLayout.size(), vertexShaderBuffer, vertexShaderSize, &m_InputLayout);
 		VALIDATE_DX_HRESULT(hr, "Failed to create Input Layout");
 
 		// ========== View Projection / Model Matrix Buffer ==========
@@ -93,13 +153,6 @@ namespace Ludo {
 		bufferDesc.ByteWidth = sizeof(float) * 4;
 		hr = device->CreateBuffer(&bufferDesc, nullptr, &m_MaterialBuffer);
 		VALIDATE_DX_HRESULT(hr, "Failed to create Material Constant Buffer");
-
-		D3D11_MAPPED_SUBRESOURCE mapped = {};
-		hr = DirectX11API::Get()->GetDeviceContext()->Map(m_MaterialBuffer, 0, D3D11_MAP_WRITE_DISCARD, NULL, &mapped);
-		VALIDATE_DX_HRESULT(hr, "failed to map Material Buffer");
-		float color[4] = { 0.0f, 1.0f, 0.0f, 1.0f };
-		memcpy(mapped.pData, color, sizeof(float) * 4);
-		DirectX11API::Get()->GetDeviceContext()->Unmap(m_MaterialBuffer, 0);
 
 		LD_CORE_TRACE("Created Shader");
 
