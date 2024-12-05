@@ -1,14 +1,12 @@
 #include <LudoEngine.h>
 
-#include <iostream>
-
 #include "imgui/imgui.h"
 
 class ExampleLayer : public Ludo::Layer
 {
 public:
 	ExampleLayer()
-	: Ludo::Layer("Example"), m_Camera(-1.6f, 1.6f, -0.9f, 0.9f)
+	: Ludo::Layer("Example"), m_CameraController(1280.0f / 720.0f, true)
 	{
 		float vertices[] =
 		{
@@ -40,13 +38,15 @@ public:
 		m_VertexBuffer = Ludo::VertexBuffer::Create(vertices, sizeof(vertices), Layout);
 		m_IndexBuffer = Ludo::IndexBuffer::Create(indices, sizeof(indices) / sizeof(uint32_t));
 		
-		m_Shader = m_ShaderLibrary.Load("TextureShader", "assets/shaders/VertexShader.hlsl", "assets/shaders/PixelShader.hlsl", m_VertexBuffer->GetLayout(), Material);
+		m_Shader = m_ShaderLibrary.Load("TextureShader", "assets/shaders/Shader.hlsl", m_VertexBuffer->GetLayout(), Material);
 		m_Material = Ludo::Material::Create(m_Shader);
 		float color[4] = { 1.0f, 0.0f, 0.0f, 1.0f };
 		m_Material->SetMaterialItemData("Color", color);
 
 		m_BoardTexture = Ludo::Texture2D::Create("assets/textures/Checkerboard.png");
 		m_ChernoTexture = Ludo::Texture2D::Create("assets/textures/ChernoLogo.png");
+
+		m_FPSs.resize(10);
 	}
 
 	~ExampleLayer()
@@ -55,19 +55,15 @@ public:
 
 	void OnUpdate(Ludo::TimeStep time) override
 	{
-		auto pos = m_Camera.GetPosition();
-
-		pos.x += (Ludo::Input::IsKeyPressed(LD_KEY_D) - Ludo::Input::IsKeyPressed(LD_KEY_A)) * 2.0f * time;
-		pos.y += (Ludo::Input::IsKeyPressed(LD_KEY_W) - Ludo::Input::IsKeyPressed(LD_KEY_S)) * 2.0f * time;
-
-		m_Camera.SetPosition(pos);
-
-		m_Camera.SetRotation(m_Camera.GetRotation() + (Ludo::Input::IsKeyPressed(LD_KEY_E) - Ludo::Input::IsKeyPressed(LD_KEY_Q)) * 2.0f * time);
-
+		m_FPSs[m_cFPS] = 1 / time;
+		m_cFPS = (m_cFPS + 1) % 10;
+		
 		m_Transform.Position.x += (Ludo::Input::IsKeyPressed(LD_KEY_RIGHT_ARROW) - Ludo::Input::IsKeyPressed(LD_KEY_LEFT_ARROW)) * 2.0f * time;
 		m_Transform.Position.y += (Ludo::Input::IsKeyPressed(LD_KEY_UP_ARROW) - Ludo::Input::IsKeyPressed(LD_KEY_DOWN_ARROW)) * 2.0f * time;
 
-		Ludo::Renderer::BeginScene(m_Camera);
+		m_CameraController.OnUpdate(time);
+
+		Ludo::Renderer::BeginScene(m_CameraController.GetCamera());
 
 		m_Material->UploadMaterialData();
 
@@ -82,19 +78,20 @@ public:
 
 	void OnEvent(Ludo::Event& event) override
 	{
+		m_CameraController.OnEvent(event);
 	}
 
 	void OnImGuiRender() override
 	{
 		ImGui::Begin("Settings");
 
+		std::stringstream ss;
+		ss << "FPS: " << std::roundf(std::accumulate(m_FPSs.begin(), m_FPSs.end(), 0) / 10.0f);
+		ImGui::Text(ss.str().c_str());
+
 		static float color[4];
 		ImGui::ColorEdit4("Clear Color", color);
 		Ludo::RenderCommand::SetClearColor(DirectX::XMFLOAT4(color));
-
-		static float sqColor[4];
-		ImGui::ColorEdit4("Square Color", sqColor);
-		m_Material->SetMaterialItemData("Color", sqColor);
 
 		ImGui::End();
 	}
@@ -110,9 +107,11 @@ private:
 	Ludo::Ref<Ludo::VertexBuffer> m_VertexBuffer;
 	Ludo::Ref<Ludo::IndexBuffer> m_IndexBuffer;
 
-	Ludo::OrthographicCamera m_Camera;
+	Ludo::OrthographicCameraController m_CameraController;
 
 	Ludo::Transform m_Transform;
+	std::vector<float> m_FPSs;
+	size_t m_cFPS = 0;
 };
 
 class Sandbox : public Ludo::Application

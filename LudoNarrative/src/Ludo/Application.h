@@ -30,9 +30,11 @@ namespace Ludo {
 
 	private:
 		bool CloseWindow(WindowCloseEvent& event);
+		bool ResizeWindow(WindowResizeEvent& event);
 
 		Window* m_Window;
 		bool m_Running = true;
+		bool m_Minimized = false;
 
 		LayerStack m_LayerStack;
 

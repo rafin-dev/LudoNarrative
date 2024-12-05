@@ -31,16 +31,14 @@ namespace Ludo {
 								void* pixelShaderBuffer, size_t pixelShaderSize,
 								const BufferLayout& vertexLayout, const BufferLayout& materialDataLayout);
 
-		static Ref<Shader> Create(const std::string& name, const std::filesystem::path& vertexSrcPath, const std::filesystem::path& pixelSrcPath,
-			const BufferLayout& vertexLayout, const BufferLayout& materialDataLayout);
+		static Ref<Shader> Create(const std::string& name, const std::filesystem::path& shaderSrcPath, const BufferLayout& vertexLayout, const BufferLayout& materialDataLayout);
 	};
 
 	class ShaderLibrary
 	{
 	public:
 		void Add(const Ref<Shader>& shader);
-		Ref<Shader> Load(const std::string& name, const std::filesystem::path& vertexSrc, const std::filesystem::path& pixelSrc,
-			const BufferLayout& vertexLayout, const BufferLayout& materialDataLayout);
+		Ref<Shader> Load(const std::string& name, const std::filesystem::path& shaderSrcPath, const BufferLayout& vertexLayout, const BufferLayout& materialDataLayout);
 
 		Ref<Shader> Load(
 			const std::string& name, 

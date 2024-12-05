@@ -27,12 +27,12 @@ namespace Ludo {
     }
 
     Ref<Shader> Shader::Create(
-        const std::string& name, const std::filesystem::path& vertexSrcPath, const std::filesystem::path& pixelSrcPath, const BufferLayout& vertexLayout, const BufferLayout& materialDataLayout)
+        const std::string& name, const std::filesystem::path& shaderSrcPath, const BufferLayout& vertexLayout, const BufferLayout& materialDataLayout)
     {
         switch (Renderer::GetAPI())
         {
             case RendererAPI::API::None: LD_CORE_ASSERT(false, "RenderAPI::None is currently not supported") return nullptr;
-            case RendererAPI::API::DirectX11: return Ref<Shader>(new DirectX11Shader(name, vertexSrcPath, pixelSrcPath, vertexLayout, materialDataLayout));
+            case RendererAPI::API::DirectX11: return Ref<Shader>(new DirectX11Shader(name, shaderSrcPath, vertexLayout, materialDataLayout));
         }
 
         LD_CORE_ASSERT(false, "Unknown RenderAPI specified, please provide a existing RenderAPI!");
@@ -47,10 +47,9 @@ namespace Ludo {
         m_Shaders[name] = shader;
     }
 
-    Ref<Shader> ShaderLibrary::Load(const std::string& name, const std::filesystem::path& vertexSrc, const std::filesystem::path& pixelSrc,
-        const BufferLayout& vertexLayout, const BufferLayout& materialDataLayout)
+    Ref<Shader> ShaderLibrary::Load(const std::string& name, const std::filesystem::path& shaderSrcPath, const BufferLayout& vertexLayout, const BufferLayout& materialDataLayout)
     {
-        Ref<Shader> shader = Shader::Create(name, vertexSrc, pixelSrc, vertexLayout, materialDataLayout);
+        Ref<Shader> shader = Shader::Create(name, shaderSrcPath, vertexLayout, materialDataLayout);
         Add(shader);
         return shader;
     }

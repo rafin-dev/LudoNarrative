@@ -8,6 +8,7 @@ namespace Ludo {
 	{
 	public:
 		OrthographicCamera(float left, float right, float bottom, float top);
+		void SetProjection(float left, float right, float bottom, float top);
 
 		inline const DirectX::XMFLOAT3& GetPosition() const { return m_Position; }
 		inline void SetPosition(const DirectX::XMFLOAT3& pos) { m_Position = pos; RecalculateViewMatrix(); }
@@ -29,5 +30,4 @@ namespace Ludo {
 		DirectX::XMFLOAT3 m_Position = {};
 		float m_Rotation = 0.0f;
 	};
-
 }

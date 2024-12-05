@@ -39,8 +39,12 @@ namespace Ludo {
         DXGI_SWAP_CHAIN_FULLSCREEN_DESC scfd = {};
         scfd.Windowed = true;
 
-        hr = api->GetFactory()->CreateSwapChainForHwnd(api->GetDevice(), m_WindowHandle, &swapDesc, &scfd, nullptr, &m_SwapChain);
+        IDXGISwapChain1* swapchain1 = nullptr;
+        hr = api->GetFactory()->CreateSwapChainForHwnd(api->GetDevice(), m_WindowHandle, &swapDesc, &scfd, nullptr, &swapchain1);
         VALIDATE_DX_HRESULT(hr, "Failed to create DXGI Swap Chain for window of size: [{0}, {1}]", m_Window->GetWidth(), m_Window->GetHeight());
+        hr = swapchain1->QueryInterface(&m_SwapChain);
+        VALIDATE_DX_HRESULT(hr, "Failed to query IDXGISwapChain2 from IDXGISwapChain1");
+        swapchain1->Release();
 
         // ========== Back Buffer / Render Target ==========
         if (!GetBackBuffer())
@@ -66,7 +70,7 @@ namespace Ludo {
         auto deviceContext = DirectX11API::Get()->GetDeviceContext();
         
         // End Last frame
-        m_SwapChain->Present(0, 0);
+        m_SwapChain->Present(m_Window->IsVsync(), m_Window->IsVsync() ? 0 : DXGI_PRESENT_ALLOW_TEARING);
         DirectX11API::Get()->GetDeviceContext()->OMSetRenderTargets(1, &m_BackBuffer, nullptr);
 
         if (m_ShouldResize)
@@ -114,6 +118,7 @@ namespace Ludo {
         LD_CORE_ASSERT(SUCCEEDED(hr), "Failed to resize Swap Chain to size: [{0}, {1}]", m_Window->GetWidth(), m_Window->GetHeight());
         GetBackBuffer();
         SetViewPort();
+        LD_CORE_INFO("Resized D3D11 Swap Chain for Window: {0}", m_Window->GetTitle());
     }
 
     void DirectX11Context::SetViewPort()

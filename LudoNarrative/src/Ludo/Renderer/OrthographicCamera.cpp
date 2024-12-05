@@ -5,10 +5,15 @@ namespace Ludo {
 
 	OrthographicCamera::OrthographicCamera(float left, float right, float bottom, float top)
 	{
-		DirectX::XMStoreFloat4x4(&m_ProjectionMatrix, DirectX::XMMatrixOrthographicOffCenterLH(left, right, bottom, top, -1, 1));
+		SetProjection(left, right, bottom, top);
 
 		DirectX::XMStoreFloat4x4(&m_ViewMatrix, DirectX::XMMatrixIdentity());
 		DirectX::XMStoreFloat4x4(&m_ViewProjectionMatrix, DirectX::XMMatrixTranspose(DirectX::XMLoadFloat4x4(&m_ViewMatrix) * DirectX::XMLoadFloat4x4(&m_ProjectionMatrix)));
+	}
+
+	void OrthographicCamera::SetProjection(float left, float right, float bottom, float top)
+	{
+		DirectX::XMStoreFloat4x4(&m_ProjectionMatrix, DirectX::XMMatrixOrthographicOffCenterLH(left, right, bottom, top, -1, 1));
 	}
 
 	void OrthographicCamera::RecalculateViewMatrix()

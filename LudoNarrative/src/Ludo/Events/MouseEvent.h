@@ -30,10 +30,11 @@ namespace Ludo {
 	class MouseScrolledEvent : public Event
 	{
 	public:
-		MouseScrolledEvent(int offsetX)
-			: m_OffsetX(offsetX) {}
+		MouseScrolledEvent(int offsetX, int offsetY)
+			: m_OffsetY(offsetY), m_OffsetX(offsetX) {}
 
 		inline int GetXOffset() { return m_OffsetX; }
+		inline int GetYOffset() { return m_OffsetY; }
 
 		std::string ToString() const override
 		{
@@ -46,6 +47,7 @@ namespace Ludo {
 		EVENT_CLASS_CATEGORY(EventCategoryMouse | EventCategoryInput)
 
 	private:
+		int m_OffsetY;
 		int m_OffsetX;
 	};
 

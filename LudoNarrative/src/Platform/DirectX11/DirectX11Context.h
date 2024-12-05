@@ -32,7 +32,7 @@ namespace Ludo {
 
 		void SetViewPort();
 
-		IDXGISwapChain1* m_SwapChain = nullptr;
+		IDXGISwapChain2* m_SwapChain = nullptr;
 
 		ID3D11RenderTargetView* m_BackBuffer = nullptr;
 

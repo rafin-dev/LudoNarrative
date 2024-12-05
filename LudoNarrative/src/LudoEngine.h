@@ -18,6 +18,8 @@
 #include "Ludo/KeyCodes.h"
 #include "Ludo/Core/TimeStep.h"
 
+#include "Ludo/OrthographicCameraController.h"
+
 // ============ Renderer ===========
 #include "Ludo/Renderer/Renderer.h"
 #include "Ludo/Renderer/RenderCommand.h"

@@ -13,61 +13,130 @@ namespace Ludo {
 		const BufferLayout& vertexLayout, const BufferLayout& materialDataLayout)
 		: m_Name(name), m_VertexBufferLayout(vertexLayout), m_MaterialDataLayout(materialDataLayout)
 	{
-		Init(vertexShaderBuffer, vertexShaderSize,
-			pixelShaderBuffer, pixelShaderSize);
+		std::unordered_map<ShaderKind, ID3DBlob*> shaders
+		{
+			{ VertexShader, nullptr },
+			{ PixelShader, nullptr }
+		};
+
+		HRESULT hr = D3DCreateBlob(vertexShaderSize, &shaders[VertexShader]);
+		LD_CORE_ASSERT(SUCCEEDED(hr), "Failed to create D3DBBlob");
+		memcpy(shaders[VertexShader]->GetBufferPointer(), vertexShaderBuffer, vertexShaderSize);
+
+		hr = D3DCreateBlob(pixelShaderSize, &shaders[PixelShader]);
+		LD_CORE_ASSERT(SUCCEEDED(hr), "Failed to create Shader Blob");
+		memcpy(shaders[PixelShader]->GetBufferPointer(), pixelShaderBuffer, pixelShaderSize);
+
+		Init(shaders);
+
+		for (auto& blob : shaders)
+		{
+			CHECK_AND_RELEASE_COMPTR(blob.second);
+		}
 	}
 
-	DirectX11Shader::DirectX11Shader(const std::string& name, 
-		const std::filesystem::path& vertexSrcPath, const std::filesystem::path& pixelSrcPath, 
+	DirectX11Shader::DirectX11Shader(const std::string& name, const std::filesystem::path& shaderSrcPath,
 		const BufferLayout& vertexLayout, const BufferLayout& materialDataLayout)
 		: m_Name(name), m_VertexBufferLayout(vertexLayout), m_MaterialDataLayout(materialDataLayout)
+	{
+		std::unordered_map<ShaderKind, std::string> shadersSources;
+		std::unordered_map<ShaderKind, ID3D10Blob*> shaderBinaries;
+		std::string source;
+
+		ReadFile(shaderSrcPath, source);
+		ParseShaders(source, shadersSources);
+		CompileShaders(shadersSources, shaderBinaries);
+		Init(shaderBinaries);
+		for (auto& shaderBlob : shaderBinaries)
+		{
+			CHECK_AND_RELEASE_COMPTR(shaderBlob.second);
+		}
+	}
+
+	DirectX11Shader::ShaderKind ShaderKindFromString(const std::string& kind)
+	{
+		if (kind == "vertex")
+		{
+			return DirectX11Shader::ShaderKind::VertexShader;
+		}
+		else if (kind == "pixel")
+		{
+			return DirectX11Shader::ShaderKind::PixelShader;
+		}
+
+		LD_CORE_ASSERT(false, "Syntax Error: Unknown Shader Kind '{0}'", kind);
+	}
+
+	void DirectX11Shader::ReadFile(const std::filesystem::path& file, std::string& output)
+	{
+		std::ifstream srcFile(file, std::ios::in | std::ios::binary);
+		if (srcFile)
+		{
+			size_t size = std::filesystem::file_size(file);
+			output.resize(size);
+			srcFile.seekg(0, std::ios::beg);
+			srcFile.read(&output[0], size);
+		}
+		else
+		{
+			LD_CORE_ASSERT(false, "Failed to open file: {0}", file.string());
+		}
+
+	}
+
+	void DirectX11Shader::ParseShaders(const std::string& source, std::unordered_map<ShaderKind, std::string>& shadersSrcs)
+	{
+		const char* typeToken = "#type";
+		size_t typeTokenLenght = strlen(typeToken);
+		size_t pos = source.find(typeToken, 0);
+		while (pos != std::string::npos)
+		{
+			size_t eol = source.find_first_of("\r\n", pos);
+			LD_CORE_ASSERT(eol != std::string::npos, "Syntax Error: Shader declared but not defined!");
+			size_t begin = pos + typeTokenLenght + 1; // Move to "#type "<-
+			std::string kind = source.substr(begin, eol - begin);
+
+			size_t nextLinePos = source.find_first_not_of("\r\n", eol);
+			LD_CORE_ASSERT(nextLinePos != std::string::npos, "Syntax Error: Shader declared but not defined!");
+
+			pos = source.find(typeToken, nextLinePos);
+
+			shadersSrcs[ShaderKindFromString(kind)] = (pos == std::string::npos) ? source.substr(nextLinePos) : source.substr(nextLinePos, pos - nextLinePos);
+		}
+	}
+
+	void DirectX11Shader::CompileShaders(const std::unordered_map<ShaderKind, std::string> shadersSources, std::unordered_map<ShaderKind, ID3D10Blob*>& output)
 	{
 		UINT flags = NULL;
 #ifdef LUDO_DEBUG
 		flags |= D3DCOMPILE_DEBUG;
 #endif
 
-		ID3DBlob* vertexShaderBlob = nullptr;
-		ID3DBlob* pixelShaderBlob = nullptr;
-
-		HRESULT hr = D3DCompileFromFile(
-			vertexSrcPath.wstring().c_str(),
-			nullptr,
-			D3D_COMPILE_STANDARD_FILE_INCLUDE,
-			"main",
-			"vs_5_0",
-			flags,
-			NULL,
-			&vertexShaderBlob,
-			nullptr
-		);
-		if (FAILED(hr))
+		for (auto& [shaderKind, shaderSrc] : shadersSources)
 		{
-			CHECK_AND_RELEASE_COMPTR(vertexShaderBlob);
-			LD_CORE_ASSERT(false, "Failed to compile Vertex Shader: {0}", vertexSrcPath.string());
-		}
-		hr = D3DCompileFromFile(
-			pixelSrcPath.wstring().c_str(),
-			nullptr,
-			D3D_COMPILE_STANDARD_FILE_INCLUDE,
-			"main",
-			"ps_5_0",
-			flags,
-			NULL,
-			&pixelShaderBlob,
-			nullptr
-		);
-		if (FAILED(hr))
-		{
-			CHECK_AND_RELEASE_COMPTR(vertexShaderBlob); CHECK_AND_RELEASE_COMPTR(pixelShaderBlob);
-			LD_CORE_ASSERT(false, "Failed to compile Pixel Shader: {0}", pixelSrcPath.string());
-		}
+			const char* target;
+			switch (shaderKind)
+			{
+			case VertexShader: target = "vs_5_0"; break;
+			case PixelShader: target = "ps_5_0"; break;
+			default: LD_CORE_ASSERT(false, "Syntax Error: Unknown Shader Kind");
+			}
 
-		Init(
-			vertexShaderBlob->GetBufferPointer(), vertexShaderBlob->GetBufferSize(),
-			pixelShaderBlob->GetBufferPointer(), pixelShaderBlob->GetBufferSize());
-
-		CHECK_AND_RELEASE_COMPTR(vertexShaderBlob); CHECK_AND_RELEASE_COMPTR(pixelShaderBlob);
+			output[shaderKind] = nullptr;
+			D3DCompile(
+				shaderSrc.c_str(),
+				shaderSrc.size(),
+				nullptr,
+				nullptr,
+				D3D_COMPILE_STANDARD_FILE_INCLUDE,
+				"main",
+				target,
+				flags,
+				NULL,
+				&output[shaderKind],
+				nullptr
+			);
+		}
 	}
 
 	static DXGI_FORMAT GetDxgiFormatFromShaderDataType(ShaderDataType type)
@@ -90,17 +159,15 @@ namespace Ludo {
 		}
 	}
 
-	bool DirectX11Shader::Init(
-		void* vertexShaderBuffer, size_t vertexShaderSize,
-		void* pixelShaderBuffer, size_t pixelShaderSize)
+	bool DirectX11Shader::Init(std::unordered_map<ShaderKind, ID3DBlob*> shaders)
 	{
 		HRESULT hr = S_OK;
 		auto device = DirectX11API::Get()->GetDevice();
 
 		// ========== Shaders ==========
-		hr = device->CreateVertexShader(vertexShaderBuffer, vertexShaderSize, NULL, &m_VertexShader);
+		hr = device->CreateVertexShader(shaders[VertexShader]->GetBufferPointer(), shaders[VertexShader]->GetBufferSize(), NULL, &m_VertexShader);
 		VALIDATE_DX_HRESULT(hr, "Failed to create Vertex Shader");
-		hr = device->CreatePixelShader(pixelShaderBuffer, pixelShaderSize, NULL, &m_PixelShader);
+		hr = device->CreatePixelShader(shaders[PixelShader]->GetBufferPointer(), shaders[PixelShader]->GetBufferSize(), NULL, &m_PixelShader);
 		VALIDATE_DX_HRESULT(hr, "Failed to create Pixel Shader");
 
 		// ========== Vertex Buffer Layout & Material Data Layout ==========
@@ -132,7 +199,7 @@ namespace Ludo {
 			{ element.Name.c_str(), 0, GetDxgiFormatFromShaderDataType(element.Type), 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 };
 			ElementLayout.push_back(desc);
 		}
-		hr = device->CreateInputLayout(ElementLayout.data(), ElementLayout.size(), vertexShaderBuffer, vertexShaderSize, &m_InputLayout);
+		hr = device->CreateInputLayout(ElementLayout.data(), ElementLayout.size(), shaders[VertexShader]->GetBufferPointer(), shaders[VertexShader]->GetBufferSize(), &m_InputLayout);
 		VALIDATE_DX_HRESULT(hr, "Failed to create Input Layout");
 
 		// ========== View Projection / Model Matrix Buffer ==========
@@ -154,7 +221,7 @@ namespace Ludo {
 		hr = device->CreateBuffer(&bufferDesc, nullptr, &m_MaterialBuffer);
 		VALIDATE_DX_HRESULT(hr, "Failed to create Material Constant Buffer");
 
-		LD_CORE_TRACE("Created Shader");
+		LD_CORE_TRACE("Created Shader '{0}'", m_Name);
 
 		return true;
 	}
@@ -226,7 +293,7 @@ namespace Ludo {
 		CHECK_AND_RELEASE_COMPTR(m_ModelMatrixBuffer);
 		CHECK_AND_RELEASE_COMPTR(m_MaterialBuffer);
 
-		LD_CORE_TRACE("Deleted Shader");
+		LD_CORE_TRACE("Deleted Shader: {0}", m_Name);
 	}
 
 }

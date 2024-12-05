@@ -9,6 +9,7 @@
 #include <locale>
 #include <codecvt>
 #include <filesystem>
+#include <numeric>
 
 #include <string>
 #include <sstream>
@@ -27,6 +28,7 @@
 // LudoNarrative is planned to be windows only, I feel sily doing things for multiplatform projects
 // But I also dont want to regret not making this way in the future
 #ifdef LD_PLATFORM_WINDOWS
+	#define NOMINMAX
 	#include <Windows.h>
 	#include <wincodec.h>
 	#include <windowsx.h>

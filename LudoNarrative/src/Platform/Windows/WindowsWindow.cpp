@@ -215,7 +215,7 @@ namespace Ludo {
 
 		// Mouse
 		{ WM_MOUSEMOVE, ThrowEvent(MouseMovedEvent(GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam))) },
-		{ WM_MOUSEWHEEL, ThrowEvent(MouseScrolledEvent(GET_WHEEL_DELTA_WPARAM(wParam))) },
+		{ WM_MOUSEWHEEL, ThrowEvent(MouseScrolledEvent(0, GET_WHEEL_DELTA_WPARAM(wParam))) },
 
 		{ WM_LBUTTONDOWN, ThrowEvent(MouseButtonPressedEvent(MouseButton::Left)) },
 		{ WM_LBUTTONUP, ThrowEvent(MouseButtonReleasedEvent(MouseButton::Left)) },

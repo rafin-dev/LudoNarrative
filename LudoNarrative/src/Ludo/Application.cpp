@@ -18,8 +18,6 @@
 
 namespace Ludo {
 
-#define BindFuncFn(x) std::bind(&Application::x, this, std::placeholders::_1)
-
 	Application* Application::s_Instance = nullptr;
 
 	Application::Application()
@@ -40,8 +38,8 @@ namespace Ludo {
 			m_Running = false;
 			return;
 		}
-		m_Window->SetEventCallBack(BindFuncFn(OnEvent));
-		m_Window->SetVsync(false);
+		m_Window->SetEventCallBack(LUDO_BIND_EVENT_FN(Application::OnEvent));
+		m_Window->SetVsync(true);
 	}
 
 	Application::~Application()
@@ -59,17 +57,20 @@ namespace Ludo {
 			TimeStep timeStep = time - m_LastFrameTime;
 			m_LastFrameTime = time;
 
-			for (Layer* layer : m_LayerStack)
+			if (!m_Minimized)
 			{
-				layer->OnUpdate(timeStep);
-			}
+				for (Layer* layer : m_LayerStack)
+				{
+					layer->OnUpdate(timeStep);
+				}
 
-			RenderCommand::BeginImGui();
-			for (Layer* l : m_LayerStack)
-			{
-				l->OnImGuiRender();
+				RenderCommand::BeginImGui();
+				for (Layer* l : m_LayerStack)
+				{
+					l->OnImGuiRender();
+				}
+				RenderCommand::EndImGui();
 			}
-			RenderCommand::EndImGui();
 
 			m_Window->OnUpdate();
 		}
@@ -78,7 +79,8 @@ namespace Ludo {
 	void Application::OnEvent(Event& event)
 	{
 		EventDispatcher dispatcher(event);
-		dispatcher.Dispatch<WindowCloseEvent>(BindFuncFn(CloseWindow));
+		dispatcher.Dispatch<WindowCloseEvent>(LUDO_BIND_EVENT_FN(Application::CloseWindow));
+		dispatcher.Dispatch<WindowResizeEvent>(LUDO_BIND_EVENT_FN(Application::ResizeWindow));
 		dispatcher.Dispatch<KeyPressedEvent>([](KeyPressedEvent& event) -> bool {
 
 			if (event.GetKeyCode() == LD_KEY_F11)
@@ -114,6 +116,13 @@ namespace Ludo {
 	{
 		m_Running = false;
 		return true;
+	}
+
+	bool Application::ResizeWindow(WindowResizeEvent& event)
+	{
+		m_Minimized = event.GetWidth() == 0 || event.GetHeight() == 0;
+
+		return false;
 	}
 
 }
