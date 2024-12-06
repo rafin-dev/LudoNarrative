@@ -25,6 +25,8 @@
 #include <stack>
 #include <queue>
 
+#include "Ludo/Core/Log.h"
+
 // LudoNarrative is planned to be windows only, I feel sily doing things for multiplatform projects
 // But I also dont want to regret not making this way in the future
 #ifdef LD_PLATFORM_WINDOWS

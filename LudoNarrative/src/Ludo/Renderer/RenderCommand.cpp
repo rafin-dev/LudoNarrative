@@ -5,7 +5,7 @@
 	#include "Platform/DirectX11/DirectX11API.h"
 #endif 
 
-#include "Ludo/Core.h"
+#include "Ludo/Core/Core.h"
 
 namespace Ludo {
 

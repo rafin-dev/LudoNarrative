@@ -1,7 +1,7 @@
 #include "ldpch.h"
 #include "Shader.h"
 
-#include "Ludo/Core.h"
+#include "Ludo/Core/Core.h"
 #include "Renderer.h"
 
 #ifdef LD_PLATFORM_WINDOWS

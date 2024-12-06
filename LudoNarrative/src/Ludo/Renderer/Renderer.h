@@ -17,8 +17,7 @@ namespace Ludo {
 		static void EndScene();
 
 		static void Submit(const Ref<Shader>& shader, 
-			const Ref<VertexBuffer>& vertexBuffer, 
-			const Ref<IndexBuffer>& indexBuffer, 
+			const Ref<VertexArray>& vertexArray, 
 			const DirectX::XMFLOAT4X4& transform);
 
 		static inline RendererAPI::API GetAPI() { return RendererAPI::GetAPI(); }

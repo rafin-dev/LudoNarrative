@@ -28,9 +28,9 @@ namespace Ludo {
 			return s_RenderAPI->GetClearColor();
 		}
 
-		static inline void DrawIndexed(const Ref<VertexBuffer>& vertexBuffer, const Ref<IndexBuffer>& indexBuffer)
+		static inline void DrawIndexed(const Ref<VertexArray>& vertexArray)
 		{
-			s_RenderAPI->DrawIndexed(vertexBuffer, indexBuffer);
+			s_RenderAPI->DrawIndexed(vertexArray);
 		}
 
 		static void BeginImGui()

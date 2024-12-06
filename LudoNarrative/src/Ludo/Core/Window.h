@@ -2,8 +2,8 @@
 
 #include "ldpch.h"
 
-#include "Core.h"
-#include "Events/Event.h"
+#include "Ludo/Core/Core.h"
+#include "Ludo/Events/Event.h"
 
 namespace Ludo {
 

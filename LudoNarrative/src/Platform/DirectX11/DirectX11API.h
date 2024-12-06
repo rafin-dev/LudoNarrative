@@ -2,7 +2,7 @@
 
 #include "ldpch.h"
 #include "Ludo/Renderer/RendererAPI.h"
-#include "Ludo/Log.h"
+#include "Ludo/Core/Log.h"
 #include "imgui/imgui.h"
 
 namespace Ludo {
@@ -16,7 +16,7 @@ namespace Ludo {
 		virtual void SetClearColor(const DirectX::XMFLOAT4& color) override;
 		virtual const DirectX::XMFLOAT4& GetClearColor() override;
 
-		virtual void DrawIndexed(const Ref<VertexBuffer>& vertexBuffer, const Ref<IndexBuffer>& indexBuffer) override;
+		virtual void DrawIndexed(const Ref<VertexArray>& vertexArray) override;
 
 		virtual void BeginImGui() override;
 		virtual void EndImGui() override;

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Ludo/Input.h"
+#include "Ludo/Core/Input.h"
 
 #include "Windows.h"
 

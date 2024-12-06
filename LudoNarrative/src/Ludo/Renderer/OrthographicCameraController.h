@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Ludo/Core.h"
+#include "Ludo/Core/Core.h"
 #include "Ludo/Core/TimeStep.h"
 #include "Ludo/Renderer/OrthographicCamera.h"
 

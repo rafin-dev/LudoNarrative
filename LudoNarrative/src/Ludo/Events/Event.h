@@ -2,9 +2,9 @@
 
 #include "ldpch.h"
 
-#include "Ludo/Core.h"
+#include "Ludo/Core/Core.h"
 
-#include "Ludo/Log.h"
+#include "Ludo/Core/Log.h"
 
 namespace Ludo {
 

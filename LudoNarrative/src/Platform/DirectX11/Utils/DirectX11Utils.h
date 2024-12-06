@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Ludo/Log.h"
+#include "Ludo/Core/Log.h"
 
 #define VALIDATE_DX_HRESULT(x, ...) \
 						if (FAILED((x))) \

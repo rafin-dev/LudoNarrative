@@ -2,7 +2,7 @@
 
 #include "WindowsWindow.h"
 
-#include "Ludo/Log.h"
+#include "Ludo/Core/Log.h"
 #include "Ludo/Events/ApplicationEvent.h"
 #include "Ludo/Events/KeyEvent.h"
 #include "Ludo/Events/MouseEvent.h"

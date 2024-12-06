@@ -1,4 +1,5 @@
 #include <LudoEngine.h>
+#include <Ludo/Core/EntryPoint.h>
 
 #include "imgui/imgui.h"
 
@@ -35,10 +36,13 @@ public:
 			{ "Color", Ludo::ShaderDataType::Float4 }
 		};
 
-		m_VertexBuffer = Ludo::VertexBuffer::Create(vertices, sizeof(vertices), Layout);
-		m_IndexBuffer = Ludo::IndexBuffer::Create(indices, sizeof(indices) / sizeof(uint32_t));
+		auto vertexBuffer = Ludo::VertexBuffer::Create(vertices, sizeof(vertices), Layout);
+		auto indexBuffer = Ludo::IndexBuffer::Create(indices, sizeof(indices) / sizeof(uint32_t));
+		m_VertexArray = Ludo::VertexArray::Create();
+		m_VertexArray->AddVertexBuffer(vertexBuffer);
+		m_VertexArray->SetIndexBuffer(indexBuffer);
 		
-		m_Shader = m_ShaderLibrary.Load("TextureShader", "assets/shaders/Shader.hlsl", m_VertexBuffer->GetLayout(), Material);
+		m_Shader = m_ShaderLibrary.Load("TextureShader", "assets/shaders/Shader.hlsl", vertexBuffer->GetLayout(), Material);
 		m_Material = Ludo::Material::Create(m_Shader);
 		float color[4] = { 1.0f, 0.0f, 0.0f, 1.0f };
 		m_Material->SetMaterialItemData("Color", color);
@@ -68,10 +72,11 @@ public:
 		m_Material->UploadMaterialData();
 
 		m_BoardTexture->Bind();
-		Ludo::Renderer::Submit(m_Shader, m_VertexBuffer, m_IndexBuffer, m_Transform.GetModelMarix());
+		Ludo::Renderer::Submit(m_Shader, m_VertexArray, m_Transform.GetModelMarix());
 
 		m_ChernoTexture->Bind();
-		Ludo::Renderer::Submit(m_Shader, m_VertexBuffer, m_IndexBuffer, m_Transform.GetModelMarix());
+		m_VertexArray->Bind();
+		Ludo::Renderer::Submit(m_Shader, m_VertexArray, m_Transform.GetModelMarix());
 
 		Ludo::Renderer::EndScene();
 	}
@@ -104,8 +109,7 @@ private:
 	Ludo::Ref<Ludo::Texture2D> m_BoardTexture;
 	Ludo::Ref<Ludo::Texture2D> m_ChernoTexture;
 
-	Ludo::Ref<Ludo::VertexBuffer> m_VertexBuffer;
-	Ludo::Ref<Ludo::IndexBuffer> m_IndexBuffer;
+	Ludo::Ref<Ludo::VertexArray> m_VertexArray;
 
 	Ludo::OrthographicCameraController m_CameraController;
 

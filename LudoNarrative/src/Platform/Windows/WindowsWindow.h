@@ -2,8 +2,8 @@
 
 #include "ldpch.h"
 
-#include "Ludo/Core.h"
-#include "Ludo/Window.h"
+#include "Ludo/Core/Core.h"
+#include "Ludo/Core/Window.h"
 
 #include "Ludo/Renderer/GraphicsContext.h"
 

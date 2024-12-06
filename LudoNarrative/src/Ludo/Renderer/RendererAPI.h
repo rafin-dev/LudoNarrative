@@ -1,9 +1,9 @@
 #pragma once
 
 #include "ldpch.h"
-#include "Ludo/Core.h"
+#include "Ludo/Core/Core.h"
 
-#include "Ludo/Renderer/Buffer.h"
+#include "Ludo/Renderer/VertexArray.h"
 
 namespace Ludo {
 
@@ -25,7 +25,7 @@ namespace Ludo {
 		virtual void SetClearColor(const DirectX::XMFLOAT4& color) = 0;
 		virtual const DirectX::XMFLOAT4& GetClearColor() = 0;
 
-		virtual void DrawIndexed(const Ref<VertexBuffer>& vertexBuffer, const Ref<IndexBuffer>& indexBuffer) = 0;
+		virtual void DrawIndexed(const Ref<VertexArray>& vertexArray) = 0;
 
 		virtual void BeginImGui() = 0;
 		virtual void EndImGui() = 0;

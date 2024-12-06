@@ -1,18 +1,18 @@
 #include "ldpch.h"
 #include "Application.h"
 
-#include "Ludo/Core.h"
+#include "Ludo/Core/Core.h"
 
-#include "Ludo/Log.h"
+#include "Ludo/Core/Log.h"
 #include "Ludo/Renderer/RendererAPI.h"
 #include "Ludo/Renderer/Renderer.h"
-#include "Ludo/Input.h"
+#include "Ludo/Core/Input.h"
 
 #include "Ludo/Events/ApplicationEvent.h"
 #include "Ludo/Events/KeyEvent.h"
 #include "Ludo/Events/MouseEvent.h"
 #include "Ludo/Events/Event.h"
-#include "Ludo/KeyCodes.h"
+#include "Ludo/Core/KeyCodes.h"
 
 #include "imgui/imgui.h"
 

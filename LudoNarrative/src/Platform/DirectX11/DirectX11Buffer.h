@@ -16,6 +16,8 @@ namespace Ludo {
 
 		virtual const BufferLayout& GetLayout() const override { return m_Layout; }
 
+		ID3D11Buffer*& const GetBuffer() { return m_VertexBuffer; }
+
 	private:
 		void ShutDown();
 

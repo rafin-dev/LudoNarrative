@@ -105,9 +105,9 @@ namespace Ludo {
         return m_ClearColor;
     }
 
-    void DirectX11API::DrawIndexed(const Ref<VertexBuffer>& vertexBuffer, const Ref<IndexBuffer>& indexBuffer)
+    void DirectX11API::DrawIndexed(const Ref<VertexArray>& vertexArray)
     {
-        m_DeviceContext->DrawIndexed(indexBuffer->GetCount(), 0, 0);
+        m_DeviceContext->DrawIndexed(vertexArray->GetIndexBuffer()->GetCount(), 0, 0);
     }
 
     void DirectX11API::BeginImGui()

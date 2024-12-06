@@ -3,10 +3,10 @@
 #include "Core.h"
 #include "Window.h"
 
-#include "Events/ApplicationEvent.h"
-#include "Events/KeyEvent.h"
-#include "Layer.h"
-#include "LayerStack.h"
+#include "Ludo/Events/ApplicationEvent.h"
+#include "Ludo/Events/KeyEvent.h"
+#include "Ludo/Core/Layer.h"
+#include "Ludo/Core/LayerStack.h"
 #include "Ludo/Core/TimeStep.h"
 
 namespace Ludo {

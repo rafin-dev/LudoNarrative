@@ -2,7 +2,7 @@
 
 #include "Core.h"
 
-#include "Events/KeyEvent.h"
+#include "Ludo/Events/KeyEvent.h"
 
 namespace Ludo {
 

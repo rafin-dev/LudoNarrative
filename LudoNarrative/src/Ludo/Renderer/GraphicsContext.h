@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Ludo/Window.h"
+#include "Ludo/Core/Window.h"
 
 namespace Ludo {
 

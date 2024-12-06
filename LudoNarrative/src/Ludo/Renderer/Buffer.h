@@ -2,7 +2,7 @@
 
 #include "typeinfo"
 
-#include "Ludo/Core.h"
+#include "Ludo/Core/Core.h"
 
 // IMPORTANT: Current DirectX12 Buffer(ID3D12Resource2) creation is EXTREMELY ineficient
 // TODO: Fix that LOL

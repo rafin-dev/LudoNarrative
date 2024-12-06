@@ -1,8 +1,8 @@
 #include "ldpch.h"
 #include "OrthographicCameraController.h"
 
-#include "Ludo/Input.h"
-#include "Ludo/KeyCodes.h"
+#include "Ludo/Core/Input.h"
+#include "Ludo/Core/KeyCodes.h"
 
 namespace Ludo {
 

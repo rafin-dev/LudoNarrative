@@ -10,15 +10,15 @@
 // |________/ \______/  \_______/ \______/ |__/  \__/ \_______/|__/      |__/      \_______/   \___/  |__/    \_/    \_______/
 //
 
-#include "Ludo/Application.h"
-#include "Ludo/Layer.h"
-#include "Ludo/Log.h"
+#include "Ludo/Core/Application.h"
+#include "Ludo/Core/Layer.h"
+#include "Ludo/Core/Log.h"
 
-#include "Ludo/Input.h"
-#include "Ludo/KeyCodes.h"
+#include "Ludo/Core/Input.h"
+#include "Ludo/Core/KeyCodes.h"
 #include "Ludo/Core/TimeStep.h"
 
-#include "Ludo/OrthographicCameraController.h"
+#include "Ludo/Renderer/OrthographicCameraController.h"
 
 // ============ Renderer ===========
 #include "Ludo/Renderer/Renderer.h"
@@ -26,13 +26,10 @@
 
 #include "Ludo/Renderer/Shader.h"
 #include "Ludo/Renderer/Buffer.h"
+#include "Ludo/Renderer/VertexArray.h"
 #include "Ludo/Renderer/Material.h"
 #include "Ludo/Renderer/Texture.h"
 
 #include "Ludo/Renderer/OrthographicCamera.h"
 #include "Ludo/Renderer/Transform.h"
-// =================================
-
-// ========== Entry-Point ==========
-#include "Ludo/EntryPoint.h"
 // =================================
