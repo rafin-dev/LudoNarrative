@@ -3,7 +3,7 @@
 
 namespace Ludo {
 
-	void Material::SetMaterialItemData(const std::string& name, void* data)
+	void Material::SetMaterialItemData(const std::string& name, const void* data)
 	{
 		auto& item = m_Items.at(name);
 

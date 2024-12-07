@@ -22,6 +22,7 @@
 
 // ============ Renderer ===========
 #include "Ludo/Renderer/Renderer.h"
+#include "Ludo/Renderer/Renderer2D.h"
 #include "Ludo/Renderer/RenderCommand.h"
 
 #include "Ludo/Renderer/Shader.h"

@@ -3,6 +3,8 @@
 
 #include "imgui/imgui.h"
 
+#include "Sandbox2D.h"
+
 class ExampleLayer : public Ludo::Layer
 {
 public:
@@ -42,7 +44,7 @@ public:
 		m_VertexArray->AddVertexBuffer(vertexBuffer);
 		m_VertexArray->SetIndexBuffer(indexBuffer);
 		
-		m_Shader = m_ShaderLibrary.Load("TextureShader", "assets/shaders/Shader.hlsl", vertexBuffer->GetLayout(), Material);
+		m_Shader = m_ShaderLibrary.Load("TextureShader", "assets/shaders/TextureShader.hlsl", vertexBuffer->GetLayout(), Material);
 		m_Material = Ludo::Material::Create(m_Shader);
 		float color[4] = { 1.0f, 0.0f, 0.0f, 1.0f };
 		m_Material->SetMaterialItemData("Color", color);
@@ -72,11 +74,11 @@ public:
 		m_Material->UploadMaterialData();
 
 		m_BoardTexture->Bind();
-		Ludo::Renderer::Submit(m_Shader, m_VertexArray, m_Transform.GetModelMarix());
+		Ludo::Renderer::Submit(m_Material, m_VertexArray, m_Transform.GetModelMarix());
 
 		m_ChernoTexture->Bind();
 		m_VertexArray->Bind();
-		Ludo::Renderer::Submit(m_Shader, m_VertexArray, m_Transform.GetModelMarix());
+		Ludo::Renderer::Submit(m_Material, m_VertexArray, m_Transform.GetModelMarix());
 
 		Ludo::Renderer::EndScene();
 	}
@@ -123,7 +125,8 @@ class Sandbox : public Ludo::Application
 public:
 	Sandbox()
 	{
-		PushLayer(new ExampleLayer());
+		//PushLayer(new ExampleLayer());
+		PushLayer(new Sandbox2D());
 	}
 
 	~Sandbox()

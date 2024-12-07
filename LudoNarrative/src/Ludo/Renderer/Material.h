@@ -15,7 +15,7 @@ namespace Ludo {
 			return Ref<Material>(new Material(shader));
 		}
 
-		void SetMaterialItemData(const std::string& name, void* data);
+		void SetMaterialItemData(const std::string& name, const void* data);
 
 		void UploadMaterialData()
 		{
@@ -24,7 +24,7 @@ namespace Ludo {
 
 		~Material();
 
-		Ref<Shader> GetShader() { return m_Shader; }
+		const Ref<Shader>& GetShader() { return m_Shader; }
 
 	private:
 		Material(Ref<Shader> shader);

@@ -16,12 +16,14 @@ namespace Ludo {
 	{
 	}
 
-	void Renderer::Submit(const Ref<Shader>& shader, const Ref<VertexArray>& vertexArray, const DirectX::XMFLOAT4X4& transform)
+	void Renderer::Submit(const Ref<Material>& material, const Ref<VertexArray>& vertexArray, const DirectX::XMFLOAT4X4& transform)
 	{
+		auto& shader = material->GetShader();
 		shader->Bind();
 		shader->SetViewProjectionMatrix(s_SceneData->ViewProjectionMatrix);
 		shader->SetModelMatrix(transform);
-
+		material->UploadMaterialData();
+		
 		vertexArray->Bind();
 		RenderCommand::DrawIndexed(vertexArray);
 	}

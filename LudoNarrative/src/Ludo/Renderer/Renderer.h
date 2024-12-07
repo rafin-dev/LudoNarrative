@@ -1,7 +1,9 @@
 #pragma once
 
 #include "RenderCommand.h"
+#include "Renderer2D.h"
 #include "Shader.h"
+#include "Material.h"
 
 #include "OrthographicCamera.h"
 
@@ -10,13 +12,25 @@ namespace Ludo {
 	class Renderer
 	{
 	public:
-		static inline bool Init() { return RenderCommand::Init(); }
-		static inline void ShutDown() { RenderCommand::ShutDown(); }
+		static inline bool Init()
+		{ 
+			bool Succes = RenderCommand::Init();
+			if (Succes)
+			{
+				Renderer2D::Init();
+			}
+			return Succes;
+		}
+		static inline void ShutDown() 
+		{ 
+			Renderer2D::Shutdown();
+			RenderCommand::ShutDown(); 
+		}
 
 		static void BeginScene(OrthographicCamera& camera);
 		static void EndScene();
 
-		static void Submit(const Ref<Shader>& shader, 
+		static void Submit(const Ref<Material>& material, 
 			const Ref<VertexArray>& vertexArray, 
 			const DirectX::XMFLOAT4X4& transform);
 
