@@ -46,6 +46,52 @@ namespace Ludo {
         VALIDATE_DX_HRESULT(hr, "Failed to query IDXGISwapChain2 from IDXGISwapChain1");
         swapchain1->Release();
 
+        // ========== Depth Buffer ==========
+        D3D11_TEXTURE2D_DESC depthTextureDesc = {};
+        depthTextureDesc.Width = m_Window->GetWidth();
+        depthTextureDesc.Height = m_Window->GetHeight();
+        depthTextureDesc.MipLevels = 1;
+        depthTextureDesc.ArraySize = 1;
+        depthTextureDesc.SampleDesc.Count = 1;
+        depthTextureDesc.SampleDesc.Quality = 0;
+        depthTextureDesc.Format = DXGI_FORMAT_D32_FLOAT;
+        depthTextureDesc.Usage = D3D11_USAGE_DEFAULT;
+        depthTextureDesc.BindFlags = D3D11_BIND_DEPTH_STENCIL;
+
+        ID3D11Texture2D* DepthStencilTexture;
+        hr = api->GetDevice()->CreateTexture2D(&depthTextureDesc, NULL, &DepthStencilTexture);
+        VALIDATE_DX_HRESULT(hr, "Failed to create Texture2d for Depth Buffer");
+
+        D3D11_DEPTH_STENCIL_VIEW_DESC dsvDesc = {};
+        dsvDesc.Format = DXGI_FORMAT_D32_FLOAT;
+        dsvDesc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
+
+        hr = api->GetDevice()->CreateDepthStencilView(DepthStencilTexture, &dsvDesc, &m_DepthStencilView);
+        DepthStencilTexture->Release();
+        VALIDATE_DX_HRESULT(hr, "Failed to create Depth Stencil View");
+
+        D3D11_DEPTH_STENCIL_DESC depthStateDesc = {};
+        depthStateDesc.DepthEnable = true;
+        depthStateDesc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ALL;
+        depthStateDesc.DepthFunc = D3D11_COMPARISON_LESS_EQUAL;
+
+        depthStateDesc.StencilEnable = true;
+        depthStateDesc.StencilReadMask = 0xFF;
+        depthStateDesc.StencilWriteMask = 0xFF;
+        
+        depthStateDesc.FrontFace.StencilFailOp = D3D11_STENCIL_OP_KEEP;
+        depthStateDesc.FrontFace.StencilDepthFailOp = D3D11_STENCIL_OP_INCR;
+        depthStateDesc.FrontFace.StencilPassOp = D3D11_STENCIL_OP_KEEP;
+        depthStateDesc.FrontFace.StencilFunc = D3D11_COMPARISON_ALWAYS;
+
+        depthStateDesc.BackFace.StencilFailOp = D3D11_STENCIL_OP_KEEP;
+        depthStateDesc.BackFace.StencilDepthFailOp = D3D11_STENCIL_OP_DECR;
+        depthStateDesc.BackFace.StencilPassOp = D3D11_STENCIL_OP_KEEP;
+        depthStateDesc.BackFace.StencilFunc = D3D11_COMPARISON_ALWAYS;
+
+        hr = api->GetDevice()->CreateDepthStencilState(&depthStateDesc, &m_DepthStencilState);
+        VALIDATE_DX_HRESULT(hr, "Failed to create Depth Stencil State");
+
         // ========== Back Buffer / Render Target ==========
         if (!GetBackBuffer())
         {
@@ -71,7 +117,8 @@ namespace Ludo {
         
         // End Last frame
         m_SwapChain->Present(m_Window->IsVsync(), m_Window->IsVsync() ? 0 : DXGI_PRESENT_ALLOW_TEARING);
-        DirectX11API::Get()->GetDeviceContext()->OMSetRenderTargets(1, &m_BackBuffer, nullptr);
+        deviceContext->OMSetRenderTargets(1, &m_BackBuffer, m_DepthStencilView);
+        deviceContext->OMSetDepthStencilState(m_DepthStencilState, 1);
 
         if (m_ShouldResize)
         {
@@ -81,6 +128,7 @@ namespace Ludo {
 
         // Begin new frame
         deviceContext->ClearRenderTargetView(m_BackBuffer, (float*)&DirectX11API::Get()->GetClearColor());
+        deviceContext->ClearDepthStencilView(m_DepthStencilView, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
     }
 
     void DirectX11Context::Resize(unsigned int width, unsigned int height)
@@ -90,6 +138,8 @@ namespace Ludo {
 
     void DirectX11Context::ShutDown()
     {
+        CHECK_AND_RELEASE_COMPTR(m_DepthStencilView);
+        CHECK_AND_RELEASE_COMPTR(m_DepthStencilState);
         CHECK_AND_RELEASE_COMPTR(m_BackBuffer);
         CHECK_AND_RELEASE_COMPTR(m_SwapChain);
         LD_CORE_INFO("Deleted DirectX11 Render Context for window: {0}", m_Window->GetTitle());
@@ -106,7 +156,8 @@ namespace Ludo {
         pBackBuffer->Release();
         VALIDATE_DX_HRESULT(hr, "Failed to create Render Target View for Back Buffer");
 
-        DirectX11API::Get()->GetDeviceContext()->OMSetRenderTargets(1, &m_BackBuffer, nullptr);
+        DirectX11API::Get()->GetDeviceContext()->OMSetRenderTargets(1, &m_BackBuffer, m_DepthStencilView);
+        DirectX11API::Get()->GetDeviceContext()->OMSetDepthStencilState(m_DepthStencilState, 1);
 
         return true;
     }

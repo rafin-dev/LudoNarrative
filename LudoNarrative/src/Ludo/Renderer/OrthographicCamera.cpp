@@ -13,7 +13,7 @@ namespace Ludo {
 
 	void OrthographicCamera::SetProjection(float left, float right, float bottom, float top)
 	{
-		DirectX::XMStoreFloat4x4(&m_ProjectionMatrix, DirectX::XMMatrixOrthographicOffCenterLH(left, right, bottom, top, -1, 1));
+		DirectX::XMStoreFloat4x4(&m_ProjectionMatrix, DirectX::XMMatrixOrthographicOffCenterLH(left, right, bottom, top, 1.0f, -1.0f));
 	}
 
 	void OrthographicCamera::RecalculateViewMatrix()

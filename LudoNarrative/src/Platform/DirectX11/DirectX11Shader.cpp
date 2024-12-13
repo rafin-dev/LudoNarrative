@@ -122,8 +122,10 @@ namespace Ludo {
 			default: LD_CORE_ASSERT(false, "Syntax Error: Unknown Shader Kind");
 			}
 
+			ID3DBlob* errorMessage = nullptr;
+
 			output[shaderKind] = nullptr;
-			D3DCompile(
+			HRESULT hr = D3DCompile(
 				shaderSrc.c_str(),
 				shaderSrc.size(),
 				nullptr,
@@ -134,8 +136,9 @@ namespace Ludo {
 				flags,
 				NULL,
 				&output[shaderKind],
-				nullptr
+				&errorMessage
 			);
+			LD_CORE_ASSERT(SUCCEEDED(hr), "Failed to compile Shader: {0}", (char*)errorMessage->GetBufferPointer());
 		}
 	}
 

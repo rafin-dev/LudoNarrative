@@ -1,7 +1,8 @@
 #pragma once
 
 #include "Ludo/Core/Core.h"
-#include "OrthographicCamera.h"
+#include "Ludo/Renderer/OrthographicCamera.h"
+#include "Ludo/Renderer/Texture.h"
 
 namespace Ludo {
 
@@ -16,8 +17,11 @@ namespace Ludo {
 		static void EndScene();
 
 		// ========== Primitives ==========
-		static void DrawQuad(const DirectX::XMFLOAT2& position, const DirectX::XMFLOAT2& size, const DirectX::XMFLOAT4& color);
-		static void DrawQuad(const DirectX::XMFLOAT3& position, const DirectX::XMFLOAT2& size, const DirectX::XMFLOAT4& color);
+		static void DrawQuad(const DirectX::XMFLOAT2& position, const DirectX::XMFLOAT2& size, float rotation, const DirectX::XMFLOAT4& color);
+		static void DrawQuad(const DirectX::XMFLOAT3& position, const DirectX::XMFLOAT2& size, float rotation, const DirectX::XMFLOAT4& color);
+	
+		static void DrawQuad(const DirectX::XMFLOAT2& position, const DirectX::XMFLOAT2& size, float rotation, const Ref<Texture2D>& texture);
+		static void DrawQuad(const DirectX::XMFLOAT3& position, const DirectX::XMFLOAT2& size, float rotation, const Ref<Texture2D>& texture);
 	};
 
 }

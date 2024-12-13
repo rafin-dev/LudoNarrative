@@ -11,7 +11,7 @@ cbuffer Model : register(b1)
 };
 
 float4 main(float3 Pos : Position) : SV_Position
-{
+{   
     return mul(mul(float4(Pos.xyz, 1.0f), ModelMatrix), ViewProjection);
 }
 

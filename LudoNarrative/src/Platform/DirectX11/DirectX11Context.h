@@ -35,6 +35,8 @@ namespace Ludo {
 		IDXGISwapChain2* m_SwapChain = nullptr;
 
 		ID3D11RenderTargetView* m_BackBuffer = nullptr;
+		ID3D11DepthStencilView* m_DepthStencilView = nullptr;
+		ID3D11DepthStencilState* m_DepthStencilState = nullptr;
 
 		HWND m_WindowHandle = NULL;
 		WindowsWindow* m_Window = nullptr;

@@ -16,6 +16,7 @@ VS_OUTPUT main(VS_INPUT input)
     VS_OUTPUT output;
     output.Position = mul(mul(float4(input.Pos.xyz, 1.0f), ModelMatrix), ViewProjection);
     output.TexPos = input.TexPos;
+    
     return output;
 }
 

@@ -17,4 +17,11 @@ public:
 private:
 	Ludo::OrthographicCameraController m_CameraController;
 
+	DirectX::XMFLOAT2 m_Position = {};
+	DirectX::XMFLOAT2 m_Size = { 1.0f, 1.0f };
+	float m_Rotation = 0.0f;
+
+	DirectX::XMFLOAT4 m_Color = { 1.0f, 1.0f, 1.0f, 1.0f };
+
+	Ludo::Ref<Ludo::Texture2D> m_Texture;
 };
