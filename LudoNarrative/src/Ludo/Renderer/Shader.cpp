@@ -19,7 +19,7 @@ namespace Ludo {
         switch (Renderer::GetAPI())
         {
             case RendererAPI::API::None: LD_CORE_ASSERT(false, "RenderAPI::None is currently not supported") return nullptr;
-            case RendererAPI::API::DirectX11: return Ref<Shader>(new DirectX11Shader(name, vertexShaderBuffer, vertexShaderSize, pixelShaderBuffer, pixelShaderSize, vertexLayout, materialDataLayout));
+            case RendererAPI::API::DirectX11: return CreateRef<DirectX11Shader>(name, vertexShaderBuffer, vertexShaderSize, pixelShaderBuffer, pixelShaderSize, vertexLayout, materialDataLayout);
         }
 
         LD_CORE_ASSERT(false, "Unknown RenderAPI specified, please provide a existing RenderAPI!");
@@ -32,7 +32,7 @@ namespace Ludo {
         switch (Renderer::GetAPI())
         {
             case RendererAPI::API::None: LD_CORE_ASSERT(false, "RenderAPI::None is currently not supported") return nullptr;
-            case RendererAPI::API::DirectX11: return Ref<Shader>(new DirectX11Shader(name, shaderSrcPath, vertexLayout, materialDataLayout));
+            case RendererAPI::API::DirectX11: return CreateRef<DirectX11Shader>(name, shaderSrcPath, vertexLayout, materialDataLayout);
         }
 
         LD_CORE_ASSERT(false, "Unknown RenderAPI specified, please provide a existing RenderAPI!");

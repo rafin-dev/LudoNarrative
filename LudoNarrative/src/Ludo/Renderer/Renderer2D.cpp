@@ -7,11 +7,19 @@
 
 namespace Ludo {
 
+	static void CreateTransform(DirectX::XMFLOAT4X4* matrixOutput, const DirectX::XMFLOAT3& pos, const DirectX::XMFLOAT2& size, float rotation)
+	{
+		DirectX::XMStoreFloat4x4(matrixOutput, DirectX::XMMatrixTranspose(
+			DirectX::XMMatrixScaling(size.x, size.y, 1.0f) *
+			DirectX::XMMatrixRotationZ(DirectX::XMConvertToRadians(-rotation)) *
+			DirectX::XMMatrixTranslation(pos.x, pos.y, pos.z)));
+	}
+
 	struct DataRenderer2D
 	{
 		Ref<VertexArray> QuadVertexArray;
-		Ref<Material> FlatColorMaterial;
 		Ref<Material> TextureMaterial;
+		Ref<Texture2D> WhiteTexture;
 	};
 
 	static DataRenderer2D* s_Data;
@@ -46,26 +54,24 @@ namespace Ludo {
 		BufferLayout materialLayout = {
 			{ "Color", ShaderDataType::Float4 },
 		};
-		auto flatColorShader = Shader::Create("FlatColorShader", "assets/shaders/FlatColorShader.hlsl", vertexBuffer->GetLayout(), materialLayout);
-		s_Data->FlatColorMaterial = Material::Create(flatColorShader);
 
-		auto textureShader = Shader::Create("TextureShader", "assets/shaders/TextureShader.hlsl", vertexBuffer->GetLayout(), {});
+		auto textureShader = Shader::Create("TextureShader", "assets/shaders/TextureShader.hlsl", vertexBuffer->GetLayout(), materialLayout);
 		s_Data->TextureMaterial = Material::Create(textureShader);
+
+		s_Data->WhiteTexture = Texture2D::Create(1, 1);
+		uint32_t whiteTextureData = 0xffffffff;
+		s_Data->WhiteTexture->SetData(&whiteTextureData, sizeof(whiteTextureData));
 	}
 	
 	void Renderer2D::Shutdown()
 	{
 		delete s_Data;
 	}
-
-	static DirectX::XMFLOAT4X4 cam;
 	
 	void Renderer2D::BeginScene(const OrthographicCamera& camera)
 	{
-		s_Data->FlatColorMaterial->GetShader()->SetViewProjectionMatrix(camera.GetViewProjectionMatrix());
+		s_Data->TextureMaterial->GetShader()->Bind();
 		s_Data->TextureMaterial->GetShader()->SetViewProjectionMatrix(camera.GetViewProjectionMatrix());
-
-		cam = camera.GetViewProjectionMatrix();
 	}
 	
 	void Renderer2D::EndScene()
@@ -79,50 +85,31 @@ namespace Ludo {
 
 	void Renderer2D::DrawQuad(const DirectX::XMFLOAT3& position, const DirectX::XMFLOAT2& size, float rotation, const DirectX::XMFLOAT4& color)
 	{
-		s_Data->FlatColorMaterial->GetShader()->Bind();
-
 		DirectX::XMFLOAT4X4 transform;		
-		DirectX::XMStoreFloat4x4(&transform, DirectX::XMMatrixTranspose(
-			DirectX::XMMatrixScaling(size.x, size.y, 1.0f) *
-			DirectX::XMMatrixRotationZ(DirectX::XMConvertToRadians(-rotation)) *
-			DirectX::XMMatrixTranslation(position.x, position.y, position.z)));
+		CreateTransform(&transform, position, size, rotation);
 
-		s_Data->FlatColorMaterial->GetShader()->SetModelMatrix(transform);
+		s_Data->TextureMaterial->GetShader()->SetModelMatrix(transform);
 
-		s_Data->FlatColorMaterial->SetMaterialItemData("Color", &color);
-		s_Data->FlatColorMaterial->UploadMaterialData();
+		s_Data->TextureMaterial->SetMaterialItemData("Color", &color);
+		s_Data->TextureMaterial->UploadMaterialData();
 
-		DirectX::XMVECTOR pos = DirectX::XMVector3Transform(
-			DirectX::XMVector3Transform(
-				DirectX::XMLoadFloat3(&position),
-				DirectX::XMLoadFloat4x4(&cam)
-			), DirectX::XMMatrixScaling(size.x, size.y, 1.0f) *
-			DirectX::XMMatrixRotationZ(DirectX::XMConvertToRadians(-rotation)) *
-			DirectX::XMMatrixTranslation(position.x, position.y, position.z));
-		DirectX::XMFLOAT3 poss;
-		DirectX::XMStoreFloat3(&poss, pos);
-
+		s_Data->WhiteTexture->Bind();
 		s_Data->QuadVertexArray->Bind();
 		RenderCommand::DrawIndexed(s_Data->QuadVertexArray);
 	}
 
-	void Renderer2D::DrawQuad(const DirectX::XMFLOAT2& position, const DirectX::XMFLOAT2& size, float rotation, const Ref<Texture2D>& texture)
+	void Renderer2D::DrawQuad(const DirectX::XMFLOAT2& position, const DirectX::XMFLOAT2& size, float rotation, const Ref<Texture2D>& texture, const DirectX::XMFLOAT4& color)
 	{
-		DrawQuad({ position.x, position.y, 0.0f }, size, rotation, texture);
+		DrawQuad({ position.x, position.y, 0.0f }, size, rotation, texture, color);
 	}
 
-	void Renderer2D::DrawQuad(const DirectX::XMFLOAT3& position, const DirectX::XMFLOAT2& size, float rotation, const Ref<Texture2D>& texture)
+	void Renderer2D::DrawQuad(const DirectX::XMFLOAT3& position, const DirectX::XMFLOAT2& size, float rotation, const Ref<Texture2D>& texture, const DirectX::XMFLOAT4& color)
 	{
-		s_Data->TextureMaterial->GetShader()->Bind();
-
 		DirectX::XMFLOAT4X4 transform;
-		DirectX::XMStoreFloat4x4(&transform, DirectX::XMMatrixTranspose(
-			DirectX::XMMatrixScaling(size.x, size.y, 1.0f) *
-			DirectX::XMMatrixRotationZ(DirectX::XMConvertToRadians(-rotation)) *
-			DirectX::XMMatrixTranslation(position.x, position.y, position.z)));
+		CreateTransform(&transform, position, size, rotation);
 
 		s_Data->TextureMaterial->GetShader()->SetModelMatrix(transform);
-
+		s_Data->TextureMaterial->SetMaterialItemData("Color", &color);
 		s_Data->TextureMaterial->UploadMaterialData();
 		
 		texture->Bind();

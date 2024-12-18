@@ -8,22 +8,15 @@
 
 namespace Ludo {
 
+	DirectX11Texture2D::DirectX11Texture2D(uint32_t width, uint32_t height)
+		: m_Width(width), m_Height(height)
+	{
+		Init(nullptr, 4);
+	}
+
 	DirectX11Texture2D::DirectX11Texture2D(const std::string& path)
 		: m_Path(path)
 	{
-		Init();
-	}
-
-	DirectX11Texture2D::~DirectX11Texture2D()
-	{
-		ShutDown();
-	}
-
-	bool DirectX11Texture2D::Init()
-	{
-		HRESULT hr = S_OK;
-		auto device = DirectX11API::Get()->GetDevice();
-
 		int channelCount = 4;
 		int width, height, channels;
 		stbi_set_flip_vertically_on_load(true);
@@ -31,6 +24,20 @@ namespace Ludo {
 		LD_CORE_ASSERT(data != nullptr, "Failed to load Image: {0}", m_Path);
 		m_Width = width;
 		m_Height = height;
+
+		Init(data, channelCount);
+		stbi_image_free(data);
+	}
+
+	DirectX11Texture2D::~DirectX11Texture2D()
+	{
+		ShutDown();
+	}
+
+	bool DirectX11Texture2D::Init(void* data, int channelCount)
+	{
+		HRESULT hr = S_OK;
+		auto device = DirectX11API::Get()->GetDevice();
 
 		D3D11_TEXTURE2D_DESC textureDesc = {};
 		textureDesc.Width = m_Width;
@@ -40,16 +47,16 @@ namespace Ludo {
 		textureDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
 		textureDesc.SampleDesc.Count = 1;
 		textureDesc.SampleDesc.Quality = 0;
-		textureDesc.Usage = D3D11_USAGE_IMMUTABLE;
+		textureDesc.Usage = D3D11_USAGE_DYNAMIC;
+		textureDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
 		textureDesc.BindFlags = D3D11_BIND_SHADER_RESOURCE;
 
 		D3D11_SUBRESOURCE_DATA TextureSubresourceData = {};
 		TextureSubresourceData.pSysMem = data;
 		TextureSubresourceData.SysMemPitch = m_Width * channelCount;
 
-		hr = device->CreateTexture2D(&textureDesc, &TextureSubresourceData, &m_Texture);
-		stbi_image_free(data);
-		VALIDATE_DX_HRESULT(hr, "Failed to create Texture: {0} [{1}, {2}", m_Path, m_Width, m_Height);
+		hr = device->CreateTexture2D(&textureDesc, data != nullptr ? &TextureSubresourceData : nullptr, &m_Texture);
+		VALIDATE_DX_HRESULT(hr, "Failed to create Texture: {0} [{1}, {2}]", m_Path, m_Width, m_Height);
 
 		hr = device->CreateShaderResourceView(m_Texture, nullptr, &m_ShaderResourceView);
 		VALIDATE_DX_HRESULT(hr, "Failed to create Shader Resource View for texture: {0}, [{1}, {2}]", m_Path, m_Width, m_Height);
@@ -83,6 +90,18 @@ namespace Ludo {
 		CHECK_AND_RELEASE_COMPTR(m_ShaderResourceView);
 		CHECK_AND_RELEASE_COMPTR(m_SamplerState);
 		LD_CORE_TRACE("Unloaded Texture: {0} [{1}, {2}]", m_Path, m_Width, m_Height);
+	}
+
+	void DirectX11Texture2D::SetData(void* data, uint32_t size)
+	{
+		LD_CORE_ASSERT(size == m_Width * m_Height * 4, "Data Size does not match texture Size! Data Size: {0}, Texture Size: {1}", size, m_Width * m_Height * 4);
+		D3D11_MAPPED_SUBRESOURCE mapped = {};
+		HRESULT hr = DirectX11API::Get()->GetDeviceContext()->Map(m_Texture, 0, D3D11_MAP_WRITE_DISCARD, 0, &mapped);
+		LD_CORE_ASSERT(SUCCEEDED(hr), "Failed to map Subresource");
+
+		memcpy(mapped.pData, data, size);
+
+		DirectX11API::Get()->GetDeviceContext()->Unmap(m_Texture, 0);
 	}
 
 	void DirectX11Texture2D::Bind(uint32_t slot = 0) const

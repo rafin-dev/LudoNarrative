@@ -1,4 +1,4 @@
-#type vertex
+#kind vertex
 
 cbuffer ViewProjection : register(b0)
 {
@@ -15,7 +15,7 @@ float4 main(float3 Pos : Position) : SV_Position
     return mul(mul(float4(Pos.xyz, 1.0f), ModelMatrix), ViewProjection);
 }
 
-#type pixel
+#kind pixel
 
 cbuffer Material : register(b0)
 {

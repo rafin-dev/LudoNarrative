@@ -86,7 +86,7 @@ namespace Ludo {
 
 	void DirectX11Shader::ParseShaders(const std::string& source, std::unordered_map<ShaderKind, std::string>& shadersSrcs)
 	{
-		const char* typeToken = "#type";
+		const char* typeToken = "#kind";
 		size_t typeTokenLenght = strlen(typeToken);
 		size_t pos = source.find(typeToken, 0);
 		while (pos != std::string::npos)

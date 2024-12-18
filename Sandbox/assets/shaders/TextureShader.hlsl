@@ -1,4 +1,4 @@
-#type vertex
+#kind vertex
 #include "assets/shaders/Header.hlsli"
 
 cbuffer ViewProjection : register(b0)
@@ -20,7 +20,7 @@ VS_OUTPUT main(VS_INPUT input)
     return output;
 }
 
-#type pixel
+#kind pixel
 #include "assets/shaders/Header.hlsli"
 
 cbuffer Material : register(b0)
@@ -33,5 +33,5 @@ SamplerState Sampler;
 
 float4 main(VS_OUTPUT input) : SV_Target
 {
-    return Texture.Sample(Sampler, input.TexPos);
+    return Texture.Sample(Sampler, input.TexPos) * Color;
 }

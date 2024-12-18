@@ -7,16 +7,19 @@ namespace Ludo {
 	class DirectX11Texture2D : public Texture2D
 	{
 	public:
+		DirectX11Texture2D(uint32_t width, uint32_t height);
 		DirectX11Texture2D(const std::string& path);
 		virtual ~DirectX11Texture2D() override;
 
 		virtual uint32_t GetWidth() const override { return m_Width; }
 		virtual uint32_t GetHeight() const override { return m_Height; }
 
+		virtual void SetData(void* data, uint32_t size) override;
+
 		virtual void Bind(uint32_t slot) const override;
 
 	private:
-		bool Init();
+		bool Init(void* data, int channelCount);
 		void ShutDown();
 
 		std::string m_Path = "None";

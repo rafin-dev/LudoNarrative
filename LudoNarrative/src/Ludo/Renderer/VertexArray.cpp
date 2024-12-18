@@ -16,7 +16,7 @@ namespace Ludo {
         switch (RendererAPI::GetAPI())
         {
             case RendererAPI::API::None: LD_CORE_ASSERT(false, "None is not yet supported") return nullptr;
-            case RendererAPI::API::DirectX11: return Ref<VertexArray>(new DirectX11VertexArray());
+            case RendererAPI::API::DirectX11: return CreateRef<DirectX11VertexArray>();
         }
 
         return nullptr;
