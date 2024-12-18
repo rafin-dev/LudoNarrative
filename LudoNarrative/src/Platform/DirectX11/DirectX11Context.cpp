@@ -54,7 +54,7 @@ namespace Ludo {
         depthTextureDesc.ArraySize = 1;
         depthTextureDesc.SampleDesc.Count = 1;
         depthTextureDesc.SampleDesc.Quality = 0;
-        depthTextureDesc.Format = DXGI_FORMAT_D32_FLOAT;
+        depthTextureDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
         depthTextureDesc.Usage = D3D11_USAGE_DEFAULT;
         depthTextureDesc.BindFlags = D3D11_BIND_DEPTH_STENCIL;
 
@@ -63,7 +63,7 @@ namespace Ludo {
         VALIDATE_DX_HRESULT(hr, "Failed to create Texture2d for Depth Buffer");
 
         D3D11_DEPTH_STENCIL_VIEW_DESC dsvDesc = {};
-        dsvDesc.Format = DXGI_FORMAT_D32_FLOAT;
+        dsvDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
         dsvDesc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
 
         hr = api->GetDevice()->CreateDepthStencilView(DepthStencilTexture, &dsvDesc, &m_DepthStencilView);
@@ -117,8 +117,6 @@ namespace Ludo {
         
         // End Last frame
         m_SwapChain->Present(m_Window->IsVsync(), m_Window->IsVsync() ? 0 : DXGI_PRESENT_ALLOW_TEARING);
-        deviceContext->OMSetRenderTargets(1, &m_BackBuffer, m_DepthStencilView);
-        deviceContext->OMSetDepthStencilState(m_DepthStencilState, 1);
 
         if (m_ShouldResize)
         {
@@ -127,6 +125,8 @@ namespace Ludo {
         }
 
         // Begin new frame
+        deviceContext->OMSetRenderTargets(1, &m_BackBuffer, m_DepthStencilView);
+        deviceContext->OMSetDepthStencilState(m_DepthStencilState, 1);
         deviceContext->ClearRenderTargetView(m_BackBuffer, (float*)&DirectX11API::Get()->GetClearColor());
         deviceContext->ClearDepthStencilView(m_DepthStencilView, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
     }
@@ -179,6 +179,8 @@ namespace Ludo {
         viewport.TopLeftY = 0;
         viewport.Width = m_Window->GetWidth();
         viewport.Height = m_Window->GetHeight();
+        viewport.MinDepth = 0.0f;
+        viewport.MaxDepth = 1.0f;
         DirectX11API::Get()->GetDeviceContext()->RSSetViewports(1, &viewport);
     }
 

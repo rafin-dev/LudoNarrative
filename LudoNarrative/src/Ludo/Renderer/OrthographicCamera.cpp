@@ -13,16 +13,20 @@ namespace Ludo {
 
 	void OrthographicCamera::SetProjection(float left, float right, float bottom, float top)
 	{
-		DirectX::XMStoreFloat4x4(&m_ProjectionMatrix, DirectX::XMMatrixOrthographicOffCenterLH(left, right, bottom, top, 1.0f, -1.0f));
+		DirectX::XMStoreFloat4x4(&m_ProjectionMatrix, DirectX::XMMatrixOrthographicOffCenterLH(left, right, bottom, top, 10.0f, 0.0f));
+		DirectX::XMStoreFloat4x4(&m_ViewProjectionMatrix, DirectX::XMMatrixTranspose(DirectX::XMLoadFloat4x4(&m_ViewMatrix) * DirectX::XMLoadFloat4x4(&m_ProjectionMatrix)));
 	}
 
 	void OrthographicCamera::RecalculateViewMatrix()
 	{
-		DirectX::XMMATRIX tranformation = DirectX::XMMatrixRotationZ(m_Rotation) * DirectX::XMMatrixTranslation(m_Position.x, m_Position.y, m_Position.z);
-		DirectX::XMMATRIX viewMatrix = DirectX::XMMatrixInverse(nullptr, tranformation);
+		DirectX::XMVECTOR Eye = DirectX::XMVectorSet(m_Position.x, m_Position.y, -1.0f, 0.0f);
+		DirectX::XMVECTOR LookAt = DirectX::XMVectorSet(m_Position.x, m_Position.y, 0.0f, 0.0f);
+		DirectX::XMVECTOR Up = DirectX::XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f);
 
-		DirectX::XMStoreFloat4x4(&m_ViewProjectionMatrix, DirectX::XMMatrixTranspose(viewMatrix * DirectX::XMLoadFloat4x4(&m_ProjectionMatrix)));
-		DirectX::XMStoreFloat4x4(&m_ViewMatrix, DirectX::XMMatrixTranspose(viewMatrix));
+		DirectX::XMMATRIX View = DirectX::XMMatrixLookAtLH(Eye, LookAt, Up);
+
+		DirectX::XMStoreFloat4x4(&m_ViewProjectionMatrix, DirectX::XMMatrixTranspose(View * DirectX::XMLoadFloat4x4(&m_ProjectionMatrix)));
+		DirectX::XMStoreFloat4x4(&m_ViewMatrix, View);
 	}
 
 }
