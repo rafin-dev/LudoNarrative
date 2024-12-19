@@ -25,8 +25,8 @@ void Sandbox2D::OnUpdate(Ludo::TimeStep timeStep)
 	// ========== Render =========
 	Ludo::Renderer2D::BeginScene(m_CameraController.GetCamera());
 
-	//Ludo::Renderer2D::DrawQuad({ 0.0f, 0.0f, 0.0f }, m_Size, m_Rotation, m_Color);
-	Ludo::Renderer2D::DrawQuad({ 0.0f, 0.0f, 0.0f }, m_Size, m_Rotation, m_Texture, { 1.0f, 1.0f, 1.0f, 0.51f });
+	Ludo::Renderer2D::DrawQuad({ 0.0f, 0.0f, 0.0f }, m_Size, m_Rotation, m_Color);
+	Ludo::Renderer2D::DrawQuad({ 0.0f, 0.0f, 0.0f }, m_Size, m_Rotation, m_Texture);
 
 	Ludo::Renderer2D::EndScene();
 }

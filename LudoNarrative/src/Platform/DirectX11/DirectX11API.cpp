@@ -42,12 +42,12 @@ namespace Ludo {
         rtBlendDesc.DestBlend = D3D11_BLEND_INV_SRC_ALPHA;
         rtBlendDesc.BlendOp = D3D11_BLEND_OP_ADD;
         rtBlendDesc.SrcBlendAlpha = D3D11_BLEND_ONE;
-        rtBlendDesc.DestBlendAlpha = D3D11_BLEND_INV_SRC_ALPHA;
+        rtBlendDesc.DestBlendAlpha = D3D11_BLEND_ZERO;
         rtBlendDesc.BlendOpAlpha = D3D11_BLEND_OP_ADD;
         rtBlendDesc.RenderTargetWriteMask = D3D11_COLOR_WRITE_ENABLE_ALL;
 
         D3D11_BLEND_DESC BlendDesc = {};
-        BlendDesc.AlphaToCoverageEnable = true;
+        BlendDesc.AlphaToCoverageEnable = false;
         BlendDesc.IndependentBlendEnable = false;
         BlendDesc.RenderTarget[0] = rtBlendDesc;
 
