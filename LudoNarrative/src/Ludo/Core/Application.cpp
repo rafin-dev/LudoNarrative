@@ -22,6 +22,8 @@ namespace Ludo {
 
 	Application::Application()
 	{
+		LD_PROFILE_FUNCTION();
+
 		LD_CORE_ASSERT(s_Instance == nullptr, "Application was already initialized");
 		s_Instance = this;
 
@@ -44,6 +46,8 @@ namespace Ludo {
 
 	Application::~Application()
 	{
+		LD_PROFILE_FUNCTION();
+
 		m_LayerStack.Clear();
 		delete m_Window;
 		Renderer::ShutDown();
@@ -51,25 +55,36 @@ namespace Ludo {
 
 	void Application::Run()
 	{
+		LD_PROFILE_FUNCTION();
+
 		while (m_Running)
 		{
+			LD_PROFILE_SCOPE("Run Loop Iteration");
+
 			float time = ImGui::GetTime();
 			TimeStep timeStep = time - m_LastFrameTime;
 			m_LastFrameTime = time;
 
 			if (!m_Minimized)
 			{
-				for (Layer* layer : m_LayerStack)
 				{
-					layer->OnUpdate(timeStep);
+					LD_PROFILE_SCOPE("Layers OnUpdate");
+					for (Layer* layer : m_LayerStack)
+					{
+						layer->OnUpdate(timeStep);
+					}
 				}
 
-				RenderCommand::BeginImGui();
-				for (Layer* l : m_LayerStack)
 				{
-					l->OnImGuiRender();
+					LD_PROFILE_SCOPE("Layers OnImGuiRender");
+					RenderCommand::BeginImGui();
+					for (Layer* l : m_LayerStack)
+					{
+						l->OnImGuiRender();
+					}
+					RenderCommand::EndImGui();
 				}
-				RenderCommand::EndImGui();
+
 			}
 
 			m_Window->OnUpdate();
@@ -78,6 +93,8 @@ namespace Ludo {
 
 	void Application::OnEvent(Event& event)
 	{
+		LD_PROFILE_FUNCTION();
+
 		EventDispatcher dispatcher(event);
 		dispatcher.Dispatch<WindowCloseEvent>(LUDO_BIND_EVENT_FN(Application::CloseWindow));
 		dispatcher.Dispatch<WindowResizeEvent>(LUDO_BIND_EVENT_FN(Application::ResizeWindow));
@@ -104,11 +121,15 @@ namespace Ludo {
 
 	void Application::PushLayer(Layer* layer)
 	{
+		LD_PROFILE_FUNCTION();
+
 		m_LayerStack.PushLayer(layer);
 	}
 
 	void Application::PushOverlay(Layer* overlay)
 	{
+		LD_PROFILE_FUNCTION();	
+
 		m_LayerStack.PushOverlay(overlay);
 	}
 

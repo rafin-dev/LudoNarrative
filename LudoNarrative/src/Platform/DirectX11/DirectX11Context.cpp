@@ -19,6 +19,8 @@ namespace Ludo {
 
     bool DirectX11Context::Init()
     {
+        LD_PROFILE_FUNCTION();
+
         HRESULT hr = S_OK;
         auto* api = DirectX11API::Get();
 
@@ -47,28 +49,10 @@ namespace Ludo {
         swapchain1->Release();
 
         // ========== Depth Buffer ==========
-        D3D11_TEXTURE2D_DESC depthTextureDesc = {};
-        depthTextureDesc.Width = m_Window->GetWidth();
-        depthTextureDesc.Height = m_Window->GetHeight();
-        depthTextureDesc.MipLevels = 1;
-        depthTextureDesc.ArraySize = 1;
-        depthTextureDesc.SampleDesc.Count = 1;
-        depthTextureDesc.SampleDesc.Quality = 0;
-        depthTextureDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
-        depthTextureDesc.Usage = D3D11_USAGE_DEFAULT;
-        depthTextureDesc.BindFlags = D3D11_BIND_DEPTH_STENCIL;
-
-        ID3D11Texture2D* DepthStencilTexture;
-        hr = api->GetDevice()->CreateTexture2D(&depthTextureDesc, NULL, &DepthStencilTexture);
-        VALIDATE_DX_HRESULT(hr, "Failed to create Texture2d for Depth Buffer");
-
-        D3D11_DEPTH_STENCIL_VIEW_DESC dsvDesc = {};
-        dsvDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
-        dsvDesc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
-
-        hr = api->GetDevice()->CreateDepthStencilView(DepthStencilTexture, &dsvDesc, &m_DepthStencilView);
-        DepthStencilTexture->Release();
-        VALIDATE_DX_HRESULT(hr, "Failed to create Depth Stencil View");
+        if (!CreateDepthStencilView())
+        {
+            return false;
+        }
 
         D3D11_DEPTH_STENCIL_DESC depthStateDesc = {};
         depthStateDesc.DepthEnable = true;
@@ -113,6 +97,8 @@ namespace Ludo {
 
     void DirectX11Context::SwapBuffers()
     {
+        LD_PROFILE_FUNCTION();
+
         auto deviceContext = DirectX11API::Get()->GetDeviceContext();
         
         // End Last frame
@@ -138,6 +124,8 @@ namespace Ludo {
 
     void DirectX11Context::ShutDown()
     {
+        LD_PROFILE_FUNCTION();
+
         CHECK_AND_RELEASE_COMPTR(m_DepthStencilView);
         CHECK_AND_RELEASE_COMPTR(m_DepthStencilState);
         CHECK_AND_RELEASE_COMPTR(m_BackBuffer);
@@ -162,11 +150,43 @@ namespace Ludo {
         return true;
     }
 
+    bool DirectX11Context::CreateDepthStencilView()
+    {
+        CHECK_AND_RELEASE_COMPTR(m_DepthStencilView);
+
+        D3D11_TEXTURE2D_DESC depthTextureDesc = {};
+        depthTextureDesc.Width = m_Window->GetWidth();
+        depthTextureDesc.Height = m_Window->GetHeight();
+        depthTextureDesc.MipLevels = 1;
+        depthTextureDesc.ArraySize = 1;
+        depthTextureDesc.SampleDesc.Count = 1;
+        depthTextureDesc.SampleDesc.Quality = 0;
+        depthTextureDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
+        depthTextureDesc.Usage = D3D11_USAGE_DEFAULT;
+        depthTextureDesc.BindFlags = D3D11_BIND_DEPTH_STENCIL;
+
+        ID3D11Texture2D* DepthStencilTexture;
+        HRESULT hr = DirectX11API::Get()->GetDevice()->CreateTexture2D(&depthTextureDesc, NULL, &DepthStencilTexture);
+        VALIDATE_DX_HRESULT(hr, "Failed to create Texture2d for Depth Buffer");
+
+        D3D11_DEPTH_STENCIL_VIEW_DESC dsvDesc = {};
+        dsvDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
+        dsvDesc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
+
+        hr = DirectX11API::Get()->GetDevice()->CreateDepthStencilView(DepthStencilTexture, &dsvDesc, &m_DepthStencilView);
+        DepthStencilTexture->Release();
+        VALIDATE_DX_HRESULT(hr, "Failed to create Depth Stencil View");
+
+        return true;
+    }
+
     void DirectX11Context::ResizeImpl()
     {
         CHECK_AND_RELEASE_COMPTR(m_BackBuffer);
         HRESULT hr = m_SwapChain->ResizeBuffers(GetSwapChainBufferCount(), m_Window->GetWidth(), m_Window->GetHeight(), DXGI_FORMAT_R8G8B8A8_UNORM, DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH | DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING);
         LD_CORE_ASSERT(SUCCEEDED(hr), "Failed to resize Swap Chain to size: [{0}, {1}]", m_Window->GetWidth(), m_Window->GetHeight());
+
+        CreateDepthStencilView();
         GetBackBuffer();
         SetViewPort();
         LD_CORE_INFO("Resized D3D11 Swap Chain for Window: {0}", m_Window->GetTitle());

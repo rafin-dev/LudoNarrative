@@ -28,6 +28,7 @@ namespace Ludo {
 		void ShutDown();
 
 		bool GetBackBuffer();
+		bool CreateDepthStencilView();
 		void ResizeImpl();
 
 		void SetViewPort();

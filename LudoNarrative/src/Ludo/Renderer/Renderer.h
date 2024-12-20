@@ -14,6 +14,8 @@ namespace Ludo {
 	public:
 		static inline bool Init()
 		{ 
+			LD_PROFILE_FUNCTION();
+
 			bool Succes = RenderCommand::Init();
 			if (Succes)
 			{
@@ -21,8 +23,11 @@ namespace Ludo {
 			}
 			return Succes;
 		}
+
 		static inline void ShutDown() 
 		{ 
+			LD_PROFILE_FUNCTION();
+
 			Renderer2D::Shutdown();
 			RenderCommand::ShutDown(); 
 		}

@@ -9,16 +9,20 @@ Sandbox2D::Sandbox2D()
 
 void Sandbox2D::OnAttach()
 {
+	LD_PROFILE_FUNCTION();
+
 	m_Texture = Ludo::Texture2D::Create("assets/textures/ChernoLogo.png");
 }
 
 void Sandbox2D::OnDetach()
 {
-
+	LD_PROFILE_FUNCTION();
 }
 
 void Sandbox2D::OnUpdate(Ludo::TimeStep timeStep)
 {
+	LD_PROFILE_FUNCTION();
+
 	// ========== Update =========
 	m_CameraController.OnUpdate(timeStep);
 
@@ -38,12 +42,24 @@ void Sandbox2D::OnEvent(Ludo::Event& event)
 
 void Sandbox2D::OnImGuiRender()
 {
+	LD_PROFILE_FUNCTION();
+
 	ImGui::Begin("Square");
 
 	ImGui::DragFloat2("Position", (float*)&m_Position, 0.1f, 1.0f);
 	ImGui::DragFloat2("Size", (float*)&m_Size, 0.1f);
 	ImGui::DragFloat("Rotation", &m_Rotation);
 	ImGui::ColorEdit4("Color", (float*)&m_Color);
+
+	for (auto& result : m_ProfileResults)
+	{
+		char label[50];
+		strcpy(label, "%.3fms ");
+		strcat(label, result.Name);
+
+		ImGui::Text(label, result.Time);
+	}
+	m_ProfileResults.clear();
 
 	ImGui::End();
 }

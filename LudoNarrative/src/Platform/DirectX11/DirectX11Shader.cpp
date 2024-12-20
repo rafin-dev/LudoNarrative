@@ -13,6 +13,8 @@ namespace Ludo {
 		const BufferLayout& vertexLayout, const BufferLayout& materialDataLayout)
 		: m_Name(name), m_VertexBufferLayout(vertexLayout), m_MaterialDataLayout(materialDataLayout)
 	{
+		LD_PROFILE_FUNCTION();
+
 		std::unordered_map<ShaderKind, ID3DBlob*> shaders
 		{
 			{ VertexShader, nullptr },
@@ -39,6 +41,8 @@ namespace Ludo {
 		const BufferLayout& vertexLayout, const BufferLayout& materialDataLayout)
 		: m_Name(name), m_VertexBufferLayout(vertexLayout), m_MaterialDataLayout(materialDataLayout)
 	{
+		LD_PROFILE_FUNCTION();
+
 		std::unordered_map<ShaderKind, std::string> shadersSources;
 		std::unordered_map<ShaderKind, ID3D10Blob*> shaderBinaries;
 		std::string source;
@@ -69,6 +73,8 @@ namespace Ludo {
 
 	void DirectX11Shader::ReadFile(const std::filesystem::path& file, std::string& output)
 	{
+		LD_PROFILE_FUNCTION();
+
 		std::ifstream srcFile(file, std::ios::in | std::ios::binary);
 		if (srcFile)
 		{
@@ -86,6 +92,8 @@ namespace Ludo {
 
 	void DirectX11Shader::ParseShaders(const std::string& source, std::unordered_map<ShaderKind, std::string>& shadersSrcs)
 	{
+		LD_PROFILE_FUNCTION();
+
 		const char* typeToken = "#kind";
 		size_t typeTokenLenght = strlen(typeToken);
 		size_t pos = source.find(typeToken, 0);
@@ -107,6 +115,8 @@ namespace Ludo {
 
 	void DirectX11Shader::CompileShaders(const std::unordered_map<ShaderKind, std::string> shadersSources, std::unordered_map<ShaderKind, ID3D10Blob*>& output)
 	{
+		LD_PROFILE_FUNCTION();
+
 		UINT flags = NULL;
 #ifdef LUDO_DEBUG
 		flags |= D3DCOMPILE_DEBUG;
@@ -164,6 +174,8 @@ namespace Ludo {
 
 	bool DirectX11Shader::Init(std::unordered_map<ShaderKind, ID3DBlob*> shaders)
 	{
+		LD_PROFILE_FUNCTION();
+
 		HRESULT hr = S_OK;
 		auto device = DirectX11API::Get()->GetDevice();
 
@@ -236,6 +248,8 @@ namespace Ludo {
 
 	void DirectX11Shader::Bind()
 	{
+		LD_PROFILE_FUNCTION();
+
 		auto deviceContext = DirectX11API::Get()->GetDeviceContext();
 
 		deviceContext->VSSetShader(m_VertexShader, 0, 0);
@@ -252,6 +266,8 @@ namespace Ludo {
 
 	void DirectX11Shader::SetViewProjectionMatrix(const DirectX::XMFLOAT4X4& matrix)
 	{
+		LD_PROFILE_FUNCTION();
+
 		D3D11_MAPPED_SUBRESOURCE mapped = {};
 		HRESULT hr = DirectX11API::Get()->GetDeviceContext()->Map(m_ViewProjectionBuffer, 0, D3D11_MAP_WRITE_DISCARD, NULL, &mapped);
 		LD_CORE_ASSERT(SUCCEEDED(hr), "Failed to Map MVP Constant Buffer");
@@ -261,6 +277,8 @@ namespace Ludo {
 
 	void DirectX11Shader::SetModelMatrix(const DirectX::XMFLOAT4X4& matrix)
 	{
+		LD_PROFILE_FUNCTION();
+
 		D3D11_MAPPED_SUBRESOURCE mapped = {};
 		HRESULT hr = DirectX11API::Get()->GetDeviceContext()->Map(m_ModelMatrixBuffer, 0, D3D11_MAP_WRITE_DISCARD, NULL, &mapped);
 		LD_CORE_ASSERT(SUCCEEDED(hr), "Failed to Map MVP Constant Buffer");
@@ -270,6 +288,8 @@ namespace Ludo {
 
 	void DirectX11Shader::UploadMaterialData(void* data)
 	{
+		LD_PROFILE_FUNCTION();
+
 		D3D11_MAPPED_SUBRESOURCE mapped = {};
 		DirectX11API::Get()->GetDeviceContext()->Map(m_MaterialBuffer, 0, D3D11_MAP_WRITE_DISCARD, NULL, &mapped);
 		memcpy(mapped.pData, data, m_MaterialDataLayout.GetStride());
@@ -288,6 +308,8 @@ namespace Ludo {
 
 	void DirectX11Shader::ShutDown()
 	{
+		LD_PROFILE_FUNCTION();
+
 		CHECK_AND_RELEASE_COMPTR(m_VertexShader);
 		CHECK_AND_RELEASE_COMPTR(m_PixelShader);
 		CHECK_AND_RELEASE_COMPTR(m_InputLayout);

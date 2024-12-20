@@ -26,6 +26,8 @@ namespace Ludo {
 
 	void Renderer2D::Init()
 	{
+		LD_PROFILE_FUNCTION();
+
 		s_Data = new DataRenderer2D();
 
 		// ========== Vertex Array ==========
@@ -65,17 +67,22 @@ namespace Ludo {
 	
 	void Renderer2D::Shutdown()
 	{
+		LD_PROFILE_FUNCTION();
+
 		delete s_Data;
 	}
 	
 	void Renderer2D::BeginScene(const OrthographicCamera& camera)
 	{
+		LD_PROFILE_FUNCTION();
+
 		s_Data->TextureMaterial->GetShader()->Bind();
 		s_Data->TextureMaterial->GetShader()->SetViewProjectionMatrix(camera.GetViewProjectionMatrix());
 	}
 	
 	void Renderer2D::EndScene()
 	{
+		LD_PROFILE_FUNCTION();
 	}
 	
 	void Renderer2D::DrawQuad(const DirectX::XMFLOAT2& position, const DirectX::XMFLOAT2& size, float rotation, const DirectX::XMFLOAT4& color)
@@ -85,6 +92,8 @@ namespace Ludo {
 
 	void Renderer2D::DrawQuad(const DirectX::XMFLOAT3& position, const DirectX::XMFLOAT2& size, float rotation, const DirectX::XMFLOAT4& color)
 	{
+		LD_PROFILE_FUNCTION();
+
 		DirectX::XMFLOAT4X4 transform;		
 		CreateTransform(&transform, position, size, rotation);
 
@@ -105,6 +114,8 @@ namespace Ludo {
 
 	void Renderer2D::DrawQuad(const DirectX::XMFLOAT3& position, const DirectX::XMFLOAT2& size, float rotation, const Ref<Texture2D>& texture, const DirectX::XMFLOAT4& color)
 	{
+		LD_PROFILE_FUNCTION();
+
 		DirectX::XMFLOAT4X4 transform;
 		CreateTransform(&transform, position, size, rotation);
 

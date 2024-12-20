@@ -13,6 +13,8 @@ namespace Ludo {
 
 	void OrthographicCameraController::OnUpdate(TimeStep timeStep)
 	{
+		LD_PROFILE_FUNCTION();
+
 		m_CameraPosition.x += (Input::IsKeyPressed(LD_KEY_D) - Input::IsKeyPressed(LD_KEY_A)) * m_CameraMoveSeed * timeStep;
 		m_CameraPosition.y += (Input::IsKeyPressed(LD_KEY_W) - Input::IsKeyPressed(LD_KEY_S)) * m_CameraMoveSeed * timeStep;
 
@@ -28,6 +30,8 @@ namespace Ludo {
 
 	void OrthographicCameraController::OnEvent(Event& e)
 	{
+		LD_PROFILE_FUNCTION();
+
 		EventDispatcher dispatcher(e);
 		dispatcher.Dispatch<MouseScrolledEvent>(LUDO_BIND_EVENT_FN(OrthographicCameraController::OnMouseScrolledEvent));
 		dispatcher.Dispatch<WindowResizeEvent>(LUDO_BIND_EVENT_FN(OrthographicCameraController::OnWindowResizeEvent));
@@ -35,6 +39,8 @@ namespace Ludo {
 
 	bool OrthographicCameraController::OnMouseScrolledEvent(MouseScrolledEvent& e)
 	{
+		LD_PROFILE_FUNCTION();
+
 		m_ZoomLevel -= (float)e.GetYOffset() * 0.0025f;
 		m_ZoomLevel = std::max(m_ZoomLevel, 0.25f);
 
@@ -47,6 +53,8 @@ namespace Ludo {
 
 	bool OrthographicCameraController::OnWindowResizeEvent(WindowResizeEvent& e)
 	{
+		LD_PROFILE_FUNCTION();
+
 		m_AspectRatio = (float)e.GetWidth() / (float)e.GetHeight();
 		LD_CORE_TRACE("New aspect ratio: {0}", m_AspectRatio);
 

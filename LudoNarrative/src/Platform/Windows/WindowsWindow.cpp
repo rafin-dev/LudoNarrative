@@ -38,6 +38,8 @@ namespace Ludo {
 
 	void WindowsWindow::OnUpdate()
 	{
+		LD_PROFILE_FUNCTION();
+
 		MSG msg;
 		while (PeekMessage(&msg, NULL, 0U, 0U, PM_REMOVE) != 0)
 		{
@@ -109,6 +111,8 @@ namespace Ludo {
 
 	bool WindowsWindow::Init(const WindowProps& props)
 	{
+		LD_PROFILE_FUNCTION();
+
 		m_Data.Title = props.Title;
 		m_Data.Width = props.Width;
 		m_Data.Height = props.Height;
@@ -172,6 +176,8 @@ namespace Ludo {
 
 	void WindowsWindow::ShutDown()
 	{
+		LD_PROFILE_FUNCTION();
+
 		if (m_Context != nullptr) { delete m_Context; m_Context = nullptr; }
 		DestroyWindow(m_WindowHandle);
 		LD_CORE_INFO("Closed Window: {0}", m_Data.Title);

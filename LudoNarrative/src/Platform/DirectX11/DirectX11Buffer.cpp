@@ -15,6 +15,8 @@ namespace Ludo {
 
 	bool DirectX11VertexBuffer::Init(float* verticies, uint32_t size)
 	{
+		LD_PROFILE_FUNCTION();
+
 		auto deviceContext = DirectX11API::Get()->GetDeviceContext();
 
 		D3D11_BUFFER_DESC bufferDesc = {};
@@ -45,6 +47,8 @@ namespace Ludo {
 
 	void DirectX11VertexBuffer::Bind() const
 	{
+		LD_PROFILE_FUNCTION();
+
 		UINT stride = m_Layout.GetStride();
 		UINT offset = 0;
 		DirectX11API::Get()->GetDeviceContext()->IASetVertexBuffers(0, 1, &m_VertexBuffer, &stride, &offset);
@@ -52,10 +56,13 @@ namespace Ludo {
 
 	void DirectX11VertexBuffer::Unbind() const
 	{
+		LD_PROFILE_FUNCTION();
 	}
 
 	void DirectX11VertexBuffer::ShutDown()
 	{
+		LD_PROFILE_FUNCTION();
+
 		CHECK_AND_RELEASE_COMPTR(m_VertexBuffer);
 	}
 
@@ -68,6 +75,8 @@ namespace Ludo {
 
 	bool DirectX11IndexBuffer::Init(uint32_t* indices, uint32_t count)
 	{
+		LD_PROFILE_FUNCTION();
+
 		auto deviceContext = DirectX11API::Get()->GetDeviceContext();
 		size_t size = count * 4;
 
@@ -94,21 +103,26 @@ namespace Ludo {
 	DirectX11IndexBuffer::~DirectX11IndexBuffer()
 	{
 		ShutDown();
+		LD_CORE_TRACE("Deleted Index Buffer");
 	}
 
 	void DirectX11IndexBuffer::Bind() const
 	{
+		LD_PROFILE_FUNCTION();
+
 		DirectX11API::Get()->GetDeviceContext()->IASetIndexBuffer(m_IndexBuffer, DXGI_FORMAT_R32_UINT, 0);
 	}
 
 	void DirectX11IndexBuffer::Unbind() const
 	{
+		LD_PROFILE_FUNCTION();
 	}
 
 	void DirectX11IndexBuffer::ShutDown()
 	{
+		LD_PROFILE_FUNCTION();
+
 		CHECK_AND_RELEASE_COMPTR(m_IndexBuffer);
-		LD_CORE_TRACE("Deleted Index Buffer");
 	}
 
 }

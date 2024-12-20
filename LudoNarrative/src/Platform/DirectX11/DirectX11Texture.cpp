@@ -11,19 +11,29 @@ namespace Ludo {
 	DirectX11Texture2D::DirectX11Texture2D(uint32_t width, uint32_t height)
 		: m_Width(width), m_Height(height)
 	{
+		LD_PROFILE_FUNCTION();
+
 		Init(nullptr, 4);
 	}
 
 	DirectX11Texture2D::DirectX11Texture2D(const std::string& path)
 		: m_Path(path)
 	{
+		LD_PROFILE_FUNCTION();
+
 		int channelCount = 4;
 		int width, height, channels;
 		stbi_set_flip_vertically_on_load(true);
-		stbi_uc* data = stbi_load(m_Path.c_str(), &width, &height, &channels, channelCount);
-		LD_CORE_ASSERT(data != nullptr, "Failed to load Image: {0}", m_Path);
-		m_Width = width;
-		m_Height = height;
+
+		stbi_uc* data = nullptr;
+		{
+			LD_PROFILE_SCOPE("stbi_load - DirectX11Texture2D::DirectX11Texture2D(const std::string&)");
+
+			data = stbi_load(m_Path.c_str(), &width, &height, &channels, channelCount);
+			LD_CORE_ASSERT(data != nullptr, "Failed to load Image: {0}", m_Path);
+			m_Width = width;
+			m_Height = height;
+		}
 
 		Init(data, channelCount);
 		stbi_image_free(data);
@@ -36,6 +46,8 @@ namespace Ludo {
 
 	bool DirectX11Texture2D::Init(void* data, int channelCount)
 	{
+		LD_PROFILE_FUNCTION();
+
 		HRESULT hr = S_OK;
 		auto device = DirectX11API::Get()->GetDevice();
 
@@ -86,6 +98,8 @@ namespace Ludo {
 
 	void DirectX11Texture2D::ShutDown()
 	{
+		LD_PROFILE_FUNCTION();
+
 		CHECK_AND_RELEASE_COMPTR(m_Texture);
 		CHECK_AND_RELEASE_COMPTR(m_ShaderResourceView);
 		CHECK_AND_RELEASE_COMPTR(m_SamplerState);
@@ -94,6 +108,8 @@ namespace Ludo {
 
 	void DirectX11Texture2D::SetData(void* data, uint32_t size)
 	{
+		LD_PROFILE_FUNCTION();
+
 		LD_CORE_ASSERT(size == m_Width * m_Height * 4, "Data Size does not match texture Size! Data Size: {0}, Texture Size: {1}", size, m_Width * m_Height * 4);
 		D3D11_MAPPED_SUBRESOURCE mapped = {};
 		HRESULT hr = DirectX11API::Get()->GetDeviceContext()->Map(m_Texture, 0, D3D11_MAP_WRITE_DISCARD, 0, &mapped);
@@ -106,6 +122,8 @@ namespace Ludo {
 
 	void DirectX11Texture2D::Bind(uint32_t slot = 0) const
 	{
+		LD_PROFILE_FUNCTION();
+
 		auto deviceContext = DirectX11API::Get()->GetDeviceContext();
 
 		deviceContext->PSSetShaderResources(slot, 1, &m_ShaderResourceView);

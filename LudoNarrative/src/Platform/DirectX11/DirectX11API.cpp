@@ -11,6 +11,8 @@ namespace Ludo {
 
     bool DirectX11API::Init()
     {
+        LD_PROFILE_FUNCTION();
+
         HRESULT hr = S_OK;
 
         hr = CreateDXGIFactory2(0, IID_PPV_ARGS(&m_Factory));
@@ -57,35 +59,44 @@ namespace Ludo {
         m_DeviceContext->OMSetBlendState(m_BlendState, nullptr, 0xffffffff);
 
         // ImGui
-        IMGUI_CHECKVERSION();
-        ImGui::CreateContext();
-        ImGuiIO& io = ImGui::GetIO();
-        io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Enable Keyboard Controls
-        io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls
-        io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;         // Enable Docking
-        io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;       // Enable Multi-Viewport / Platform Windows
-
-        ImGui::StyleColorsDark();
-        ImGuiStyle& style = ImGui::GetStyle();
-        if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
         {
-            style.WindowRounding = 0.0f;
-            style.Colors[ImGuiCol_WindowBg].w = 1.0f;
+            LD_PROFILE_SCOPE("Init ImGui - DirectX11API");
+
+            IMGUI_CHECKVERSION();
+            ImGui::CreateContext();
+            ImGuiIO& io = ImGui::GetIO();
+            io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Enable Keyboard Controls
+            io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls
+            io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;         // Enable Docking
+            io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;       // Enable Multi-Viewport / Platform Windows
+
+            ImGui::StyleColorsDark();
+            ImGuiStyle& style = ImGui::GetStyle();
+            if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
+            {
+                style.WindowRounding = 0.0f;
+                style.Colors[ImGuiCol_WindowBg].w = 1.0f;
+            }
+
+            ImGui_ImplDX11_Init(m_Device, m_DeviceContext);
+
+            LD_CORE_INFO("Initialized ImGui");
         }
-
-        ImGui_ImplDX11_Init(m_Device, m_DeviceContext);
-
-        LD_CORE_INFO("Initialized ImGui");
 
         return true;
     }
 
     void DirectX11API::ShutDown()
     {
-        ImGui_ImplDX11_Shutdown();
-        ImGui_ImplWin32_Shutdown();
-        ImGui::DestroyContext();
-        LD_CORE_INFO("Closed ImGui");
+        LD_PROFILE_FUNCTION();
+
+        {
+            LD_PROFILE_SCOPE("Close ImGui - DirectX11API::ShutDown");
+            ImGui_ImplDX11_Shutdown();
+            ImGui_ImplWin32_Shutdown();
+            ImGui::DestroyContext();
+            LD_CORE_INFO("Closed ImGui");
+        }
 
         CHECK_AND_RELEASE_COMPTR(m_BlendState);
 
@@ -107,11 +118,15 @@ namespace Ludo {
 
     void DirectX11API::DrawIndexed(const Ref<VertexArray>& vertexArray)
     {
+        LD_PROFILE_FUNCTION();
+
         m_DeviceContext->DrawIndexed(vertexArray->GetIndexBuffer()->GetCount(), 0, 0);
     }
 
     void DirectX11API::BeginImGui()
     {
+        LD_PROFILE_FUNCTION();
+
         ImGui_ImplDX11_NewFrame();
         ImGui_ImplWin32_NewFrame();
         ImGui::NewFrame();
@@ -119,6 +134,8 @@ namespace Ludo {
 
     void DirectX11API::EndImGui()
     {
+        LD_PROFILE_FUNCTION();
+
         ImGui::Render();
         ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
 
