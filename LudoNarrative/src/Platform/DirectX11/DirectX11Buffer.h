@@ -8,13 +8,16 @@ namespace Ludo {
 	{
 	public:
 		DirectX11VertexBuffer(float* verticies, uint32_t size, const BufferLayout& layout);
-		bool Init(float* verticies, uint32_t size);
+		DirectX11VertexBuffer(uint32_t size, const BufferLayout& layout);
+		bool Init(uint32_t size);
 		virtual ~DirectX11VertexBuffer() override;
 
 		virtual void Bind() const override;
 		virtual void Unbind() const override;
 
 		virtual const BufferLayout& GetLayout() const override { return m_Layout; }
+
+		virtual void SetData(void* data, uint32_t size) override;
 
 		ID3D11Buffer*& const GetBuffer() { return m_VertexBuffer; }
 
@@ -24,6 +27,7 @@ namespace Ludo {
 		ID3D11Buffer* m_VertexBuffer = nullptr;
 
 		BufferLayout m_Layout;
+		uint32_t m_Size;
 	};
 
 	class DirectX11IndexBuffer : public IndexBuffer

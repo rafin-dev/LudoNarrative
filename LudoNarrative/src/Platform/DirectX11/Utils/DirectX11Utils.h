@@ -5,7 +5,7 @@
 #define VALIDATE_DX_HRESULT(x, ...) \
 						if (FAILED((x))) \
 						{ \
-							LD_CORE_ERROR(__VA_ARGS__);\
+							LD_CORE_ASSERT(false, __VA_ARGS__);\
 							ShutDown();\
 							return false;\
 						}

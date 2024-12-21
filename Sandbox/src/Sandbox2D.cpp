@@ -11,7 +11,7 @@ void Sandbox2D::OnAttach()
 {
 	LD_PROFILE_FUNCTION();
 
-	m_Texture = Ludo::Texture2D::Create("assets/textures/ChernoLogo.png");
+	m_Texture = Ludo::Texture2D::Create("assets/textures/CheckerBoard.png");
 }
 
 void Sandbox2D::OnDetach()
@@ -25,14 +25,17 @@ void Sandbox2D::OnUpdate(Ludo::TimeStep timeStep)
 
 	// ========== Update =========
 	m_CameraController.OnUpdate(timeStep);
+	// ===========================
 
 	// ========== Render =========
 	Ludo::Renderer2D::BeginScene(m_CameraController.GetCamera());
 
-	Ludo::Renderer2D::DrawQuad({ 0.0f, 0.0f, 0.0f }, m_Size, m_Rotation, m_Color);
-	Ludo::Renderer2D::DrawQuad({ 0.0f, 0.0f, 0.0f }, m_Size, m_Rotation, m_Texture);
+	//Ludo::Renderer2D::DrawQuad(m_Position, { 10.0f, 10.0f }, m_Rotation, m_Texture, m_Color, 10.0f);
+	Ludo::Renderer2D::DrawQuad({ -1.0f, 0.0f }, m_Size, 45, {9.0f, 0.5f, 0.8f, 1.0f});
+	Ludo::Renderer2D::DrawQuad({  1.0f, 0.0f }, m_Size, 45, {2.0f, 0.9f, 0.7f, 1.0f});
 
 	Ludo::Renderer2D::EndScene();
+	// ===========================
 }
 
 void Sandbox2D::OnEvent(Ludo::Event& event)

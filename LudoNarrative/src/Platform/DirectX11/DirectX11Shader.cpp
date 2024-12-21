@@ -232,7 +232,10 @@ namespace Ludo {
 		hr = device->CreateBuffer(&bufferDesc, nullptr, &m_ModelMatrixBuffer);
 		VALIDATE_DX_HRESULT(hr, "Failed to create Constant Buffer for the Model Matrix");
 
-		bufferDesc.ByteWidth = sizeof(float) * 4;
+		// ByteWidth has to be a multiple of 16
+		UINT cbSize = m_MaterialDataLayout.GetStride();
+		UINT module = cbSize % 16;
+		bufferDesc.ByteWidth = cbSize + (16 - module);
 		hr = device->CreateBuffer(&bufferDesc, nullptr, &m_MaterialBuffer);
 		VALIDATE_DX_HRESULT(hr, "Failed to create Material Constant Buffer");
 

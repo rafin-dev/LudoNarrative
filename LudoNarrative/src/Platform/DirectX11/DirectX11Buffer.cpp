@@ -10,14 +10,31 @@ namespace Ludo {
 	DirectX11VertexBuffer::DirectX11VertexBuffer(float* verticies, uint32_t size, const BufferLayout& layout)
 		: m_Layout(layout)
 	{
-		Init(verticies, size);
+		LD_PROFILE_FUNCTION();
+
+		if (!Init(size))
+		{
+			return;
+		}
+
+		SetData(verticies, size);
 	}
 
-	bool DirectX11VertexBuffer::Init(float* verticies, uint32_t size)
+	DirectX11VertexBuffer::DirectX11VertexBuffer(uint32_t size, const BufferLayout& layout)
+		: m_Layout(layout)
+	{
+		LD_PROFILE_FUNCTION();
+
+		Init(size);
+	}
+
+	bool DirectX11VertexBuffer::Init(uint32_t size)
 	{
 		LD_PROFILE_FUNCTION();
 
 		auto deviceContext = DirectX11API::Get()->GetDeviceContext();
+
+		m_Size = size;
 
 		D3D11_BUFFER_DESC bufferDesc = {};
 		bufferDesc.Usage = D3D11_USAGE_DYNAMIC;
@@ -27,12 +44,6 @@ namespace Ludo {
 
 		HRESULT hr = DirectX11API::Get()->GetDevice()->CreateBuffer(&bufferDesc, nullptr, &m_VertexBuffer);
 		VALIDATE_DX_HRESULT(hr, "Failed to create Vertex Buffer of size: {0}", size);
-
-		D3D11_MAPPED_SUBRESOURCE mapped = {};
-		hr = deviceContext->Map(m_VertexBuffer, 0, D3D11_MAP_WRITE_DISCARD, NULL, &mapped);
-		VALIDATE_DX_HRESULT(hr, "Failed to Map Vertex Buffer of size: {0}", size);
-		std::memcpy(mapped.pData, verticies, size);
-		deviceContext->Unmap(m_VertexBuffer, 0);
 
 		LD_CORE_TRACE("Created Vertex Buffer of size: {0}", size);
 
@@ -57,6 +68,20 @@ namespace Ludo {
 	void DirectX11VertexBuffer::Unbind() const
 	{
 		LD_PROFILE_FUNCTION();
+	}
+
+	void DirectX11VertexBuffer::SetData(void* data, uint32_t size)
+	{
+		LD_PROFILE_FUNCTION();
+
+		LD_CORE_ASSERT(size <= m_Size, "Vertex Buffer of size {0} bytes cannot have {1} bytes of data written on!", m_Size, size);
+
+		D3D11_MAPPED_SUBRESOURCE mapped = {};
+		HRESULT hr = DirectX11API::Get()->GetDeviceContext()->Map(m_VertexBuffer, 0, D3D11_MAP_WRITE_DISCARD, NULL, &mapped);
+		LD_CORE_ASSERT(SUCCEEDED(hr), "Failed to map Vertes Buffer");
+		std::memcpy(mapped.pData, data, size);
+		DirectX11API::Get()->GetDeviceContext()->Unmap(m_VertexBuffer, 0);
+
 	}
 
 	void DirectX11VertexBuffer::ShutDown()

@@ -28,7 +28,7 @@ namespace Ludo {
 			return s_RenderAPI->GetClearColor();
 		}
 
-		static inline void DrawIndexed(const Ref<VertexArray>& vertexArray)
+		static inline void DrawIndexed(const Ref<VertexArray>& vertexArray, uint32_t indexCount = 0)
 		{
 			s_RenderAPI->DrawIndexed(vertexArray);
 		}

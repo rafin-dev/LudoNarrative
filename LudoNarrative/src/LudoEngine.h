@@ -10,6 +10,7 @@
 // |________/ \______/  \_______/ \______/ |__/  \__/ \_______/|__/      |__/      \_______/   \___/  |__/    \_/    \_______/
 //
 
+// ========== Core ==========
 #include "Ludo/Core/Application.h"
 #include "Ludo/Core/Layer.h"
 #include "Ludo/Core/Log.h"
@@ -20,7 +21,7 @@
 
 #include "Ludo/Renderer/OrthographicCameraController.h"
 
-// ============ Renderer ===========
+// ========== Renderer ==========
 #include "Ludo/Renderer/Renderer.h"
 #include "Ludo/Renderer/Renderer2D.h"
 #include "Ludo/Renderer/RenderCommand.h"
@@ -33,4 +34,4 @@
 
 #include "Ludo/Renderer/OrthographicCamera.h"
 #include "Ludo/Renderer/Transform.h"
-// =================================
+// ==============================

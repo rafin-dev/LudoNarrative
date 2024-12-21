@@ -123,9 +123,13 @@ namespace Ludo {
 
 		virtual const BufferLayout& GetLayout() const = 0;
 
+		virtual void SetData(void* data, uint32_t size) = 0;
+
+		static Ref<VertexBuffer> Create(uint32_t size, const BufferLayout& layout);
 		static Ref<VertexBuffer> Create(float* vertices, uint32_t size, const BufferLayout& layout);
 	};
 
+	// IndexBuffer only supports 32 bit index buffers
 	class IndexBuffer
 	{
 	public:

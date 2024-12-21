@@ -14,7 +14,9 @@ cbuffer Model : register(b1)
 VS_OUTPUT main(VS_INPUT input)
 {
     VS_OUTPUT output;
-    output.Position = mul(mul(float4(input.Pos.xyz, 1.0f), ModelMatrix), ViewProjection);
+    //output.Position = mul(mul(float4(input.Pos.xyz, 1.0f), ModelMatrix), ViewProjection);
+    output.Position = mul(float4(input.Pos.xyz, 1.0f), ViewProjection);
+    output.Color = input.Color;
     output.TexPos = input.TexPos;
     
     return output;
@@ -26,6 +28,7 @@ VS_OUTPUT main(VS_INPUT input)
 cbuffer Material : register(b0)
 {
     float4 Color;
+    float TilingFactor;
 }
 
 Texture2D Texture;
@@ -33,5 +36,6 @@ SamplerState Sampler;
 
 float4 main(VS_OUTPUT input) : SV_Target
 {
-    return Texture.Sample(Sampler, input.TexPos) * Color;
+    return input.Color;
+    //return Texture.Sample(Sampler, input.TexPos * TilingFactor) * input.Color;
 }

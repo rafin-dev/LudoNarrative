@@ -116,11 +116,11 @@ namespace Ludo {
         return m_ClearColor;
     }
 
-    void DirectX11API::DrawIndexed(const Ref<VertexArray>& vertexArray)
+    void DirectX11API::DrawIndexed(const Ref<VertexArray>& vertexArray, uint32_t indexCount)
     {
         LD_PROFILE_FUNCTION();
 
-        m_DeviceContext->DrawIndexed(vertexArray->GetIndexBuffer()->GetCount(), 0, 0);
+        m_DeviceContext->DrawIndexed(indexCount == 0 ? vertexArray->GetIndexBuffer()->GetCount() : indexCount, 0, 0);
     }
 
     void DirectX11API::BeginImGui()

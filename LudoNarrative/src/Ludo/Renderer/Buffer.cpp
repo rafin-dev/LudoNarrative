@@ -10,6 +10,18 @@
 
 namespace Ludo {
 
+    Ref<VertexBuffer> VertexBuffer::Create(uint32_t size, const BufferLayout& layout)
+    {
+        switch (Renderer::GetAPI())
+        {
+        case RendererAPI::API::None: LD_CORE_ASSERT(false, "RenderAPI::None is currently not supported") return nullptr;
+        case RendererAPI::API::DirectX11: return CreateRef<DirectX11VertexBuffer>(size, layout);
+        }
+
+        LD_CORE_ASSERT(false, "Unknown RenderAPI specified, please provide a existing RenderAPI!");
+        return nullptr;
+    }
+
     Ref<VertexBuffer> VertexBuffer::Create(float* vertices, uint32_t size, const BufferLayout& layout)
     {
         switch (Renderer::GetAPI())
