@@ -24,7 +24,6 @@ namespace Ludo {
 		static void DrawQuad(const DirectX::XMFLOAT2& position, const DirectX::XMFLOAT2& size, float rotation, const Ref<Texture2D>& texture, 
 			const DirectX::XMFLOAT4& color = { 1.0f, 1.0f, 1.0f, 1.0f },
 			float tilingFactor = 1.0f);
-
 		static void DrawQuad(const DirectX::XMFLOAT3& position, const DirectX::XMFLOAT2& size, float rotation, const Ref<Texture2D>& texture, 
 			const DirectX::XMFLOAT4& color = { 1.0f, 1.0f, 1.0f, 1.0f },
 			float tilingFactor = 1.0f);

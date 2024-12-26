@@ -6,6 +6,7 @@
 
 #ifdef LD_PLATFORM_WINDOWS
     #include "Platform/DirectX11/DirectX11Buffer.h"
+    #include "Platform/DirectX12/DirectX12Buffer.h"
 #endif 
 
 namespace Ludo {
@@ -16,6 +17,7 @@ namespace Ludo {
         {
         case RendererAPI::API::None: LD_CORE_ASSERT(false, "RenderAPI::None is currently not supported") return nullptr;
         case RendererAPI::API::DirectX11: return CreateRef<DirectX11VertexBuffer>(size, layout);
+        case RendererAPI::API::DirectX12: return CreateRef<DirectX12VertexBuffer>(size, layout);
         }
 
         LD_CORE_ASSERT(false, "Unknown RenderAPI specified, please provide a existing RenderAPI!");
@@ -28,6 +30,7 @@ namespace Ludo {
         {
             case RendererAPI::API::None: LD_CORE_ASSERT(false, "RenderAPI::None is currently not supported") return nullptr;
             case RendererAPI::API::DirectX11: return CreateRef<DirectX11VertexBuffer>(vertices, size, layout);
+            case RendererAPI::API::DirectX12: return CreateRef<DirectX12VertexBuffer>(vertices, size, layout);
         }
 
         LD_CORE_ASSERT(false, "Unknown RenderAPI specified, please provide a existing RenderAPI!");
@@ -40,6 +43,7 @@ namespace Ludo {
         {
             case RendererAPI::API::None: LD_CORE_ASSERT(false, "RenderAPI::None is currently not supported") return nullptr;
             case RendererAPI::API::DirectX11: return CreateRef<DirectX11IndexBuffer>(indices, count);
+            case RendererAPI::API::DirectX12: return CreateRef<DirectX12IndexBuffer>(indices, count);
         }
 
         LD_CORE_ASSERT(false, "Unknown RenderAPI specified, please provide a existing RenderAPI!");

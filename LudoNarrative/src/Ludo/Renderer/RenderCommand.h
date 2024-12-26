@@ -10,7 +10,8 @@ namespace Ludo {
 	public:
 		static inline bool Init()
 		{
-			return s_RenderAPI->Init();
+			bool success = s_RenderAPI->Init();
+			return success;
 		}
 
 		static inline void ShutDown()

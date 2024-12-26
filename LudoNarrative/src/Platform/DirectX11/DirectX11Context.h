@@ -15,7 +15,7 @@ namespace Ludo {
 		virtual bool Init() override;
 		virtual void SwapBuffers() override;
 
-		virtual void Resize(unsigned int width, unsigned int height) override;
+		virtual void Resize(uint32_t width, uint32_t height) override;
 
 		static constexpr size_t SwapChainBufferCount = 2;
 		static constexpr size_t GetSwapChainBufferCount()

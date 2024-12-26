@@ -15,11 +15,18 @@ namespace Ludo {
 			DirectX::XMMatrixTranslation(pos.x, pos.y, pos.z)));
 	}
 
+	// Operator to make Texture2D comparison synatx look a bit nicer
+	inline bool operator==(const Ref<Texture2D>& a, const Ref<Texture2D>& b)
+	{
+		return *a.get() == *b.get();
+	}
+
 	struct QuadVertex
 	{
 		DirectX::XMFLOAT3 Position;
 		DirectX::XMFLOAT4 Color;
 		DirectX::XMFLOAT2 TexCoord;
+		float TexIndex;
 	};
 
 	struct Renderer2DData
@@ -27,6 +34,7 @@ namespace Ludo {
 		const uint32_t MaxQuads = 10000;
 		const uint32_t MaxVertices = MaxQuads * 4;
 		const uint32_t MaxIndices = MaxQuads * 6;
+		static const uint32_t MaxtextureSlots = 32;
 
 		Ref<VertexArray> QuadVertexArray;
 		Ref<VertexBuffer> QuadVertexBuffer;
@@ -36,6 +44,9 @@ namespace Ludo {
 		uint32_t QuadIndexCount = 0;
 		QuadVertex* QuadVertexBufferBase = nullptr;
 		QuadVertex* QuadVertexBufferPtr = nullptr;
+
+		std::array<Ref<Texture2D>, MaxtextureSlots> TextureSlots;
+		uint32_t TextureSlotIndex = 1;
 	};
 
 	static Renderer2DData s_Data;
@@ -48,7 +59,8 @@ namespace Ludo {
 		BufferLayout vbLayout = {
 			{ "Position", ShaderDataType::Float3 },
 			{ "Color", ShaderDataType::Float4 },
-			{ "TexCoord", ShaderDataType::Float2 }
+			{ "TexCoord", ShaderDataType::Float2 },
+			{ "TexIndex", ShaderDataType::Float }
 		};
 
 		s_Data.QuadVertexBuffer = VertexBuffer::Create(s_Data.MaxVertices * sizeof(QuadVertex), vbLayout);
@@ -89,6 +101,8 @@ namespace Ludo {
 		s_Data.WhiteTexture = Texture2D::Create(1, 1);
 		uint32_t whiteTextureData = 0xffffffff;
 		s_Data.WhiteTexture->SetData(&whiteTextureData, sizeof(whiteTextureData));
+
+		s_Data.TextureSlots[0] = s_Data.WhiteTexture;
 	}
 	
 	void Renderer2D::Shutdown()
@@ -107,12 +121,12 @@ namespace Ludo {
 
 		s_Data.QuadIndexCount = 0;
 		s_Data.QuadVertexBufferPtr = s_Data.QuadVertexBufferBase;
+		s_Data.TextureSlotIndex = 1;
 	}
 	
 	void Renderer2D::EndScene()
 	{
 		LD_PROFILE_FUNCTION();
-
 
 		Flush();
 	}
@@ -123,6 +137,11 @@ namespace Ludo {
 
 		uint32_t dataSize = (uint8_t*)s_Data.QuadVertexBufferPtr - (uint8_t*)s_Data.QuadVertexBufferBase;
 		s_Data.QuadVertexBuffer->SetData(s_Data.QuadVertexBufferBase, dataSize);
+
+		for (int i = 0; i < s_Data.TextureSlotIndex; i++)
+		{
+			s_Data.TextureSlots[i]->Bind(i);
+		}
 
 		s_Data.QuadVertexArray->Bind();
 		RenderCommand::DrawIndexed(s_Data.QuadVertexArray, s_Data.QuadIndexCount);
@@ -140,32 +159,39 @@ namespace Ludo {
 		float halfWidth = size.x / 2;
 		float halfHeight = size.y / 2;
 
+		constexpr float whiteTxIndex = 0.0f;
+
 		s_Data.QuadVertexBufferPtr->Position = { position.x - halfWidth, position.y - halfHeight, position.z };
 		s_Data.QuadVertexBufferPtr->Color = color;
 		s_Data.QuadVertexBufferPtr->TexCoord = { 0.0f, 0.0f };
+		s_Data.QuadVertexBufferPtr->TexIndex = whiteTxIndex;
 		s_Data.QuadVertexBufferPtr++;
 
 		s_Data.QuadVertexBufferPtr->Position = { position.x - halfWidth, position.y + halfHeight, position.z };
 		s_Data.QuadVertexBufferPtr->Color = color;
 		s_Data.QuadVertexBufferPtr->TexCoord = { 0.0f, 1.0f };
+		s_Data.QuadVertexBufferPtr->TexIndex = whiteTxIndex;
 		s_Data.QuadVertexBufferPtr++;
 
 		s_Data.QuadVertexBufferPtr->Position = { position.x + halfWidth, position.y + halfHeight, position.z };
 		s_Data.QuadVertexBufferPtr->Color = color;
 		s_Data.QuadVertexBufferPtr->TexCoord = { 1.0f, 1.0f };
+		s_Data.QuadVertexBufferPtr->TexIndex = whiteTxIndex;
 		s_Data.QuadVertexBufferPtr++;
 
 		s_Data.QuadVertexBufferPtr->Position = { position.x + halfWidth, position.y - halfHeight, position.z };
 		s_Data.QuadVertexBufferPtr->Color = color;
 		s_Data.QuadVertexBufferPtr->TexCoord = { 1.0f, 0.0f };
+		s_Data.QuadVertexBufferPtr->TexIndex = whiteTxIndex;
 		s_Data.QuadVertexBufferPtr++;
 
 		s_Data.QuadIndexCount += 6;
 
-		DirectX::XMFLOAT4X4 transform;		
+#if false
+		DirectX::XMFLOAT4X4 transform;
 		CreateTransform(&transform, position, size, rotation);
 
-		/*s_Data.TextureMaterial->GetShader()->SetModelMatrix(transform);
+		s_Data.TextureMaterial->GetShader()->SetModelMatrix(transform);
 
 		float tilingFactor = 1.0f;
 		s_Data.TextureMaterial->SetMaterialItemData("TilingFactor", &tilingFactor);
@@ -173,7 +199,8 @@ namespace Ludo {
 
 		s_Data.WhiteTexture->Bind();
 		s_Data.QuadVertexArray->Bind();
-		RenderCommand::DrawIndexed(s_Data.QuadVertexArray);*/
+		RenderCommand::DrawIndexed(s_Data.QuadVertexArray);
+#endif
 	}
 
 	void Renderer2D::DrawQuad(const DirectX::XMFLOAT2& position, const DirectX::XMFLOAT2& size, float rotation, const Ref<Texture2D>& texture, const DirectX::XMFLOAT4& color, float tilingFactor)
@@ -185,6 +212,54 @@ namespace Ludo {
 	{
 		LD_PROFILE_FUNCTION();
 
+		float textureIndex = 0.0f;
+
+		for (int i = 1; i < s_Data.TextureSlotIndex; i++)
+		{
+			if (s_Data.TextureSlots[i] == texture)
+			{
+				textureIndex = (float)i;
+				break;
+			}
+		}
+
+		if (textureIndex == 0.0f)
+		{
+			textureIndex = (float)s_Data.TextureSlotIndex;
+			s_Data.TextureSlots[s_Data.TextureSlotIndex] = texture;
+			s_Data.TextureSlotIndex++;
+		}
+
+		float halfWidth = size.x / 2;
+		float halfHeight = size.y / 2;
+
+		s_Data.QuadVertexBufferPtr->Position = { position.x - halfWidth, position.y - halfHeight, position.z };
+		s_Data.QuadVertexBufferPtr->Color = color;
+		s_Data.QuadVertexBufferPtr->TexCoord = { 0.0f, 0.0f };
+		s_Data.QuadVertexBufferPtr->TexIndex = textureIndex;
+		s_Data.QuadVertexBufferPtr++;
+
+		s_Data.QuadVertexBufferPtr->Position = { position.x - halfWidth, position.y + halfHeight, position.z };
+		s_Data.QuadVertexBufferPtr->Color = color;
+		s_Data.QuadVertexBufferPtr->TexCoord = { 0.0f, 1.0f };
+		s_Data.QuadVertexBufferPtr->TexIndex = textureIndex;
+		s_Data.QuadVertexBufferPtr++;
+
+		s_Data.QuadVertexBufferPtr->Position = { position.x + halfWidth, position.y + halfHeight, position.z };
+		s_Data.QuadVertexBufferPtr->Color = color;
+		s_Data.QuadVertexBufferPtr->TexCoord = { 1.0f, 1.0f };
+		s_Data.QuadVertexBufferPtr->TexIndex = textureIndex;
+		s_Data.QuadVertexBufferPtr++;
+
+		s_Data.QuadVertexBufferPtr->Position = { position.x + halfWidth, position.y - halfHeight, position.z };
+		s_Data.QuadVertexBufferPtr->Color = color;
+		s_Data.QuadVertexBufferPtr->TexCoord = { 1.0f, 0.0f };
+		s_Data.QuadVertexBufferPtr->TexIndex = textureIndex;
+		s_Data.QuadVertexBufferPtr++;
+
+		s_Data.QuadIndexCount += 6;
+
+#if false
 		DirectX::XMFLOAT4X4 transform;
 		CreateTransform(&transform, position, size, rotation);
 
@@ -196,6 +271,7 @@ namespace Ludo {
 		texture->Bind();
 		s_Data.QuadVertexArray->Bind();
 		RenderCommand::DrawIndexed(s_Data.QuadVertexArray);
+#endif
 	}
 
 }

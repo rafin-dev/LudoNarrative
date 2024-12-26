@@ -11,7 +11,7 @@ namespace Ludo {
 		virtual ~GraphicsContext() = default;
 		virtual void SwapBuffers() = 0;
 
-		virtual void Resize(unsigned int width, unsigned int height) = 0;
+		virtual void Resize(uint32_t width, uint32_t height) = 0;
 
 		static GraphicsContext* Create(const Window* window);
 	};

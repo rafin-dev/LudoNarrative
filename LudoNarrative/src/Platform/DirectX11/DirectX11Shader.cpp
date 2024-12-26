@@ -44,7 +44,7 @@ namespace Ludo {
 		LD_PROFILE_FUNCTION();
 
 		std::unordered_map<ShaderKind, std::string> shadersSources;
-		std::unordered_map<ShaderKind, ID3D10Blob*> shaderBinaries;
+		std::unordered_map<ShaderKind, ID3DBlob*> shaderBinaries;
 		std::string source;
 
 		ReadFile(shaderSrcPath, source);

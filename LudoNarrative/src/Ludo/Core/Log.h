@@ -1,6 +1,8 @@
 #pragma once
 
 #include "Core.h"
+
+#define SPDLOG_WCHAR_TO_UTF8_SUPPORT
 #include <spdlog/spdlog.h>
 
 namespace Ludo {

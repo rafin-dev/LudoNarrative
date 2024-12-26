@@ -13,13 +13,13 @@ namespace Ludo {
 		enum class API
 		{
 			None = 0,
-			DirectX11 = 1
+			DirectX11 = 1,
+			DirectX12 = 2
 		};
 
 	public:
-		virtual void ShutDown() = 0;
-
 		virtual bool Init() = 0;
+		virtual void ShutDown() = 0;
 
 		virtual void SetClearColor(const DirectX::XMFLOAT4& color) = 0;
 		virtual const DirectX::XMFLOAT4& GetClearColor() = 0;

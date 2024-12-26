@@ -8,8 +8,10 @@
 
 namespace Ludo {
 
+	static std::atomic<uint32_t> s_IDcounter = 0;
+
 	DirectX11Texture2D::DirectX11Texture2D(uint32_t width, uint32_t height)
-		: m_Width(width), m_Height(height)
+		: m_Width(width), m_Height(height), m_ID(s_IDcounter++)
 	{
 		LD_PROFILE_FUNCTION();
 
@@ -17,7 +19,7 @@ namespace Ludo {
 	}
 
 	DirectX11Texture2D::DirectX11Texture2D(const std::string& path)
-		: m_Path(path)
+		: m_Path(path), m_ID(s_IDcounter++)
 	{
 		LD_PROFILE_FUNCTION();
 

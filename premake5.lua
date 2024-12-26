@@ -16,6 +16,7 @@ IncludeDir = {}
 IncludeDir["Vendor"] = "%{wks.location}/LudoNarrative/vendor" 
 IncludeDir["ImGui"] = "%{wks.location}/LudoNarrative/vendor/imgui"
 IncludeDir["stb_image"] = "%{wks.location}/LudoNarrative/vendor/stb_image"
+IncludeDir["dxc"] = "%{wks.location}/LudoNarrative/vendor/dxc"
 
 include "imgui_premake5"
 
@@ -36,7 +37,8 @@ project "LudoNarrative"
         "%{prj.location}/src/**.h",
         "%{prj.location}/src/**.cpp",
         "%{prj.location}/vendor/stb_image/**.h",
-        "%{prj.location}/vendor/stb_image/**.cpp"
+        "%{prj.location}/vendor/stb_image/**.cpp",
+        "%{prj.location}/vendor/dxc/inc/**.h"
     }
 
     includedirs
@@ -106,6 +108,8 @@ project "Sandbox"
     {
         "LudoNarrative"
     }
+
+    postbuildcommands { "{COPYFILE} %{wks.location}/LudoNarrative/vendor/dxc/bin/x64/dxcompiler.dll %{cfg.buildtarget.directory}", "{COPYFILE} %{wks.location}/LudoNarrative/vendor/dxc/bin/x64/dxil.dll %{cfg.buildtarget.directory}" }
 
     cppdialect "c++20"
     systemversion "latest"

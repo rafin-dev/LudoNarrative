@@ -117,7 +117,7 @@ namespace Ludo {
         deviceContext->ClearDepthStencilView(m_DepthStencilView, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
     }
 
-    void DirectX11Context::Resize(unsigned int width, unsigned int height)
+    void DirectX11Context::Resize(uint32_t width, uint32_t height)
     {
         m_ShouldResize = true;
     }

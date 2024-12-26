@@ -18,6 +18,7 @@ VS_OUTPUT main(VS_INPUT input)
     output.Position = mul(float4(input.Pos.xyz, 1.0f), ViewProjection);
     output.Color = input.Color;
     output.TexPos = input.TexPos;
+    output.TexIndex = input.TexIndex;
     
     return output;
 }
@@ -31,11 +32,14 @@ cbuffer Material : register(b0)
     float TilingFactor;
 }
 
-Texture2D Texture;
-SamplerState Sampler;
+Texture2D<float4> textures[] : register(t0);
+SamplerState Sampler : register(s0);
 
 float4 main(VS_OUTPUT input) : SV_Target
 {
+    float4 texel = textures[int(input.TexIndex)].Sample(Sampler, input.TexPos);
     return input.Color;
-    //return Texture.Sample(Sampler, input.TexPos * TilingFactor) * input.Color;
+    //return float4(input.TexPos.xy, 0.0f, 1.0f);
+    //int txIndex = int(input.TexIndex);
+    //return textures[1].Sample(Sampler[1], input.TexPosa) * input.Color;
 }

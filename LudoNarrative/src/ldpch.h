@@ -25,6 +25,7 @@
 #include <stack>
 #include <queue>
 
+#include "Ludo/Core/Core.h"
 #include "Ludo/Core/Log.h"
 #include "Ludo/Debug/Instrumentor.h"
 
@@ -42,17 +43,27 @@
 	#include <dxgi1_6.h>
 	#include <d3dcompiler.h>
 
-	#ifdef LUDO_DEBUG
-
-		#include <dxgidebug.h>
-
-	#endif
-
 	#pragma comment(lib, "d3d11.lib")
 	#pragma comment (lib, "dxgi.lib")
 	#pragma comment(lib, "dxguid.lib")
 	#pragma comment(lib, "d3dcompiler")
 
+	// DirectX12
+	#include <d3d12.h>
+	#include <dxcapi.h>
+
+	#ifdef LUDO_DEBUG
+
+		#include <d3d12sdklayers.h>
+		#include <dxgidebug.h>
+
+	#endif
+
+	#pragma comment(lib, "d3d12.lib")
+	#pragma comment(lib, "dxgi.lib")
+	#pragma comment(lib, "dxguid.lib")
+	#pragma comment(lib, "d3dcompiler.lib")
+	#pragma comment(lib, "dxcompiler.lib")
 
 	#include <DirectXMath.h>
 	#include <DirectXPackedVector.h>
