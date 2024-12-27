@@ -72,15 +72,6 @@ namespace Ludo {
 			&textureDesc, D3D12_RESOURCE_STATE_COMMON, nullptr, IID_PPV_ARGS(&m_Texture));
 		VALIDATE_DX12_HRESULT(hr, "Failed to create Texture of size: [{0}, {1}]", m_Width, m_Height);
 
-		D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
-		srvDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
-		srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
-		srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
-		srvDesc.Texture2D.MostDetailedMip = 0;
-		srvDesc.Texture2D.MipLevels = 0;
-		srvDesc.Texture2D.PlaneSlice = 0;
-		srvDesc.Texture2D.ResourceMinLODClamp = 0.0f;
-
 		LD_CORE_TRACE("Created Texture of size: [{0}, {1}]", m_Width, m_Height);
 
 		return true;
@@ -101,6 +92,8 @@ namespace Ludo {
 		return m_Height;
 	}
 
+#define Align(x, y) std::max(((int)(x) / (int)(y)) * (int)(y), (int)(y));
+
 	void DirectX12Texture2D::SetData(void* data, uint32_t size)
 	{
 		LD_CORE_ASSERT(size <= m_Height * m_Width * sizeof(uint32_t), "Atempt to write out of texture bounds");
@@ -116,7 +109,7 @@ namespace Ludo {
 		src.PlacedFootprint.Footprint.Width = m_Width;
 		src.PlacedFootprint.Footprint.Height = m_Height;
 		src.PlacedFootprint.Footprint.Depth = 1;
-		src.PlacedFootprint.Footprint.RowPitch = 256; // R8 G8 B8 A8 -> 32 bits -> 4 bytes -> sizof(uint32_t)
+		src.PlacedFootprint.Footprint.RowPitch = Align(m_Width * sizeof(uint32_t), D3D12_TEXTURE_DATA_PITCH_ALIGNMENT); // Assure the row Pitch is a multiple of 256
 		src.PlacedFootprint.Footprint.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
 
 		D3D12_TEXTURE_COPY_LOCATION dest = {};
@@ -139,7 +132,21 @@ namespace Ludo {
 	{
 		LD_PROFILE_FUNCTION();
 
-		
+
+		D3D12_SHADER_RESOURCE_VIEW_DESC srv = {};
+		srv.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+		srv.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
+		srv.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+		srv.Texture2D.MipLevels = 1;
+		srv.Texture2D.MostDetailedMip = 0;
+		srv.Texture2D.PlaneSlice = 0;
+		srv.Texture2D.ResourceMinLODClamp = 0.0f;
+
+		UINT stride = DirectX12API::Get()->GetDevice()->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+		auto cpuHandle = DirectX12API::Get()->GetTexturesDecriptorHeap()->GetCPUDescriptorHandleForHeapStart();
+		cpuHandle.ptr += stride * slot;
+
+		DirectX12API::Get()->GetDevice()->CreateShaderResourceView(m_Texture, &srv, cpuHandle);
 	}
 
 	void DirectX12Texture2D::ShutDown()

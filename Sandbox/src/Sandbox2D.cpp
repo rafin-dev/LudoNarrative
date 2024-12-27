@@ -30,10 +30,10 @@ void Sandbox2D::OnUpdate(Ludo::TimeStep timeStep)
 	// ========== Render =========
 	Ludo::Renderer2D::BeginScene(m_CameraController.GetCamera());
 
-	Ludo::Renderer2D::DrawQuad(m_Position, { 10.0f, 10.0f }, m_Rotation, m_Texture, m_Color, 10.0f);
-	Ludo::Renderer2D::DrawQuad({ -1.0f, 0.0f }, m_Size, 45, {9.0f, 0.5f, 0.8f, 1.0f});
-	Ludo::Renderer2D::DrawQuad({ 1.0f, 0.0f }, m_Size, 45, { 2.0f, 0.9f, 0.7f, 1.0f });
-	Ludo::Renderer2D::DrawQuad({ 2.0f, 1.5f }, m_Size, 45, { 0.0f, 0.0f, 1.0f, 1.0f });
+	Ludo::Renderer2D::DrawQuad({ 0.0f, 0.0f, 0.0f }, { 10.0f, 10.0f }, m_Rotation, m_Texture, m_Color, 10.0f);
+	Ludo::Renderer2D::DrawQuad({ 0.0f, 0.0f, 0.0f }, m_Size, 45, { 0.9f, 0.5f, 0.8f, 1.0f});
+	Ludo::Renderer2D::DrawQuad({ 0.5f, 0.0f, 0.0f }, m_Size, 45, { 0.2f, 0.9f, 0.7f, 1.0f });
+	Ludo::Renderer2D::DrawQuad({ 2.0f, 1.5f, 0.0f }, m_Size, 45, { 0.0f, 0.0f, 1.0f, 1.0f });
 
 	Ludo::Renderer2D::EndScene();
 	// ===========================
@@ -54,16 +54,6 @@ void Sandbox2D::OnImGuiRender()
 	ImGui::DragFloat2("Size", (float*)&m_Size, 0.1f);
 	ImGui::DragFloat("Rotation", &m_Rotation);
 	ImGui::ColorEdit4("Color", (float*)&m_Color);
-
-	for (auto& result : m_ProfileResults)
-	{
-		char label[50];
-		strcpy(label, "%.3fms ");
-		strcat(label, result.Name);
-
-		ImGui::Text(label, result.Time);
-	}
-	m_ProfileResults.clear();
 
 	ImGui::End();
 }

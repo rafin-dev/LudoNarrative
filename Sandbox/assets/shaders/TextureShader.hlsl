@@ -38,7 +38,7 @@ SamplerState Sampler : register(s0);
 float4 main(VS_OUTPUT input) : SV_Target
 {
     float4 texel = textures[int(input.TexIndex)].Sample(Sampler, input.TexPos);
-    return input.Color;
+    return texel * input.Color;
     //return float4(input.TexPos.xy, 0.0f, 1.0f);
     //int txIndex = int(input.TexIndex);
     //return textures[1].Sample(Sampler[1], input.TexPosa) * input.Color;

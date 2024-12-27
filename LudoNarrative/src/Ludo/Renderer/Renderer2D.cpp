@@ -110,6 +110,11 @@ namespace Ludo {
 		LD_PROFILE_FUNCTION();
 
 		delete[] s_Data.QuadVertexBufferBase;
+		for (auto& texture : s_Data.TextureSlots) { texture = nullptr; }
+		s_Data.QuadVertexArray = nullptr;
+		s_Data.QuadVertexBuffer = nullptr;
+		s_Data.TextureMaterial = nullptr;
+		s_Data.WhiteTexture = nullptr;
 	}
 	
 	void Renderer2D::BeginScene(const OrthographicCamera& camera)

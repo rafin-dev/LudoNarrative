@@ -180,7 +180,7 @@ namespace Ludo {
 		pipelineStateDescription.RTVFormats[0] = DXGI_FORMAT_R8G8B8A8_UNORM;
 
 		// DSVFormat
-		pipelineStateDescription.DSVFormat = DXGI_FORMAT_UNKNOWN;
+		pipelineStateDescription.DSVFormat = DXGI_FORMAT_D32_FLOAT;
 
 		// BlendState
 		pipelineStateDescription.BlendState.AlphaToCoverageEnable = FALSE;
@@ -199,7 +199,7 @@ namespace Ludo {
 		pipelineStateDescription.BlendState.RenderTarget[0].RenderTargetWriteMask = D3D12_COLOR_WRITE_ENABLE_ALL;
 
 		// DepthStencilState
-		pipelineStateDescription.DepthStencilState.DepthEnable = FALSE;
+		pipelineStateDescription.DepthStencilState.DepthEnable = TRUE;
 		pipelineStateDescription.DepthStencilState.DepthFunc = D3D12_COMPARISON_FUNC_LESS_EQUAL;
 		pipelineStateDescription.DepthStencilState.DepthWriteMask = D3D12_DEPTH_WRITE_MASK_ALL;
 		pipelineStateDescription.DepthStencilState.StencilEnable = FALSE;
@@ -442,7 +442,7 @@ namespace Ludo {
 		srvRange.NumDescriptors = UINT_MAX;
 		srvRange.BaseShaderRegister = 0;
 		srvRange.RegisterSpace = 0;
-		srvRange.Flags = D3D12_DESCRIPTOR_RANGE_FLAG_NONE;
+		srvRange.Flags = D3D12_DESCRIPTOR_RANGE_FLAG_DESCRIPTORS_VOLATILE;
 		srvRange.OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
 
 		D3D12_ROOT_PARAMETER1 textures = {};

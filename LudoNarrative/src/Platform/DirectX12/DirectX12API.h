@@ -27,6 +27,7 @@ namespace Ludo {
 		inline auto* const& GetDXGIFactory() { return m_DXGIFactory; }
 		inline auto* const& GetCommandQueue() { return m_GraphicsCommands.GetCommandQueue(); }
 		inline auto* const& GetCommandList() { return m_GraphicsCommands.GetCommandList(); }
+		inline auto* const& GetTexturesDecriptorHeap() { return m_TexturesDescriptorHeap; }
 
 		inline auto& GetCopyCommandHelper() { return m_CopyCommands; }
 
@@ -61,6 +62,8 @@ namespace Ludo {
 		DX12CommandHelper m_CopyCommands;
 
 		IDXGIFactory7* m_DXGIFactory = nullptr;
+
+		ID3D12DescriptorHeap* m_TexturesDescriptorHeap = nullptr;
 
 		ID3D12DescriptorHeap* m_ImGuiSrvDescHeap = nullptr;
 

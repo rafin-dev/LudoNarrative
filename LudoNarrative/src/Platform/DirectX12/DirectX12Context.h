@@ -40,6 +40,9 @@ namespace Ludo {
 		ID3D12DescriptorHeap* m_rtvDescriptorHeap = nullptr;
 		D3D12_CPU_DESCRIPTOR_HANDLE m_rtvCPUhandles[SwapChainBufferCount] = {};
 
+		ID3D12Resource2* m_DepthStencilBuffer = nullptr;
+		ID3D12DescriptorHeap* m_DepthStencilDescriptorHeap = nullptr;
+
 		bool m_ShouldResize = false;
 		uint32_t m_Nwidth = 0;
 		uint32_t m_Nheight = 0;

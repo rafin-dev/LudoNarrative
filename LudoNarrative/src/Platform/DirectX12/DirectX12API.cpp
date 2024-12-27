@@ -60,15 +60,22 @@ namespace Ludo {
             return false;
         }
 
+        D3D12_DESCRIPTOR_HEAP_DESC descHeapDesc = {};
+        descHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
+        descHeapDesc.NumDescriptors = 32;
+        descHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
+        descHeapDesc.NodeMask = 0;
+
+        hr = m_Device->CreateDescriptorHeap(&descHeapDesc, IID_PPV_ARGS(&m_TexturesDescriptorHeap));
+        VALIDATE_DX12_HRESULT(hr, "Failed to create Descriptor Heap for the textures");
+        m_TexturesDescriptorHeap->SetName(L"Texture Descriptor Heap");
+
         LD_CORE_INFO("Initialized DirectX12(D3D12) Render API");
 
         if (!InitImGui())
         {
             return false;
         }
-
-        DX12UploadBuffer up;
-        up.Init(12);
 
         return true;
     }
@@ -100,6 +107,7 @@ namespace Ludo {
         imguiSrvDesHeapDescription.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
         HRESULT hr = m_Device->CreateDescriptorHeap(&imguiSrvDesHeapDescription, IID_PPV_ARGS(&m_ImGuiSrvDescHeap));
         VALIDATE_DX12_HRESULT(hr, "Failed to create ImGui SRV Descriptor Heap");
+        m_ImGuiSrvDescHeap->SetName(L"ImGui SRV Descriptor Heap");
 
         if (!ImGui_ImplDX12_Init(m_Device, DirectX12Context::GetSwapChainBufferCount(),
             DXGI_FORMAT_R8G8B8A8_UNORM, m_ImGuiSrvDescHeap,
@@ -144,10 +152,20 @@ namespace Ludo {
         m_GraphicsCommands.ShutDown();
         m_CopyCommands.ShutDown();
 
+        CHECK_AND_RELEASE_COMPTR(m_TexturesDescriptorHeap);
+
         CHECK_AND_RELEASE_COMPTR(m_Device);
         CHECK_AND_RELEASE_COMPTR(m_DXGIFactory);
 
 #ifdef LUDO_DEBUG
+        if (m_DXGIDebug != nullptr)
+        {
+            OutputDebugString(L"DXGI Reports living device objects:\n");
+            m_DXGIDebug->ReportLiveObjects(
+                DXGI_DEBUG_ALL, (DXGI_DEBUG_RLO_FLAGS)(DXGI_DEBUG_RLO_DETAIL | DXGI_DEBUG_RLO_IGNORE_INTERNAL)
+            );
+        }
+
         CHECK_AND_RELEASE_COMPTR(m_D3D12Debug);
         CHECK_AND_RELEASE_COMPTR(m_DXGIDebug);
 #endif // LUDO_DEBUG
@@ -169,7 +187,11 @@ namespace Ludo {
     {
         LD_PROFILE_FUNCTION();
 
-        m_GraphicsCommands.GetCommandList()->DrawIndexedInstanced(indexCount == 0 ? vertexArray->GetIndexBuffer()->GetCount() : indexCount, 1, 0, 0, 0);
+        // This is very bad for performance
+        auto& commandList = m_GraphicsCommands.GetCommandList();
+
+        commandList->SetGraphicsRootDescriptorTable(2, DirectX12API::Get()->GetTexturesDecriptorHeap()->GetGPUDescriptorHandleForHeapStart());
+        commandList->DrawIndexedInstanced(indexCount == 0 ? vertexArray->GetIndexBuffer()->GetCount() : indexCount, 1, 0, 0, 0);
     }
 
     void DirectX12API::BeginImGui()
