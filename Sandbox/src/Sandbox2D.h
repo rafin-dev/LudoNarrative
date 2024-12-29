@@ -26,4 +26,6 @@ private:
 	DirectX::XMFLOAT4 m_Color = { 1.0f, 1.0f, 1.0f, 1.0f };
 
 	Ludo::Ref<Ludo::Texture2D> m_Texture;
+
+	float m_LastDeltaTime = 0.0f;
 };

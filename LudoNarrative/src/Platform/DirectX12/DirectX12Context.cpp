@@ -260,7 +260,7 @@ namespace Ludo {
         commandList->RSSetScissorRects(1, &scissorRect);
 
         // Texture Descriptor Table/Heap
-        commandList->SetDescriptorHeaps(1, &DirectX12API::Get()->GetTexturesDecriptorHeap());
+        DirectX12API::Get()->GetSRVDescriptorHeap().NewFrame();
     }
 
     inline void DirectX12Context::EndFrame()

@@ -89,8 +89,13 @@ namespace Ludo {
 		HRESULT hr = S_OK;
 		auto& device = DirectX12API::Get()->GetDevice();
 
-		m_ShaderResources.emplace_back().Init(m_MaterialLayout.GetStride());
-
+		// If theres no material, ignore the upload buffer creation
+		// Shoudnt be an issue... in theory
+		if (m_MaterialLayout.GetElements().size() > 0)
+		{
+			m_ShaderResources.emplace_back().Init(m_MaterialLayout.GetStride());
+		}
+		
 		std::vector<D3D12_INPUT_ELEMENT_DESC> ElementLayout;
 		ElementLayout.reserve(m_VertexBufferLayout.GetElements().size());
 

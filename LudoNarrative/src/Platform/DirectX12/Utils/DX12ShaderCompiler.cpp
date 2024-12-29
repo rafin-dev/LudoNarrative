@@ -73,7 +73,7 @@ namespace Ludo {
         result->GetOutput(DXC_OUT_ERRORS, IID_PPV_ARGS(&errors), nullptr);
         if (errors && errors->GetStringLength())
         {
-            LD_CORE_INFO("Shader Compilation Errors/Warnings: {0}", (char*)errors->GetBufferPointer());
+            LD_CORE_WARN("Shader Compilation Errors/Warnings: {0}", (char*)errors->GetBufferPointer());
             errors->Release();
         }
         if (FAILED(hr))

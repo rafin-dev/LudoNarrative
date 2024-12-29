@@ -36,7 +36,6 @@ namespace Ludo {
 	private:
 		bool Init(const WindowProps& props);
 		void ShutDown();
-		void Resize();
 
 		HWND m_WindowHandle;
 		GraphicsContext* m_Context = nullptr;

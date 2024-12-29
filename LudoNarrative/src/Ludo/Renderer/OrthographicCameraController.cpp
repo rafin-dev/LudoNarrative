@@ -56,7 +56,6 @@ namespace Ludo {
 		LD_PROFILE_FUNCTION();
 
 		m_AspectRatio = (float)e.GetWidth() / (float)e.GetHeight();
-		LD_CORE_TRACE("New aspect ratio: {0}", m_AspectRatio);
 
 		m_Camera.SetProjection(-m_AspectRatio * m_ZoomLevel, m_AspectRatio * m_ZoomLevel, -m_ZoomLevel, m_ZoomLevel);
 

@@ -31,7 +31,7 @@ namespace Ludo {
 
 		static inline void DrawIndexed(const Ref<VertexArray>& vertexArray, uint32_t indexCount = 0)
 		{
-			s_RenderAPI->DrawIndexed(vertexArray);
+			s_RenderAPI->DrawIndexed(vertexArray, indexCount);
 		}
 
 		static void BeginImGui()

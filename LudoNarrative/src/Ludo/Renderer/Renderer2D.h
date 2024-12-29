@@ -27,6 +27,22 @@ namespace Ludo {
 		static void DrawQuad(const DirectX::XMFLOAT3& position, const DirectX::XMFLOAT2& size, float rotation, const Ref<Texture2D>& texture, 
 			const DirectX::XMFLOAT4& color = { 1.0f, 1.0f, 1.0f, 1.0f },
 			float tilingFactor = 1.0f);
+
+		// ========== Statistics ==========
+		struct Statistics
+		{
+			uint32_t DrawCalls = 0;
+			uint32_t QuadCount = 0;
+
+			uint32_t GetTotalVertexCount() { return QuadCount * 4; }
+			uint32_t GetTotalIndexCount() { return QuadCount * 6; }
+		};
+
+		static void ResetStats();
+		static Statistics GetStats();
+
+	private:
+		static void FlushAndReset();
 	};
 
 }

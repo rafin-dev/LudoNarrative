@@ -132,7 +132,6 @@ namespace Ludo {
 	{
 		LD_PROFILE_FUNCTION();
 
-
 		D3D12_SHADER_RESOURCE_VIEW_DESC srv = {};
 		srv.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
 		srv.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
@@ -142,11 +141,7 @@ namespace Ludo {
 		srv.Texture2D.PlaneSlice = 0;
 		srv.Texture2D.ResourceMinLODClamp = 0.0f;
 
-		UINT stride = DirectX12API::Get()->GetDevice()->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
-		auto cpuHandle = DirectX12API::Get()->GetTexturesDecriptorHeap()->GetCPUDescriptorHandleForHeapStart();
-		cpuHandle.ptr += stride * slot;
-
-		DirectX12API::Get()->GetDevice()->CreateShaderResourceView(m_Texture, &srv, cpuHandle);
+		DirectX12API::Get()->GetSRVDescriptorHeap().CreateDescriptorInOffset(m_Texture, srv, slot);
 	}
 
 	void DirectX12Texture2D::ShutDown()

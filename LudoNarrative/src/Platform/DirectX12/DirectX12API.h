@@ -2,6 +2,7 @@
 
 #include "Ludo/Renderer/RendererAPI.h"
 #include "Platform/DirectX12/Utils/DX12CommandHelper.h"
+#include "Platform/DirectX12/Utils/DX12SRVDescriptorHeap.h"
 
 #include "d3d12.h"
 
@@ -27,7 +28,7 @@ namespace Ludo {
 		inline auto* const& GetDXGIFactory() { return m_DXGIFactory; }
 		inline auto* const& GetCommandQueue() { return m_GraphicsCommands.GetCommandQueue(); }
 		inline auto* const& GetCommandList() { return m_GraphicsCommands.GetCommandList(); }
-		inline auto* const& GetTexturesDecriptorHeap() { return m_TexturesDescriptorHeap; }
+		inline auto & const GetSRVDescriptorHeap() { return m_SrvDescriptorHeap; }
 
 		inline auto& GetCopyCommandHelper() { return m_CopyCommands; }
 
@@ -63,9 +64,7 @@ namespace Ludo {
 
 		IDXGIFactory7* m_DXGIFactory = nullptr;
 
-		ID3D12DescriptorHeap* m_TexturesDescriptorHeap = nullptr;
-
-		ID3D12DescriptorHeap* m_ImGuiSrvDescHeap = nullptr;
+		DX12SRVDescriptorHeap m_SrvDescriptorHeap;
 
 		DirectX::XMFLOAT4 m_ClearColor = { 0.0f, 0.0f, 0.0f, 0.0f };
 

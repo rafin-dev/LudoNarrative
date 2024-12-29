@@ -49,7 +49,8 @@ namespace Ludo {
 
 		if (m_ShouldResize)
 		{
-			Resize();
+			m_ShouldResize = false;
+			m_Context->Resize(m_Data.Width, m_Data.Height);
 		}
 
 		m_Context->SwapBuffers();
@@ -181,12 +182,6 @@ namespace Ludo {
 		if (m_Context != nullptr) { delete m_Context; m_Context = nullptr; }
 		DestroyWindow(m_WindowHandle);
 		LD_CORE_INFO("Closed Window: {0}", m_Data.Title);
-	}
-
-	void WindowsWindow::Resize()
-	{
-		m_ShouldResize = false;
-		m_Context->Resize(m_Data.Width, m_Data.Height);
 	}
 
 #define MSGlambda [] (HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) -> bool
