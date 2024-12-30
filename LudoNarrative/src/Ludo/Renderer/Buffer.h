@@ -116,6 +116,13 @@ namespace Ludo {
 	class VertexBuffer
 	{
 	public:
+		enum VBUpdateFrequency
+		{
+			IMMUTABLE = 0, // Initial Data Cannot be overriden
+			MUTABLE, // Can be changed once per frame. If changed more than once, last value will be used for all draw calls
+			DYNAMIC // Can be changed multiple times per frame, takes when the data was changed into account
+		};
+
 		virtual ~VertexBuffer() = default;
 	
 		virtual void Bind() const = 0;
@@ -125,8 +132,8 @@ namespace Ludo {
 
 		virtual void SetData(void* data, uint32_t size) = 0;
 
-		static Ref<VertexBuffer> Create(uint32_t size, const BufferLayout& layout);
-		static Ref<VertexBuffer> Create(float* vertices, uint32_t size, const BufferLayout& layout);
+		static Ref<VertexBuffer> Create(uint32_t size, const BufferLayout& layout, VBUpdateFrequency updateFrequency);
+		static Ref<VertexBuffer> Create(float* vertices, uint32_t size, const BufferLayout& layout, VBUpdateFrequency updateFrequency);
 	};
 
 	// IndexBuffer only supports 32 bit index buffers

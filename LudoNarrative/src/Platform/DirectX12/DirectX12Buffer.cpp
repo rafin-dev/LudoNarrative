@@ -10,23 +10,53 @@ namespace Ludo {
 	// ========== Vertex Buffer ==========
 	// ===================================
 
-	DirectX12VertexBuffer::DirectX12VertexBuffer(float* verticies, uint32_t size, const BufferLayout& layout)
+	DirectX12VertexBuffer::DirectX12VertexBuffer(float* verticies, uint32_t size, const BufferLayout& layout, VBUpdateFrequency updateFrequency)
 		: m_Layout(layout)
 	{
 		LD_PROFILE_FUNCTION();
 
-		bool result = Init(size);
+		bool result = Init(size, updateFrequency);
 		LD_CORE_ASSERT(result, "Failed to create Vertex Buffer");
+
+		// If its a Immutable Buffer, SetData woludnt do anything, so we set the data manually
+		if (updateFrequency == VBUpdateFrequency::IMMUTABLE)
+		{
+			DX12UploadBuffer upBuffer;
+			upBuffer.Init(size);
+
+			auto& commandList = DirectX12API::Get()->GetCopyCommandHelper().InitCommandList();
+			upBuffer.FillBufferData(verticies, 0, size);
+			
+			D3D12_RESOURCE_BARRIER barrier = {};
+			barrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
+			barrier.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;
+			barrier.Transition.pResource = m_VertexBuffer;
+			barrier.Transition.Subresource = 0;
+
+			barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER;
+			barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_COPY_DEST;
+
+			commandList->ResourceBarrier(1, &barrier);
+			commandList->CopyBufferRegion(m_VertexBuffer, 0, upBuffer.GetBuffer(), 0, size);
+
+			barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_COPY_DEST;
+			barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER;
+			commandList->ResourceBarrier(1, &barrier);
+			
+			return;
+		}
 
 		SetData(verticies, size);
 	}
 
-	DirectX12VertexBuffer::DirectX12VertexBuffer(uint32_t size, const BufferLayout& layout)
+	DirectX12VertexBuffer::DirectX12VertexBuffer(uint32_t size, const BufferLayout& layout, VBUpdateFrequency updateFrequency)
 		: m_Layout(layout)
 	{
 		LD_PROFILE_FUNCTION();
 
-		bool result = Init(size);
+		LD_CORE_ASSERT(updateFrequency != VBUpdateFrequency::IMMUTABLE, "A Immutable Vertex Buffer cannot be initialized withot any data");
+
+		bool result = Init(size, updateFrequency);
 		LD_CORE_ASSERT(result, "Failed to create Vertex Buffer");
 	}
 
@@ -55,10 +85,10 @@ namespace Ludo {
 	{
 		LD_PROFILE_FUNCTION();
 
-		m_UploadBuffer.ImediateUploadData(m_VertexBuffer, data, 0, size);
+		m_Updater->UpdateVertexBuffer(m_VertexBuffer, 0, data, size);
 	}
 
-	bool DirectX12VertexBuffer::Init(size_t size)
+	bool DirectX12VertexBuffer::Init(size_t size, VBUpdateFrequency updateFrequency)
 	{
 		LD_PROFILE_FUNCTION();
 
@@ -88,7 +118,7 @@ namespace Ludo {
 		resourceDescription.Flags = D3D12_RESOURCE_FLAG_NONE;
 
 		// ========== Vertex Buffer ==========
-		hr = device->CreateCommittedResource(&heapPropertiesVertex, D3D12_HEAP_FLAG_NONE, &resourceDescription, D3D12_RESOURCE_STATE_COMMON,
+		hr = device->CreateCommittedResource(&heapPropertiesVertex, D3D12_HEAP_FLAG_NONE, &resourceDescription, D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER,
 			nullptr, IID_PPV_ARGS(&m_VertexBuffer));
 		VALIDATE_DX12_HRESULT(hr, "Failed to create Vertex Buffer");
 
@@ -97,7 +127,11 @@ namespace Ludo {
 		m_VertexBufferView.SizeInBytes = size;
 		m_VertexBufferView.StrideInBytes = m_Layout.GetStride();
 
-		m_UploadBuffer.Init(size);
+		m_Updater = DX12VertexBufferUpdater::Create(updateFrequency);
+		if (!m_Updater->Init(size))
+		{
+			return false;
+		}
 
 		return true;
 	}
@@ -154,7 +188,7 @@ namespace Ludo {
 		resourceDescription.Flags = D3D12_RESOURCE_FLAG_NONE;
 
 		// ========== Index Buffer ==========
-		hr = device->CreateCommittedResource(&heapPropertiesIndex, D3D12_HEAP_FLAG_NONE, &resourceDescription, D3D12_RESOURCE_STATE_COMMON,
+		hr = device->CreateCommittedResource(&heapPropertiesIndex, D3D12_HEAP_FLAG_NONE, &resourceDescription, D3D12_RESOURCE_STATE_COPY_DEST,
 			nullptr, IID_PPV_ARGS(&m_IndexBuffer));
 		VALIDATE_DX12_HRESULT(hr, "Failed to create Index Buffer of size {0}", count);
 
@@ -165,7 +199,21 @@ namespace Ludo {
 
 		DX12UploadBuffer upBuffer;
 		upBuffer.Init(size);
-		upBuffer.ImediateUploadData(m_IndexBuffer, indices, 0, count * sizeof(uint32_t));
+
+		auto& commandList = DirectX12API::Get()->GetCopyCommandHelper().InitCommandList();
+		D3D12_RESOURCE_BARRIER barrier = {};
+		barrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
+		barrier.Transition.pResource = m_IndexBuffer;
+		barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_COPY_DEST;
+		barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_INDEX_BUFFER;
+		barrier.Transition.Subresource = 0;
+		barrier.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;
+
+		upBuffer.FillBufferData(indices, 0, size);
+		commandList->CopyBufferRegion(m_IndexBuffer, 0, upBuffer.GetBuffer(), 0, size);
+		commandList->ResourceBarrier(1, &barrier);
+
+		DirectX12API::Get()->GetCopyCommandHelper().ExecuteCommandListAndWait();
 
 		return true;
 	}

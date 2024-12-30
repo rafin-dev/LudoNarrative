@@ -13,8 +13,7 @@ namespace Ludo {
 		enum class API
 		{
 			None = 0,
-			DirectX11 = 1,
-			DirectX12 = 2
+			DirectX12 = 1
 		};
 
 	public:

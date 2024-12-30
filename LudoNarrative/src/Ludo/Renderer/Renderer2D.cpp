@@ -69,7 +69,7 @@ namespace Ludo {
 			{ "TilingFactor", ShaderDataType::Float }
 		};
 
-		s_Data.QuadVertexBuffer = VertexBuffer::Create(s_Data.MaxVertices * sizeof(QuadVertex), vbLayout);
+		s_Data.QuadVertexBuffer = VertexBuffer::Create(s_Data.MaxVertices * sizeof(QuadVertex), vbLayout, VertexBuffer::DYNAMIC);
 
 		s_Data.QuadVertexBufferBase = new QuadVertex[s_Data.MaxVertices];
 		
@@ -143,9 +143,6 @@ namespace Ludo {
 		s_Data.QuadVertexBuffer->SetData(s_Data.QuadVertexBufferBase, dataSize);
 
 		Flush();
-
-		for (uint32_t i = 1; i < s_Data.TextureSlotIndex; i++) { s_Data.TextureSlots[i] = nullptr; } // Clear texture reference
-		s_Data.TextureSlotIndex = 1;
 	}
 
 	void Renderer2D::Flush()
@@ -173,7 +170,7 @@ namespace Ludo {
 	{
 		LD_PROFILE_FUNCTION();
 
-		if (s_Data.QuadIndexCount > Renderer2DData::MaxIndices)
+		if (s_Data.QuadIndexCount == Renderer2DData::MaxIndices)
 		{
 			FlushAndReset();
 		}
@@ -230,7 +227,7 @@ namespace Ludo {
 	{
 		LD_PROFILE_FUNCTION();
 
-		if (s_Data.QuadIndexCount > Renderer2DData::MaxIndices)
+		if (s_Data.QuadIndexCount == Renderer2DData::MaxIndices)
 		{
 			FlushAndReset();
 		}

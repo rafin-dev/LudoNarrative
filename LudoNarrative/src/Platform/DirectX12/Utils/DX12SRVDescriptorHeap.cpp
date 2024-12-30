@@ -54,7 +54,7 @@ namespace Ludo {
 
         DirectX12API::Get()->GetCommandList()->SetGraphicsRootDescriptorTable(2, handle);
 
-        m_CurrentOffset += m_CurrentMaxSlot + 1; // If no texture was bound for this draw call, MaxSlot is -1, so the offset does not change
+        m_CurrentOffset += m_CurrentMaxSlot + 1;
         m_CurrentMaxSlot = -1;
     }
 

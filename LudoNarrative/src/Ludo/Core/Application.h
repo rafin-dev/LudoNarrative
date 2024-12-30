@@ -26,6 +26,8 @@ namespace Ludo {
 
 		Window& GetWindow() { return *m_Window; }
 
+		uint64_t GetCurrentFrame() { return m_FrameCounter; }
+
 		static Application& Get() { return *s_Instance; }
 
 	private:
@@ -39,6 +41,7 @@ namespace Ludo {
 		LayerStack m_LayerStack;
 
 		float m_LastFrameTime = 0.0f;
+		uint64_t m_FrameCounter = 0;
 
 		static Application* s_Instance;
 	};

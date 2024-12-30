@@ -88,6 +88,8 @@ namespace Ludo {
 			}
 
 			m_Window->OnUpdate();
+
+			m_FrameCounter++;
 		}
 	}
 
@@ -103,6 +105,10 @@ namespace Ludo {
 			if (event.GetKeyCode() == LD_KEY_F11)
 			{
 				Application::Get().GetWindow().SetFullScreen(!Application::Get().GetWindow().IsFullScreen());
+			}
+			else if (event.GetKeyCode() == LD_KEY_V)
+			{
+				Application::Get().GetWindow().SetVsync(!Application::Get().GetWindow().IsVsync());
 			}
 
 			return false;

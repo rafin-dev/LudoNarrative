@@ -38,7 +38,7 @@ public:
 			{ "Color", Ludo::ShaderDataType::Float4 }
 		};
 
-		auto vertexBuffer = Ludo::VertexBuffer::Create(vertices, sizeof(vertices), Layout);
+		auto vertexBuffer = Ludo::VertexBuffer::Create(vertices, sizeof(vertices), Layout, Ludo::VertexBuffer::IMMUTABLE);
 		auto indexBuffer = Ludo::IndexBuffer::Create(indices, sizeof(indices) / sizeof(uint32_t));
 		m_VertexArray = Ludo::VertexArray::Create();
 		m_VertexArray->AddVertexBuffer(vertexBuffer);

@@ -31,7 +31,7 @@ namespace Ludo {
 
 		ID3D12Resource2* m_Texture = nullptr;
 
-		std::filesystem::path m_Path;
+		std::filesystem::path m_Path = "None";
 		uint32_t m_Width = 0;
 		uint32_t m_Height = 0;
 

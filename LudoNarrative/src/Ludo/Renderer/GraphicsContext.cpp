@@ -4,7 +4,6 @@
 #include "RendererAPI.h"
 
 #ifdef LD_PLATFORM_WINDOWS
-    #include "Platform/DirectX11/DirectX11Context.h"
     #include "Platform/DirectX12/DirectX12Context.h"
     #include "Platform/Windows/WindowsWindow.h"
 #endif 
@@ -17,7 +16,6 @@ namespace Ludo {
         switch (RendererAPI::GetAPI())
         {
             case RendererAPI::API::None: LD_CORE_ASSERT(false, "None is not yet supported!"); return nullptr;
-            case RendererAPI::API::DirectX11: return new DirectX11Context(((WindowsWindow*)window)->GetHandle());
             case RendererAPI::API::DirectX12: return new DirectX12Context(((WindowsWindow*)window)->GetHandle());
         }
 

@@ -2,6 +2,7 @@
 
 #include "Ludo/Renderer/Buffer.h"
 #include "Platform/DirectX12/Utils/DX12UploadBuffer.h"
+#include "Platform/DirectX12/Utils/DX12VertexBufferUpdater.h"
 
 #include "d3d12.h"
 
@@ -10,8 +11,8 @@ namespace Ludo {
 	class DirectX12VertexBuffer : public VertexBuffer
 	{
 	public:
-		DirectX12VertexBuffer(float* verticies, uint32_t size, const BufferLayout& layout);
-		DirectX12VertexBuffer(uint32_t size, const BufferLayout& layout);
+		DirectX12VertexBuffer(float* verticies, uint32_t size, const BufferLayout& layout, VBUpdateFrequency updateFrequency);
+		DirectX12VertexBuffer(uint32_t size, const BufferLayout& layout, VBUpdateFrequency updateFrequency);
 		virtual ~DirectX12VertexBuffer() override;
 
 		virtual void Bind() const override;
@@ -24,10 +25,10 @@ namespace Ludo {
 	private:
 		void ImplBind(uint32_t slot) const;
 
-		bool Init(size_t size);
+		bool Init(size_t size, VBUpdateFrequency updateFrequency);
 		void ShutDown();
 		
-		DX12UploadBuffer m_UploadBuffer;
+		Scope<DX12VertexBufferUpdater> m_Updater;
 
 		D3D12_VERTEX_BUFFER_VIEW m_VertexBufferView = {};
 		ID3D12Resource2* m_VertexBuffer = nullptr;
