@@ -31,6 +31,7 @@
 #include "Ludo/Renderer/VertexArray.h"
 #include "Ludo/Renderer/Material.h"
 #include "Ludo/Renderer/Texture.h"
+#include "Ludo/Renderer/SubTexture2D.h"
 
 #include "Ludo/Renderer/OrthographicCamera.h"
 #include "Ludo/Renderer/Transform.h"

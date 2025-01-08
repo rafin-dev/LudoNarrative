@@ -35,6 +35,13 @@ namespace Ludo {
         DirectX12API::Get()->GetCommandList()->CopyBufferRegion(destBuffer, offset, m_UploadBuffer, 0, size);
     }
 
+    void DX12UploadBuffer::ClearBuffer()
+    {
+        LD_PROFILE_FUNCTION();
+
+        memset(m_Dest, 0, m_Size);
+    }
+
     void DX12UploadBuffer::FillBufferData(void* data, size_t offset, uint32_t size)
     {
         LD_PROFILE_FUNCTION();

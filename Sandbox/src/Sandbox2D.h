@@ -26,6 +26,9 @@ private:
 	DirectX::XMFLOAT4 m_Color = { 1.0f, 1.0f, 1.0f, 1.0f };
 
 	Ludo::Ref<Ludo::Texture2D> m_Texture;
+	Ludo::Ref<Ludo::Texture2D> m_SpriteSheet;
+	Ludo::Ref<Ludo::SubTexture2D> m_StairsTexture;
+	Ludo::Ref<Ludo::SubTexture2D> m_TreeTexture;
 
 	float m_LastDeltaTime = 0.0f;
 };

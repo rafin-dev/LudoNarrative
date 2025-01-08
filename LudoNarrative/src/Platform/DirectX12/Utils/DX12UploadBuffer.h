@@ -14,6 +14,7 @@ namespace Ludo {
 
 		void ImediateUploadData(ID3D12Resource2* &const destBuffer, void* data, size_t offset, size_t size);
 		void QueuUploadData(ID3D12Resource2*& const destBuffer, void* data, size_t offset, size_t size);
+		void ClearBuffer();
 
 		void FillBufferData(void* data, size_t offset, uint32_t size);
 

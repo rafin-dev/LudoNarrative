@@ -12,8 +12,12 @@ void Sandbox2D::OnAttach()
 	LD_PROFILE_FUNCTION();
 
 	m_Texture = Ludo::Texture2D::Create("assets/textures/CheckerBoard.png");
+	m_SpriteSheet = Ludo::Texture2D::Create("assets/textures/RPGpack_sheet_2X.png");
 
-	Ludo::RenderCommand::SetClearColor({ 0.5f, 0.2f, 0.9f, 1.0f });
+	m_StairsTexture = Ludo::SubTexture2D::CreateFromCoords(m_SpriteSheet, { 7, 5 }, { 128, 128 });
+	m_TreeTexture = Ludo::SubTexture2D::CreateFromCoords(m_SpriteSheet, { 2, 1 }, { 128, 128 }, { 1, 2 });
+
+	Ludo::RenderCommand::SetClearColor({ 0.2f, 0.2f, 0.2f, 1.0f });
 }
 
 void Sandbox2D::OnDetach()
@@ -38,25 +42,44 @@ void Sandbox2D::OnUpdate(Ludo::TimeStep timeStep)
 
 	{
 		LD_PROFILE_SCOPE("Rendering submission");
-
+		
 		Ludo::Renderer2D::BeginScene(m_CameraController.GetCamera());
 
+#if 0
 		static float rotation = 0.0f;
 		rotation += 20.0f * timeStep;
 
 		Ludo::Renderer2D::DrawQuad(m_Position, { 10.0f, 10.0f }, 0.0f, m_Texture, { 1.0f, 1.0f, 1.0f, 1.0f }, 10.0f);
 
-		Ludo::Renderer2D::DrawQuad({ -1.0f, 0.0f }, { 1.0f, 1.0f }, rotation, m_Texture, { 1.0f, 1.0f, 1.0f, 1.0f }, 3.0f);
+		Ludo::Renderer2D::DrawQuad({ -1.0f, 0.0f, 0.1f }, { 1.0f, 1.0f }, DirectX::XMConvertToRadians(-rotation), m_Texture, { 1.0f, 1.0f, 1.0f, 1.0f }, 3.0f);
 
-		Ludo::Renderer2D::DrawQuad({ 0.0f, 0.0f, 0.0f }, { 0.75f, 1.0f }, 0.0f, { 0.9f, 0.5f, 0.8f, 1.0f });
+		Ludo::Renderer2D::DrawQuad({ 1.0f, 1.0f, 0.1f }, { 0.75f, 1.0f }, 0.0f, { 0.9f, 0.5f, 0.8f, 1.0f });
 		
-		Ludo::Renderer2D::DrawQuad({ 0.0f, 2.0f, 0.0f }, { 1.0f, 1.0f }, 0.0f, { 0.0f, 0.0f, 1.0f, 1.0f });
-		Ludo::Renderer2D::DrawQuad({ 0.0f, 2.0f, 0.0f }, { 1.0f, 1.0f }, 0.0f, { 0.0f, 0.0f, 1.0f, 1.0f });
-		Ludo::Renderer2D::DrawQuad({ 0.0f, 2.0f, 0.0f }, { 1.0f, 1.0f }, 0.0f, { 0.0f, 0.0f, 1.0f, 1.0f });
+		Ludo::Renderer2D::DrawQuad({ 0.0f, 2.0f, 0.1f }, { 1.0f, 1.0f }, 0.0f, { 0.0f, 0.0f, 1.0f, 1.0f });
 
 		if (Render5quads)
 		{
 			Ludo::Renderer2D::DrawQuad({ 5.0f, 2.0f, 0.0f }, m_Size, 0, { 0.0f, 0.0f, 1.0f, 1.0f });
+		}
+#endif
+
+		Ludo::Renderer2D::DrawQuad({ 0.0f, 0.0f }, { 1.0f, 1.0f }, 0.0f, m_StairsTexture, { 1.0f, 1.0f, 1.0f, 1.0f });
+		Ludo::Renderer2D::DrawQuad({ 1.0f, 0.5f }, { 1.0f, 2.0f }, 0.0f, m_TreeTexture, { 1.0f, 1.0f, 1.0f, 1.0f });
+
+		Ludo::Renderer2D::EndScene();
+
+		Ludo::Renderer2D::BeginScene(m_CameraController.GetCamera());
+
+		if (Render5quads)
+		{
+			for (float y = -4.75f; y < 5.25f; y += 0.5f)
+			{
+				for (float x = -4.75f; x < 5.25f; x += 0.5f)
+				{
+					DirectX::XMFLOAT4 color = { (x + 5) / 10, (y + 5) / 10, 0.4f, 0.7f };
+					Ludo::Renderer2D::DrawQuad({ x, y }, { 0.5, 0.5f }, 0.0f, color);
+				}
+			}
 		}
 
 		Ludo::Renderer2D::EndScene();

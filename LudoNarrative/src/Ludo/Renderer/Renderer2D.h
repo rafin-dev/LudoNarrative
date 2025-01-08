@@ -3,30 +3,45 @@
 #include "Ludo/Core/Core.h"
 #include "Ludo/Renderer/OrthographicCamera.h"
 #include "Ludo/Renderer/Texture.h"
+#include "Ludo/Renderer/SubTexture2D.h"
 
 namespace Ludo {
 
 	class Renderer2D
 	{
 	public:
-		// ========== System ==========
+		// ========== System =============
 		static void Init();
 		static void Shutdown();
 
 		static void BeginScene(const OrthographicCamera& camera);
 		static void EndScene();
 		static void Flush();
+		// ================================
 
 		// ========== Primitives ==========
+		// Roation is in radians
+
+		// Colored Quads
 		static void DrawQuad(const DirectX::XMFLOAT2& position, const DirectX::XMFLOAT2& size, float rotation, const DirectX::XMFLOAT4& color);
 		static void DrawQuad(const DirectX::XMFLOAT3& position, const DirectX::XMFLOAT2& size, float rotation, const DirectX::XMFLOAT4& color);
 	
+		// Textured Quads
 		static void DrawQuad(const DirectX::XMFLOAT2& position, const DirectX::XMFLOAT2& size, float rotation, const Ref<Texture2D>& texture, 
 			const DirectX::XMFLOAT4& color = { 1.0f, 1.0f, 1.0f, 1.0f },
 			float tilingFactor = 1.0f);
 		static void DrawQuad(const DirectX::XMFLOAT3& position, const DirectX::XMFLOAT2& size, float rotation, const Ref<Texture2D>& texture, 
 			const DirectX::XMFLOAT4& color = { 1.0f, 1.0f, 1.0f, 1.0f },
 			float tilingFactor = 1.0f);
+
+		// SubTextured Quads
+		static void DrawQuad(const DirectX::XMFLOAT2& position, const DirectX::XMFLOAT2& size, float rotation, const Ref<SubTexture2D>& subTexture,
+			const DirectX::XMFLOAT4& color = { 1.0f, 1.0f, 1.0f, 1.0f },
+			float tilingFactor = 1.0f);
+		static void DrawQuad(const DirectX::XMFLOAT3& position, const DirectX::XMFLOAT2& size, float rotation, const Ref<SubTexture2D>& subTexture,
+			const DirectX::XMFLOAT4& color = { 1.0f, 1.0f, 1.0f, 1.0f },
+			float tilingFactor = 1.0f);
+		// ================================
 
 		// ========== Statistics ==========
 		struct Statistics
@@ -40,8 +55,15 @@ namespace Ludo {
 
 		static void ResetStats();
 		static Statistics GetStats();
+		// ================================
 
 	private:
+		// Internal use
+		static void DrawQuad(const DirectX::XMFLOAT3& position, const DirectX::XMFLOAT2& size, float rotation, 
+			const Ref<Texture2D>& texture, const DirectX::XMFLOAT2* texCoords,
+			const DirectX::XMFLOAT4& color = { 1.0f, 1.0f, 1.0f, 1.0f },
+			float tilingFactor = 1.0f);
+
 		static void FlushAndReset();
 	};
 

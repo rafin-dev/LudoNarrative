@@ -167,9 +167,12 @@ namespace Ludo {
 
 		LD_CORE_INFO("Created Window: {0} [{1}, {2}]", m_Data.Title, m_Data.Width, m_Data.Height);
 
-		if (InitImGui)
 		{
-			ImGui_ImplWin32_Init(m_WindowHandle);
+			LD_PROFILE_SCOPE("ImGui_ImplWin32_Init");
+			if (InitImGui)
+			{
+				ImGui_ImplWin32_Init(m_WindowHandle);
+			}
 		}
 
 		return true;

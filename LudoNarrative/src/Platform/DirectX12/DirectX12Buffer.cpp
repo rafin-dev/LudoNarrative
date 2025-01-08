@@ -241,6 +241,8 @@ namespace Ludo {
 
 	void DirectX12IndexBuffer::ShutDown()
 	{
+		LD_PROFILE_FUNCTION();
+
 		CHECK_AND_RELEASE_COMPTR(m_IndexBuffer);
 	}
 

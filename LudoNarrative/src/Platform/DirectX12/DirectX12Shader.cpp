@@ -474,7 +474,7 @@ namespace Ludo {
 		D3D12_ROOT_PARAMETER1 parameters[] = { rootConstants, materialCBV, textures };
 
 		D3D12_STATIC_SAMPLER_DESC staticSampler = {};
-		staticSampler.Filter = D3D12_FILTER_COMPARISON_MIN_MAG_MIP_POINT;
+		staticSampler.Filter = D3D12_FILTER_MIN_MAG_MIP_POINT;
 		staticSampler.AddressU = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
 		staticSampler.AddressV = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
 		staticSampler.AddressW = D3D12_TEXTURE_ADDRESS_MODE_WRAP;

@@ -202,7 +202,16 @@ namespace Ludo {
 	}
 }
 
+#ifdef LUDO_DIST
+
+#define LD_PROFILE 0
+
+#else
+
 #define LD_PROFILE 1
+
+#endif
+
 #if LD_PROFILE
 // Resolve which function signature macro will be used. Note that this only
 // is resolved when the (pre)compiler starts, so the syntax highlighting
