@@ -91,7 +91,7 @@ void Sandbox2D::OnUpdate(Ludo::TimeStep timeStep)
 		}
 
 		Ludo::Renderer2D::EndScene();
-
+		
 		m_FrameBuffer->Unbind();
 	}
 	// ===========================
@@ -106,8 +106,6 @@ void Sandbox2D::OnImGuiRender()
 {
 	LD_PROFILE_FUNCTION();
 	
-	ImGui::DockSpaceOverViewport(0, ImGui::GetMainViewport());
-
 	ImGui::Begin("Info");
 	
 	int frameRate = 1 / m_LastDeltaTime;
@@ -128,7 +126,7 @@ void Sandbox2D::OnImGuiRender()
 		Render5quads = !Render5quads;
 	}
 
-	ImGui::Image(m_FrameBuffer->GetImTextureID(), ImVec2{ 320.0f, 160.0f});
+	ImGui::Image(m_FrameBuffer->GetImTextureID(), ImVec2{ 320.0f, 160.0f });
 
 	ImGui::End();
 }

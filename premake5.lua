@@ -131,3 +131,58 @@ project "Sandbox"
         defines "LUDO_DIST"
         optimize "On"
         runtime "Release"
+    
+project "Ludo-Editor"
+    location "Ludo-Editor"
+    kind "ConsoleApp"
+    language "C++"
+
+    targetdir ("bin/" .. outputdir .. "/%{prj.name}")
+    objdir ("bin-int/" .. outputdir .. "/%{prj.name}")
+
+    files
+    {
+        "%{prj.location}/src/**.h",
+        "%{prj.location}/src/**.cpp"
+    }
+
+    includedirs
+    {
+        "%{prj.location}/src",
+        "%{wks.location}/LudoNarrative/src",
+        "%{wks.location}/LudoNarrative/vendor/spdlog/include",
+        "%{IncludeDir.Vendor}"
+    }
+
+    defines
+    {
+        "LD_PLATFORM_WINDOWS"
+    }
+
+    links
+    {
+        "LudoNarrative"
+    }
+
+    postbuildcommands { "{COPYFILE} %{wks.location}/LudoNarrative/vendor/dxc/bin/x64/dxcompiler.dll %{cfg.buildtarget.directory}", "{COPYFILE} %{wks.location}/LudoNarrative/vendor/dxc/bin/x64/dxil.dll %{cfg.buildtarget.directory}" }
+
+    cppdialect "c++20"
+    systemversion "latest"
+
+    filter "configurations:Debug"
+        defines "LUDO_DEBUG"
+        symbols "on"
+        optimize "off"
+        runtime "Debug"
+        
+        defines { "LD_ENABLE_ASSERTS" }
+
+    filter "configurations:Release"
+        defines "LUDO_RELEASE"
+        optimize "On"
+        runtime "Release"
+
+    filter "configurations:Dist"
+        defines "LUDO_DIST"
+        optimize "On"
+        runtime "Release"

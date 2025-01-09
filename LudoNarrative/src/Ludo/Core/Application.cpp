@@ -20,7 +20,7 @@ namespace Ludo {
 
 	Application* Application::s_Instance = nullptr;
 
-	Application::Application()
+	Application::Application(const std::string& name)
 	{
 		LD_PROFILE_FUNCTION();
 
@@ -34,7 +34,7 @@ namespace Ludo {
 		}
 
 		bool result;
-		m_Window = Window::Create(&result);
+		m_Window = Window::Create(&result, WindowProps(name));
 		if (!result)
 		{
 			m_Running = false;
