@@ -17,10 +17,15 @@ namespace Ludo {
 		void OnUpdate(TimeStep timeStep);
 		void OnEvent(Event& e);
 
-		inline OrthographicCamera& GetCamera() { return m_Camera; }
-		inline const OrthographicCamera& GetCamera() const { return m_Camera; }
+		OrthographicCamera& GetCamera() { return m_Camera; }
+		const OrthographicCamera& GetCamera() const { return m_Camera; }
+
+		float GetZoomLevel() { return m_ZoomLevel; }
+		void SetZoomLevel(float zommLevel) { m_ZoomLevel = zommLevel; CalculateView(); }
 
 	private:
+		void CalculateView();
+
 		bool OnMouseScrolledEvent(MouseScrolledEvent& e);
 		bool OnWindowResizeEvent(WindowResizeEvent& e);
 
@@ -33,7 +38,6 @@ namespace Ludo {
 		DirectX::XMFLOAT3 m_CameraPosition = { 0.0f, 0.0f, 0.0f };
 		float m_CameraRotation = 0.0f;
 
-		float m_CameraMoveSeed = 1.0f;
 		float m_CameraRotationSpeed = 1.0f;
 	};
 

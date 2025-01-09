@@ -72,7 +72,7 @@ namespace Ludo {
 
 	void DirectX12VertexBuffer::ImplBind(uint32_t slot) const
 	{
-		LD_PROFILE_FUNCTION();
+		LD_PROFILE_RENDERER_FUNCTION();
 
 		DirectX12API::Get()->GetCommandList()->IASetVertexBuffers(slot, 1, &m_VertexBufferView);
 	}
@@ -83,7 +83,7 @@ namespace Ludo {
 
 	void DirectX12VertexBuffer::SetData(void* data, uint32_t size)
 	{
-		LD_PROFILE_FUNCTION();
+		LD_PROFILE_RENDERER_FUNCTION();
 
 		m_Updater->UpdateVertexBuffer(m_VertexBuffer, 0, data, size);
 	}
@@ -225,7 +225,7 @@ namespace Ludo {
 
 	void DirectX12IndexBuffer::Bind() const
 	{
-		LD_PROFILE_FUNCTION();
+		LD_PROFILE_RENDERER_FUNCTION();
 
 		DirectX12API::Get()->GetCommandList()->IASetIndexBuffer(&m_IndexBufferView);
 	}

@@ -239,6 +239,8 @@ namespace Ludo {
         commandList->ClearRenderTargetView(m_rtvCPUhandles[m_CurrentBackBuffer], (float*)&RenderCommand::GetClearColor(), 0, nullptr);
         commandList->ClearDepthStencilView(depthStencilViewHandle, D3D12_CLEAR_FLAG_DEPTH, 1.0f, 0, 0, nullptr);
 
+        s_CurrentBAckBufferRTVHandle = m_rtvCPUhandles[m_CurrentBackBuffer];
+        s_DepthStencilHandle = m_DepthStencilDescriptorHeap->GetCPUDescriptorHandleForHeapStart();
         commandList->OMSetRenderTargets(1, &m_rtvCPUhandles[m_CurrentBackBuffer], false, &depthStencilViewHandle);
 
         // Viewport
@@ -270,6 +272,9 @@ namespace Ludo {
         LD_PROFILE_FUNCTION();
 
         auto& commandList = DirectX12API::Get()->GetCommandList();
+
+        D3D12_CPU_DESCRIPTOR_HANDLE depthStencilViewHandle = m_DepthStencilDescriptorHeap->GetCPUDescriptorHandleForHeapStart();
+        commandList->OMSetRenderTargets(1, &m_rtvCPUhandles[m_CurrentBackBuffer], false, &depthStencilViewHandle);
 
         D3D12_RESOURCE_BARRIER barrier = {};
         barrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
@@ -308,6 +313,16 @@ namespace Ludo {
         RetrieveBuffers();
 
         LD_CORE_TRACE("Resize DirectX12 Swap Chain for the window: {0} [{1}, {2}]", m_Window->GetTitle(), m_Window->GetWidth(), m_Window->GetHeight());
+    }
+
+    D3D12_CPU_DESCRIPTOR_HANDLE DirectX12Context::s_CurrentBAckBufferRTVHandle;
+    D3D12_CPU_DESCRIPTOR_HANDLE DirectX12Context::s_DepthStencilHandle;
+
+    void DirectX12Context::SetSwapChainRenderTarget()
+    {
+        LD_PROFILE_RENDERER_FUNCTION();
+
+        DirectX12API::Get()->GetCommandList()->OMSetRenderTargets(1, &s_CurrentBAckBufferRTVHandle, false, &s_DepthStencilHandle);
     }
 
 }

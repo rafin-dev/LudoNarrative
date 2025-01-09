@@ -187,7 +187,7 @@ namespace Ludo {
 
     void DirectX12API::DrawIndexed(const Ref<VertexArray>& vertexArray, uint32_t indexCount)
     {
-        LD_PROFILE_FUNCTION();
+        LD_PROFILE_RENDERER_FUNCTION();
 
         auto& commandList = m_GraphicsCommands.GetCommandList();
 
@@ -197,7 +197,7 @@ namespace Ludo {
 
     void DirectX12API::BeginImGui()
     {
-        LD_PROFILE_FUNCTION();
+        LD_PROFILE_RENDERER_FUNCTION();
 
         ImGui_ImplDX12_NewFrame();
         ImGui_ImplWin32_NewFrame();
@@ -206,7 +206,7 @@ namespace Ludo {
 
     void DirectX12API::EndImGui()
     {
-        LD_PROFILE_FUNCTION();
+        LD_PROFILE_RENDERER_FUNCTION();
 
         ImGui::Render();
 

@@ -16,7 +16,7 @@ namespace Ludo {
 
 	void DirectX12VertexArray::Bind()
 	{
-		LD_PROFILE_FUNCTION();
+		LD_PROFILE_RENDERER_FUNCTION();
 
 		for (int i = 0; i < m_VertexBuffers.size(); i++)
 		{

@@ -247,3 +247,15 @@ namespace Ludo {
 #define LD_PROFILE_SCOPE(name)
 #define LD_PROFILE_FUNCTION()
 #endif
+
+#if LD_PROFILE_RENDERER
+
+#define LD_PROFILE_RENDERER_SCOPE(name) LD_PROFILE_SCOPE(name)
+#define LD_PROFILE_RENDERER_FUNCTION() LD_PROFILE_FUNCTION()
+
+#else
+
+#define LD_PROFILE_RENDERER_SCOPE(name)
+#define LD_PROFILE_RENDERER_FUNCTION() 
+
+#endif

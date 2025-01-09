@@ -25,6 +25,7 @@
 #include "Ludo/Renderer/Renderer.h"
 #include "Ludo/Renderer/Renderer2D.h"
 #include "Ludo/Renderer/RenderCommand.h"
+#include "Ludo/Renderer/FrameBuffer.h"
 
 #include "Ludo/Renderer/Shader.h"
 #include "Ludo/Renderer/Buffer.h"
@@ -32,6 +33,7 @@
 #include "Ludo/Renderer/Material.h"
 #include "Ludo/Renderer/Texture.h"
 #include "Ludo/Renderer/SubTexture2D.h"
+#include "Ludo/Renderer/ImGuiTexture.h"
 
 #include "Ludo/Renderer/OrthographicCamera.h"
 #include "Ludo/Renderer/Transform.h"

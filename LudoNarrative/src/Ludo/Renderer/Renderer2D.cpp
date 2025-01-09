@@ -113,7 +113,7 @@ namespace Ludo {
 	
 	void Renderer2D::Shutdown()
 	{
-		LD_PROFILE_FUNCTION();
+		LD_PROFILE_RENDERER_FUNCTION();
 
 		delete[] s_Data.QuadVertexBufferBase;
 		for (auto& texture : s_Data.TextureSlots) { texture = nullptr; }
@@ -125,7 +125,7 @@ namespace Ludo {
 	
 	void Renderer2D::BeginScene(const OrthographicCamera& camera)
 	{
-		LD_PROFILE_FUNCTION();
+		LD_PROFILE_RENDERER_FUNCTION();
 
 		s_Data.TextureMaterial->GetShader()->Bind();
 		s_Data.TextureMaterial->GetShader()->SetViewProjectionMatrix(camera.GetViewProjectionMatrix());
@@ -137,7 +137,7 @@ namespace Ludo {
 	
 	void Renderer2D::EndScene()
 	{
-		LD_PROFILE_FUNCTION();
+		LD_PROFILE_RENDERER_FUNCTION();
 
 		uint32_t dataSize = (uint8_t*)s_Data.QuadVertexBufferPtr - (uint8_t*)s_Data.QuadVertexBufferBase;
 		s_Data.QuadVertexBuffer->SetData(s_Data.QuadVertexBufferBase, dataSize);
@@ -147,7 +147,7 @@ namespace Ludo {
 
 	void Renderer2D::Flush()
 	{
-		LD_PROFILE_FUNCTION();
+		LD_PROFILE_RENDERER_FUNCTION();
 
 		if (s_Data.QuadIndexCount == 0)
 		{
@@ -173,7 +173,7 @@ namespace Ludo {
 
 	void Renderer2D::DrawQuad(const DirectX::XMFLOAT3& position, const DirectX::XMFLOAT2& size, float rotation, const DirectX::XMFLOAT4& color)
 	{
-		LD_PROFILE_FUNCTION();
+		LD_PROFILE_RENDERER_FUNCTION();
 
 		if (s_Data.QuadIndexCount == Renderer2DData::MaxIndices)
 		{
@@ -241,7 +241,7 @@ namespace Ludo {
 
 	void Renderer2D::DrawQuad(const DirectX::XMFLOAT3& position, const DirectX::XMFLOAT2& size, float rotation, const Ref<Texture2D>& texture, const DirectX::XMFLOAT2* texCoords, const DirectX::XMFLOAT4& color, float tilingFactor)
 	{
-		LD_PROFILE_FUNCTION();
+		LD_PROFILE_RENDERER_FUNCTION();
 
 		if (s_Data.QuadIndexCount == Renderer2DData::MaxIndices)
 		{

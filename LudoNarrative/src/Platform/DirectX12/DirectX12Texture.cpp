@@ -96,6 +96,8 @@ namespace Ludo {
 
 	void DirectX12Texture2D::SetData(void* data, uint32_t size)
 	{
+		LD_PROFILE_RENDERER_FUNCTION();
+
 		LD_CORE_ASSERT(size <= m_Height * m_Width * sizeof(uint32_t), "Atempt to write out of texture bounds");
 
 		DX12UploadBuffer uploadBuffer;
@@ -130,7 +132,7 @@ namespace Ludo {
 
 	void DirectX12Texture2D::Bind(uint32_t slot) const
 	{
-		LD_PROFILE_FUNCTION();
+		LD_PROFILE_RENDERER_FUNCTION();
 
 		D3D12_SHADER_RESOURCE_VIEW_DESC srv = {};
 		srv.Format = DXGI_FORMAT_R8G8B8A8_UNORM;

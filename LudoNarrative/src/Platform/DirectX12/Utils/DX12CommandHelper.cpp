@@ -54,7 +54,7 @@ namespace Ludo {
 
     ID3D12GraphicsCommandList6* const& DX12CommandHelper::InitCommandList()
     {
-        LD_PROFILE_FUNCTION();
+        LD_PROFILE_RENDERER_FUNCTION();
 
         HRESULT hr = m_CommandAllocator->Reset();
         CHECK_DX12_HRESULT(hr, "Failed to Reset Command Allocator");
@@ -67,7 +67,7 @@ namespace Ludo {
 
     void DX12CommandHelper::Flush(uint32_t count)
     {
-        LD_PROFILE_FUNCTION();
+        LD_PROFILE_RENDERER_FUNCTION();
 
         for (int i = 0; i < count; i++)
         {
@@ -77,7 +77,7 @@ namespace Ludo {
 
     void DX12CommandHelper::ExecuteCommandListAndWait()
     {
-        LD_PROFILE_FUNCTION();
+        LD_PROFILE_RENDERER_FUNCTION();
 
         HRESULT hr = m_CommandList->Close();
         CHECK_DX12_HRESULT(hr, "Failed to close Command List");
@@ -89,7 +89,7 @@ namespace Ludo {
 
     void DX12CommandHelper::SignalAndWait()
     {
-        LD_PROFILE_FUNCTION();
+        LD_PROFILE_RENDERER_FUNCTION();
 
         m_FenceValue++;
         m_CommandQueue->Signal(m_Fence, m_FenceValue);

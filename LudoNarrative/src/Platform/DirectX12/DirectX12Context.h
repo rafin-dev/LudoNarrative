@@ -23,6 +23,8 @@ namespace Ludo {
 			return SwapChainBufferCount;
 		}
 
+		static void SetSwapChainRenderTarget();
+
 	private:
 		void ShutDown();
 		void ResizeImpl();
@@ -48,6 +50,9 @@ namespace Ludo {
 		uint32_t m_Nheight = 0;
 		HWND m_WindowHandle = nullptr;
 		WindowsWindow* m_Window = nullptr;
+
+		static D3D12_CPU_DESCRIPTOR_HANDLE s_CurrentBAckBufferRTVHandle;
+		static D3D12_CPU_DESCRIPTOR_HANDLE s_DepthStencilHandle;
 	};
 
 }

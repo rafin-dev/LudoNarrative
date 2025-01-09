@@ -35,7 +35,7 @@ namespace Ludo {
 
     void DX12MutableVertexBufferUpdater::UpdateVertexBuffer(ID3D12Resource2* &const vertexBuffer, uint32_t destOffset, void* data, size_t dataSize)
     {
-        LD_PROFILE_FUNCTION();
+        LD_PROFILE_RENDERER_FUNCTION();
 
         auto& commandList = DirectX12API::Get()->GetCommandList();
 
@@ -82,7 +82,7 @@ namespace Ludo {
 
     void DX12DynamicVertexBufferUpdater::UpdateVertexBuffer(ID3D12Resource2*& const vertexBuffer, uint32_t destOffset, void* data, size_t dataSize)
     {
-        LD_PROFILE_FUNCTION();
+        LD_PROFILE_RENDERER_FUNCTION();
 
         auto frame = Application::Get().GetCurrentFrame();
         if (m_CurrentFrame != frame)

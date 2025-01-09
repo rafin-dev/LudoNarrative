@@ -86,6 +86,8 @@ namespace Ludo {
 
 	bool DirectX12Shader::Init(std::unordered_map<DX12ShaderCompiler::ShaderKind, IDxcBlob*> shaders)
 	{
+		LD_PROFILE_FUNCTION();
+
 		HRESULT hr = S_OK;
 		auto& device = DirectX12API::Get()->GetDevice();
 
@@ -246,11 +248,15 @@ namespace Ludo {
 
 	void DirectX12Shader::ShutDown()
 	{
+		LD_PROFILE_FUNCTION();
+
 		CHECK_AND_RELEASE_COMPTR(m_PipelineStateObject);
 	}
 
 	void DirectX12Shader::Bind()
 	{
+		LD_PROFILE_RENDERER_FUNCTION();
+
 		// TODO:
 		// if (m_CurreentFrame != Application::Get().GetCurrentFrame()
 		// {
@@ -415,6 +421,8 @@ namespace Ludo {
 
 	bool DirectX12Shader::CreateRootSignature()
 	{
+		LD_PROFILE_FUNCTION();
+
 		/*
 		*	Root Signature Layout (CPU)
 		*	- 0		float4x4 "ViewProjection", float4x4 "Model"

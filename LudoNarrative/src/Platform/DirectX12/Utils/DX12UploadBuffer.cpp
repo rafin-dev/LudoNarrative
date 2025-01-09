@@ -15,7 +15,7 @@ namespace Ludo {
 
     void DX12UploadBuffer::ImediateUploadData(ID3D12Resource2*& const destBuffer, void* data, size_t offset, size_t size)
     {
-        LD_PROFILE_FUNCTION();
+        LD_PROFILE_RENDERER_FUNCTION();
 
         LD_CORE_ASSERT(size <= (m_Size - offset), "Atempt to write out of Upload Buffer Bounds");
 
@@ -26,7 +26,7 @@ namespace Ludo {
 
     void DX12UploadBuffer::QueuUploadData(ID3D12Resource2*& const destBuffer, void* data, size_t offset, size_t size)
     {
-        LD_PROFILE_FUNCTION();
+        LD_PROFILE_RENDERER_FUNCTION();
 
         LD_CORE_ASSERT(size <= (m_Size - offset), "Atempt to write out of Upload Buffer Bounds");
 
@@ -37,14 +37,14 @@ namespace Ludo {
 
     void DX12UploadBuffer::ClearBuffer()
     {
-        LD_PROFILE_FUNCTION();
+        LD_PROFILE_RENDERER_FUNCTION();
 
         memset(m_Dest, 0, m_Size);
     }
 
     void DX12UploadBuffer::FillBufferData(void* data, size_t offset, uint32_t size)
     {
-        LD_PROFILE_FUNCTION();
+        LD_PROFILE_RENDERER_FUNCTION();
 
         LD_CORE_ASSERT(size <= (m_Size - offset), "Atempt to write out of Upload Buffer Bounds");
 

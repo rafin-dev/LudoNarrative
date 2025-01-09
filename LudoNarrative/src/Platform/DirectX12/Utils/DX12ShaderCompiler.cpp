@@ -50,6 +50,8 @@ namespace Ludo {
 
     bool DX12ShaderCompiler::Compile(const DxcBuffer& srcCode, ShaderKind shaderKind, IDxcBlob*& output)
     {
+        LD_PROFILE_FUNCTION();
+
         std::vector<LPCWSTR> arguments;
         arguments.reserve(4);
 

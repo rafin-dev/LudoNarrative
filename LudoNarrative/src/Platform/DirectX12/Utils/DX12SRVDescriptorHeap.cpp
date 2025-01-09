@@ -36,7 +36,7 @@ namespace Ludo {
 
     void DX12SRVDescriptorHeap::NewFrame()
     {
-        LD_PROFILE_FUNCTION();
+        LD_PROFILE_RENDERER_FUNCTION();
         
         // Simple cleanup
         m_CurrentOffset = 64;
@@ -47,7 +47,7 @@ namespace Ludo {
 
     void DX12SRVDescriptorHeap::BindToDescriptorTable()
     {
-        LD_PROFILE_FUNCTION();
+        LD_PROFILE_RENDERER_FUNCTION();
 
         auto handle = m_GpuHeapStart;
         handle.ptr += m_CurrentOffset * m_IncrementAmount;
@@ -60,6 +60,8 @@ namespace Ludo {
 
     void DX12SRVDescriptorHeap::CreateDescriptorInOffset(ID3D12Resource2* const& resource, const D3D12_SHADER_RESOURCE_VIEW_DESC& srvDesc, uint32_t slot)
     {
+        LD_PROFILE_RENDERER_FUNCTION();
+
         LD_CORE_ASSERT((m_CurrentOffset + slot) < LD_SHADER_RESOURCE_VIEW_COUNT, "Texture slot is out of Descriptor Heap bounds");
 
         auto handle = m_CpuHeapStart;

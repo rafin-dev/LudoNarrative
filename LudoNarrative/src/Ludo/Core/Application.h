@@ -21,6 +21,8 @@ namespace Ludo {
 		void Run();
 		void OnEvent(Event& event);
 
+		void Close() { m_Running = false; }
+
 		void PushLayer(Layer* layer);
 		void PushOverlay(Layer* overlay);
 

@@ -2,6 +2,8 @@
 
 #include <imgui/imgui.h>
 
+#include <Platform/DirectX12/DirectX12API.h>
+
 Sandbox2D::Sandbox2D()
 	: m_CameraController(1280.0f / 720.0f, true)
 {
@@ -11,13 +13,23 @@ void Sandbox2D::OnAttach()
 {
 	LD_PROFILE_FUNCTION();
 
+	Ludo::FrameBufferSpecification fbSpec = {};
+	fbSpec.Width = Ludo::Application::Get().GetWindow().GetWidth();
+	fbSpec.Height = Ludo::Application::Get().GetWindow().GetHeight();
+
+	m_FrameBuffer = Ludo::FrameBuffer::Create(fbSpec);
+
 	m_Texture = Ludo::Texture2D::Create("assets/textures/CheckerBoard.png");
+	m_ImGuiTexture = Ludo::ImGuiTexture::Create(m_Texture);
+
 	m_SpriteSheet = Ludo::Texture2D::Create("assets/textures/RPGpack_sheet_2X.png");
 
 	m_StairsTexture = Ludo::SubTexture2D::CreateFromCoords(m_SpriteSheet, { 7, 5 }, { 128, 128 });
 	m_TreeTexture = Ludo::SubTexture2D::CreateFromCoords(m_SpriteSheet, { 2, 1 }, { 128, 128 }, { 1, 2 });
 
 	Ludo::RenderCommand::SetClearColor({ 0.2f, 0.2f, 0.2f, 1.0f });
+
+	m_CameraController.SetZoomLevel(5);
 }
 
 void Sandbox2D::OnDetach()
@@ -42,10 +54,11 @@ void Sandbox2D::OnUpdate(Ludo::TimeStep timeStep)
 
 	{
 		LD_PROFILE_SCOPE("Rendering submission");
-		
+	
+		m_FrameBuffer->Bind();
+
 		Ludo::Renderer2D::BeginScene(m_CameraController.GetCamera());
 
-#if 0
 		static float rotation = 0.0f;
 		rotation += 20.0f * timeStep;
 
@@ -61,14 +74,9 @@ void Sandbox2D::OnUpdate(Ludo::TimeStep timeStep)
 		{
 			Ludo::Renderer2D::DrawQuad({ 5.0f, 2.0f, 0.0f }, m_Size, 0, { 0.0f, 0.0f, 1.0f, 1.0f });
 		}
-#endif
 
 		Ludo::Renderer2D::DrawQuad({ 0.0f, 0.0f }, { 1.0f, 1.0f }, 0.0f, m_StairsTexture, { 1.0f, 1.0f, 1.0f, 1.0f });
 		Ludo::Renderer2D::DrawQuad({ 1.0f, 0.5f }, { 1.0f, 2.0f }, 0.0f, m_TreeTexture, { 1.0f, 1.0f, 1.0f, 1.0f });
-
-		Ludo::Renderer2D::EndScene();
-
-		Ludo::Renderer2D::BeginScene(m_CameraController.GetCamera());
 
 		if (Render5quads)
 		{
@@ -83,6 +91,8 @@ void Sandbox2D::OnUpdate(Ludo::TimeStep timeStep)
 		}
 
 		Ludo::Renderer2D::EndScene();
+
+		m_FrameBuffer->Unbind();
 	}
 	// ===========================
 }
@@ -96,9 +106,12 @@ void Sandbox2D::OnImGuiRender()
 {
 	LD_PROFILE_FUNCTION();
 	
-	ImGui::Begin("Square");
+	ImGui::DockSpaceOverViewport(0, ImGui::GetMainViewport());
+
+	ImGui::Begin("Info");
 	
 	int frameRate = 1 / m_LastDeltaTime;
+	ImGui::Text("Frame Time: %f", m_LastDeltaTime);
 	ImGui::Text("Frame rate: %i", frameRate);
 	
 	auto stats = Ludo::Renderer2D::GetStats();
@@ -114,6 +127,8 @@ void Sandbox2D::OnImGuiRender()
 	{
 		Render5quads = !Render5quads;
 	}
+
+	ImGui::Image(m_FrameBuffer->GetImTextureID(), ImVec2{ 320.0f, 160.0f});
 
 	ImGui::End();
 }
