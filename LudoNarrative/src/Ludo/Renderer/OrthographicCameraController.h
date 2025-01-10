@@ -20,7 +20,10 @@ namespace Ludo {
 		OrthographicCamera& GetCamera() { return m_Camera; }
 		const OrthographicCamera& GetCamera() const { return m_Camera; }
 
-		float GetZoomLevel() { return m_ZoomLevel; }
+		float GetAspectRatio() const { return m_AspectRatio; }
+		void SetAspectRatio(float aspectRatio) { m_AspectRatio = aspectRatio; CalculateView(); }
+
+		float GetZoomLevel() const { return m_ZoomLevel; }
 		void SetZoomLevel(float zommLevel) { m_ZoomLevel = zommLevel; CalculateView(); }
 
 	private:

@@ -17,6 +17,8 @@ namespace Ludo {
 		void Bind() override;
 		void Unbind() override;
 
+		void Resize(uint32_t width, uint32_t height) override;
+
 		ImTextureID GetImTextureID() const override { return m_ImTextureID; }
 
 		const FrameBufferSpecification& GetSpecification() const override { return m_Specification; }

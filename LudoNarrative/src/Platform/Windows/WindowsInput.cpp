@@ -1,24 +1,22 @@
 #include "ldpch.h"
-#include "WindowsInput.h"
+
+#include "Ludo/Core/Input.h"
 
 #include "Ludo/Core/KeyCodes.h"
-#include "Ludo/Core/Log.h"
 
 namespace Ludo {
 
-    Input* Input::s_Instance = new WindowsInput();
-
-    bool WindowsInput::IsKeyPressedImpl(int keyCode)
+    bool Input::IsKeyPressed(int keyCode)
     {
         return GetKeyState(keyCode) < 0;
     }
 
-    bool WindowsInput::IsMouseButtonDownImpl(int buttonCode)
+    bool Input::IsMouseButtonDown(int buttonCode)
     {
         return GetKeyState(buttonCode) < 0;
     }
 
-    std::pair<float, float> WindowsInput::GetMousePositionImpl()
+    std::pair<float, float> Input::GetMousePosition()
     {
         POINT pos;
         GetCursorPos(&pos);
@@ -26,7 +24,7 @@ namespace Ludo {
         return std::make_pair<float, float>(pos.x, pos.y);
     }
 
-    float WindowsInput::GetMouseXImpl()
+    float Input::GetMouseX()
     {
         POINT pos;
         GetCursorPos(&pos);
@@ -34,7 +32,7 @@ namespace Ludo {
         return pos.x;
     }
 
-    float WindowsInput::GetMouseYImpl()
+    float Input::GetMouseY()
     {
         POINT pos;
         GetCursorPos(&pos);

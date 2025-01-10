@@ -1,7 +1,7 @@
 workspace "LudoNarrative"
     architecture "x64"
 
-    startproject "Sandbox"
+    startproject "Ludo-Editor"
     
     configurations
     {

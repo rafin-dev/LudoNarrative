@@ -136,7 +136,16 @@ namespace Ludo {
 		commandList->ClearRenderTargetView(m_RenderTargetView, color, 0, nullptr);
 		commandList->ClearDepthStencilView(m_DepthStencilView, D3D12_CLEAR_FLAG_DEPTH, 1.0f, 0, 0, nullptr);
 
-		DirectX12API::Get()->GetCommandList()->OMSetRenderTargets(1, &m_RenderTargetView, false, &m_DepthStencilView);
+		D3D12_VIEWPORT viewport = {};
+		viewport.TopLeftX = 0;
+		viewport.TopLeftY = 0;
+		viewport.Width = m_Specification.Width;
+		viewport.Height = m_Specification.Height;
+		viewport.MinDepth = 0.0f;
+		viewport.MaxDepth = 1.0f;
+		commandList->RSSetViewports(1, &viewport);
+
+		commandList->OMSetRenderTargets(1, &m_RenderTargetView, false, &m_DepthStencilView);
 	}
 
 	void DirectX12FrameBuffer::Unbind()
@@ -153,6 +162,14 @@ namespace Ludo {
 		DirectX12Context::SetSwapChainRenderTarget();
 
 		DirectX12API::Get()->GetCommandList()->ResourceBarrier(1, &barrier);
+	}
+
+	void DirectX12FrameBuffer::Resize(uint32_t width, uint32_t height)
+	{
+		m_Specification.Width = width;
+		m_Specification.Height = height;
+
+		Invalidate();
 	}
 
 	bool DirectX12FrameBuffer::Init()

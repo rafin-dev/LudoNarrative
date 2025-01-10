@@ -252,6 +252,9 @@ namespace Ludo {
         viewport.MinDepth = 0.0f;
         viewport.MaxDepth = 1.0f;
 
+        s_ViewportWidth = viewport.Width;
+        s_ViewportHeight = viewport.Height;
+
         // Scissor rectangle
         RECT scissorRect = {};
         scissorRect.left = 0;
@@ -317,11 +320,22 @@ namespace Ludo {
 
     D3D12_CPU_DESCRIPTOR_HANDLE DirectX12Context::s_CurrentBAckBufferRTVHandle;
     D3D12_CPU_DESCRIPTOR_HANDLE DirectX12Context::s_DepthStencilHandle;
+    uint32_t DirectX12Context::s_ViewportWidth;
+    uint32_t DirectX12Context::s_ViewportHeight;
+
 
     void DirectX12Context::SetSwapChainRenderTarget()
     {
         LD_PROFILE_RENDERER_FUNCTION();
 
+        auto& commandList = DirectX12API::Get()->GetCommandList();
+
+        D3D12_VIEWPORT viewport = {};
+        viewport.Width = s_ViewportWidth;
+        viewport.Height = s_ViewportHeight;
+        viewport.MaxDepth = 1.0f;
+
+        commandList->RSSetViewports(1, &viewport);
         DirectX12API::Get()->GetCommandList()->OMSetRenderTargets(1, &s_CurrentBAckBufferRTVHandle, false, &s_DepthStencilHandle);
     }
 

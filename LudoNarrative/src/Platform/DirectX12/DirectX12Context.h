@@ -53,6 +53,8 @@ namespace Ludo {
 
 		static D3D12_CPU_DESCRIPTOR_HANDLE s_CurrentBAckBufferRTVHandle;
 		static D3D12_CPU_DESCRIPTOR_HANDLE s_DepthStencilHandle;
+		static uint32_t s_ViewportWidth;
+		static uint32_t s_ViewportHeight;
 	};
 
 }
