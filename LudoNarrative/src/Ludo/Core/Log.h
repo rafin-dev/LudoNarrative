@@ -22,6 +22,8 @@ namespace Ludo {
 
 }
 
+
+#ifndef LUDO_DIST
 // Engine log
 #define LD_CORE_ERROR(...) ::Ludo::Log::GetCoreLogger()->error(__VA_ARGS__)
 #define LD_CORE_WARN(...)  ::Ludo::Log::GetCoreLogger()->warn(__VA_ARGS__)
@@ -33,3 +35,17 @@ namespace Ludo {
 #define LD_WARN(...)  ::Ludo::Log::GetClientLogger()->warn(__VA_ARGS__)
 #define LD_INFO(...)  ::Ludo::Log::GetClientLogger()->info(__VA_ARGS__)
 #define LD_TRACE(...) ::Ludo::Log::GetClientLogger()->trace(__VA_ARGS__)
+
+#else
+
+#define LD_CORE_ERROR(...) 
+#define LD_CORE_WARN(...)  
+#define LD_CORE_INFO(...)  
+#define LD_CORE_TRACE(...) 
+
+#define LD_ERROR(...) 
+#define LD_WARN(...)  
+#define LD_INFO(...)  
+#define LD_TRACE(...) 
+
+#endif

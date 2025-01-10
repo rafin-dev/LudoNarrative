@@ -2,6 +2,11 @@
 
 #ifdef LD_PLATFORM_WINDOWS
 
+#define NOMINMAX
+#include <Windows.h>
+
+#ifndef LUDO_DIST
+
 extern Ludo::Application* Ludo::CreateApplication();
 
 int main(int argc, char** argv)
@@ -20,5 +25,20 @@ int main(int argc, char** argv)
 	delete app;
 	LD_PROFILE_END_SESSION();
 }
+
+#else
+
+extern Ludo::Application* Ludo::CreateApplication();
+
+int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine, int nCmdShow) 
+{
+	Ludo::Application* app = Ludo::CreateApplication();
+
+	app->Run();
+
+	delete app;
+}
+
+#endif
 
 #endif 
