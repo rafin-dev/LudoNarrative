@@ -2,6 +2,8 @@
 
 #include "Event.h"
 
+#include "Ludo/Core/KeyCodes.h"
+
 namespace Ludo {
 
 	class MouseMovedEvent : public Event
@@ -51,37 +53,30 @@ namespace Ludo {
 		int m_OffsetX;
 	};
 
-	enum MouseButton : int
-	{
-		Left,
-		Middle,
-		Right
-	};
-
 	class MouseButtonEvent : public Event
 	{
 	public:
-		inline int GetMouseButton() const { return m_Button; }
+		inline MouseButtonCode GetMouseButton() const { return m_Button; }
 
 		EVENT_CLASS_CATEGORY(EventCategoryMouse | EventCategoryInput)
 
 	protected:
-		MouseButtonEvent(int button)
+		MouseButtonEvent(MouseButtonCode button)
 			: m_Button(button) {}
 
-		int m_Button;
+		MouseButtonCode m_Button;
 	};
 
 	class MouseButtonPressedEvent : public MouseButtonEvent
 	{
 	public:
-		MouseButtonPressedEvent(int button)
+		MouseButtonPressedEvent(MouseButtonCode button)
 			: MouseButtonEvent(button) {}
 
 		std::string ToString() const override
 		{
 			std::stringstream stringStream;
-			stringStream << "MouseButtonPressedEvent: " << m_Button;
+			stringStream << "MouseButtonPressedEvent: " << (int)m_Button;
 			return stringStream.str();
 		}
 
@@ -91,13 +86,13 @@ namespace Ludo {
 	class MouseButtonReleasedEvent : public MouseButtonEvent
 	{
 	public:
-		MouseButtonReleasedEvent(int button)
+		MouseButtonReleasedEvent(MouseButtonCode button)
 			: MouseButtonEvent(button) {}
 
 		std::string ToString() const override
 		{
 			std::stringstream stringStream;
-			stringStream << "MouseButtonReleasedEvent: " << m_Button;
+			stringStream << "MouseButtonReleasedEvent: " << (int)m_Button;
 			return stringStream.str();
 		}
 

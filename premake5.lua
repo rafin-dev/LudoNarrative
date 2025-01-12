@@ -17,6 +17,7 @@ IncludeDir["Vendor"] = "%{wks.location}/LudoNarrative/vendor"
 IncludeDir["ImGui"] = "%{wks.location}/LudoNarrative/vendor/imgui"
 IncludeDir["stb_image"] = "%{wks.location}/LudoNarrative/vendor/stb_image"
 IncludeDir["dxc"] = "%{wks.location}/LudoNarrative/vendor/dxc"
+IncludeDir["entt"] = "%{wks.location}/LudoNarrative/vendor/entt/include"
 
 include "imgui_premake5"
 
@@ -47,7 +48,8 @@ project "LudoNarrative"
         "%{prj.location}/vendor/spdlog/include",
         "%{IncludeDir.Vendor}",
         "%{IncludeDir.ImGui}",
-        "%{IncludeDir.stb_image}"
+        "%{IncludeDir.stb_image}",
+        "%{IncludeDir.entt}"
     }
 
     links
@@ -96,7 +98,8 @@ project "Sandbox"
         "%{prj.location}/src",
         "%{wks.location}/LudoNarrative/src",
         "%{wks.location}/LudoNarrative/vendor/spdlog/include",
-        "%{IncludeDir.Vendor}"
+        "%{IncludeDir.Vendor}",
+        "%{IncludeDir.entt}"
     }
 
     defines
@@ -152,7 +155,8 @@ project "Ludo-Editor"
         "%{prj.location}/src",
         "%{wks.location}/LudoNarrative/src",
         "%{wks.location}/LudoNarrative/vendor/spdlog/include",
-        "%{IncludeDir.Vendor}"
+        "%{IncludeDir.Vendor}",
+        "%{IncludeDir.entt}"
     }
 
     defines

@@ -2,18 +2,16 @@
 
 #include "Ludo/Core/Input.h"
 
-#include "Ludo/Core/KeyCodes.h"
-
 namespace Ludo {
 
-    bool Input::IsKeyPressed(int keyCode)
+    bool Input::IsKeyPressed(KeyCode keyCode)
     {
-        return GetKeyState(keyCode) < 0;
+        return GetKeyState((int)keyCode) < 0;
     }
 
-    bool Input::IsMouseButtonDown(int buttonCode)
+    bool Input::IsMouseButtonDown(MouseButtonCode buttonCode)
     {
-        return GetKeyState(buttonCode) < 0;
+        return GetKeyState((int)buttonCode) < 0;
     }
 
     std::pair<float, float> Input::GetMousePosition()

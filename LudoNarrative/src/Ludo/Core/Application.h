@@ -26,6 +26,8 @@ namespace Ludo {
 		void PushLayer(Layer* layer);
 		void PushOverlay(Layer* overlay);
 
+		void ImGuiBlockEvent(bool active) { m_ImGuiBlockEvent = active; }
+
 		Window& GetWindow() { return *m_Window; }
 
 		uint64_t GetCurrentFrame() { return m_FrameCounter; }
@@ -44,6 +46,8 @@ namespace Ludo {
 
 		float m_LastFrameTime = 0.0f;
 		uint64_t m_FrameCounter = 0;
+
+		bool m_ImGuiBlockEvent = true;
 
 		static Application* s_Instance;
 	};

@@ -15,12 +15,12 @@ namespace Ludo {
 	{
 		LD_PROFILE_FUNCTION();
 
-		m_CameraPosition.x += (Input::IsKeyPressed(LD_KEY_D) - Input::IsKeyPressed(LD_KEY_A)) * m_ZoomLevel * timeStep;
-		m_CameraPosition.y += (Input::IsKeyPressed(LD_KEY_W) - Input::IsKeyPressed(LD_KEY_S)) * m_ZoomLevel * timeStep;
+		m_CameraPosition.x += (Input::IsKeyPressed(KeyCode::D) - Input::IsKeyPressed(KeyCode::A)) * m_ZoomLevel * timeStep;
+		m_CameraPosition.y += (Input::IsKeyPressed(KeyCode::W) - Input::IsKeyPressed(KeyCode::S)) * m_ZoomLevel * timeStep;
 
 		if (m_RotationEnabled)
 		{
-			int rotationDirection = Ludo::Input::IsKeyPressed(LD_KEY_E) - Ludo::Input::IsKeyPressed(LD_KEY_Q);
+			int rotationDirection = Ludo::Input::IsKeyPressed(KeyCode::E) - Ludo::Input::IsKeyPressed(KeyCode::Q);
 			m_CameraRotation += rotationDirection * m_CameraRotationSpeed * timeStep;
 			m_Camera.SetRotation(m_CameraRotation);
 		}
@@ -34,7 +34,6 @@ namespace Ludo {
 
 		EventDispatcher dispatcher(e);
 		dispatcher.Dispatch<MouseScrolledEvent>(LUDO_BIND_EVENT_FN(OrthographicCameraController::OnMouseScrolledEvent));
-		dispatcher.Dispatch<WindowResizeEvent>(LUDO_BIND_EVENT_FN(OrthographicCameraController::OnWindowResizeEvent));
 	}
 
 	void OrthographicCameraController::CalculateView()
@@ -50,17 +49,6 @@ namespace Ludo {
 		m_ZoomLevel = std::max(m_ZoomLevel, 0.25f);
 
 		CalculateView();
-
-		return false;
-	}
-
-	bool OrthographicCameraController::OnWindowResizeEvent(WindowResizeEvent& e)
-	{
-		LD_PROFILE_FUNCTION();
-
-		m_AspectRatio = (float)e.GetWidth() / (float)e.GetHeight();
-
-		m_Camera.SetProjection(-m_AspectRatio * m_ZoomLevel, m_AspectRatio * m_ZoomLevel, -m_ZoomLevel, m_ZoomLevel);
 
 		return false;
 	}

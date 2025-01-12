@@ -30,7 +30,6 @@ namespace Ludo {
 		void CalculateView();
 
 		bool OnMouseScrolledEvent(MouseScrolledEvent& e);
-		bool OnWindowResizeEvent(WindowResizeEvent& e);
 
 		float m_AspectRatio;
 		float m_ZoomLevel = 1.0f;

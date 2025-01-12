@@ -18,7 +18,7 @@ namespace Ludo {
 		bool result = Init(size, updateFrequency);
 		LD_CORE_ASSERT(result, "Failed to create Vertex Buffer");
 
-		// If its a Immutable Buffer, SetData woludnt do anything, so we set the data manually
+		// If its a Immutable Buffer, SetData wouldn't do anything, so we set the data manually
 		if (updateFrequency == VBUpdateFrequency::IMMUTABLE)
 		{
 			DX12UploadBuffer upBuffer;

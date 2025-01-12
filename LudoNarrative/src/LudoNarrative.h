@@ -21,6 +21,10 @@
 
 #include "Ludo/Renderer/OrthographicCameraController.h"
 
+#include "Ludo/Scene/Scene.h"
+#include "Ludo/Scene/Entity.h"
+#include "Ludo/Scene/Components.h"
+
 // ========== Renderer ==========
 #include "Ludo/Renderer/Renderer.h"
 #include "Ludo/Renderer/Renderer2D.h"

@@ -6,6 +6,7 @@
 #include "Ludo/Events/ApplicationEvent.h"
 #include "Ludo/Events/KeyEvent.h"
 #include "Ludo/Events/MouseEvent.h"
+#include "Ludo/Core/KeyCodes.h"
 
 #include "imgui/backends/imgui_impl_win32.h"
 
@@ -221,14 +222,14 @@ namespace Ludo {
 		{ WM_MOUSEMOVE, ThrowEvent(MouseMovedEvent(GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam))) },
 		{ WM_MOUSEWHEEL, ThrowEvent(MouseScrolledEvent(0, GET_WHEEL_DELTA_WPARAM(wParam))) },
 
-		{ WM_LBUTTONDOWN, ThrowEvent(MouseButtonPressedEvent(MouseButton::Left)) },
-		{ WM_LBUTTONUP, ThrowEvent(MouseButtonReleasedEvent(MouseButton::Left)) },
+		{ WM_LBUTTONDOWN, ThrowEvent(MouseButtonPressedEvent(MouseButtonCode::Left)) },
+		{ WM_LBUTTONUP, ThrowEvent(MouseButtonReleasedEvent(MouseButtonCode::Left)) },
 
-		{ WM_RBUTTONDOWN, ThrowEvent(MouseButtonPressedEvent(MouseButton::Right)) },
-		{ WM_RBUTTONUP, ThrowEvent(MouseButtonReleasedEvent(MouseButton::Right)) },
+		{ WM_RBUTTONDOWN, ThrowEvent(MouseButtonPressedEvent(MouseButtonCode::Right)) },
+		{ WM_RBUTTONUP, ThrowEvent(MouseButtonReleasedEvent(MouseButtonCode::Right)) },
 
-		{ WM_MBUTTONDOWN, ThrowEvent(MouseButtonPressedEvent(MouseButton::Middle)) },
-		{ WM_MBUTTONUP, ThrowEvent(MouseButtonReleasedEvent(MouseButton::Middle)) }
+		{ WM_MBUTTONDOWN, ThrowEvent(MouseButtonPressedEvent(MouseButtonCode::Middle)) },
+		{ WM_MBUTTONUP, ThrowEvent(MouseButtonReleasedEvent(MouseButtonCode::Middle)) }
 	};
 
 	void WindowsWindow::InitializeWinAPI()

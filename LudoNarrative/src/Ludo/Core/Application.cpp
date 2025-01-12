@@ -100,28 +100,22 @@ namespace Ludo {
 		EventDispatcher dispatcher(event);
 		dispatcher.Dispatch<WindowCloseEvent>(LUDO_BIND_EVENT_FN(Application::CloseWindow));
 		dispatcher.Dispatch<WindowResizeEvent>(LUDO_BIND_EVENT_FN(Application::ResizeWindow));
-		dispatcher.Dispatch<KeyPressedEvent>([](KeyPressedEvent& event) -> bool {
 
-			if (event.GetKeyCode() == LD_KEY_F11)
-			{
-				Application::Get().GetWindow().SetFullScreen(!Application::Get().GetWindow().IsFullScreen());
-			}
-			else if (event.GetKeyCode() == LD_KEY_V)
-			{
-				Application::Get().GetWindow().SetVsync(!Application::Get().GetWindow().IsVsync());
-			}
-
-			return false;
-			});
+		if (m_ImGuiBlockEvent)
+		{
+			ImGuiIO& io = ImGui::GetIO();
+			event.Handled |= event.IsInCategory(EventCategoryMouse) & io.WantCaptureMouse;
+			event.Handled |= event.IsInCategory(EventCategoryKeyboard) & io.WantCaptureKeyboard;
+		}
 
 		for (Layer* layer : m_LayerStack)
 		{
-			layer->OnEvent(event);
-
 			if (event.Handled)
 			{
 				break;
 			}
+
+			layer->OnEvent(event);
 		}
 	}
 

@@ -15,11 +15,14 @@ namespace Ludo {
 		void OnImGuiRender() override;
 
 	private:
-		OrthographicCameraController m_CameraController;
-
 		Ref<FrameBuffer> m_FrameBuffer;
 		Ref<Texture2D> m_Texture;
 	
+		Ref<Scene> m_ActiveScene;
+		Entity m_SquareEntity;
+		Entity m_CameraEntity;
+
+		bool m_ViewportFocused = false;
 		DirectX::XMFLOAT2 m_ViewportSize = { 0.0f, 0.0f };
 		bool m_ResizeFrameBuffer = false;
 	};

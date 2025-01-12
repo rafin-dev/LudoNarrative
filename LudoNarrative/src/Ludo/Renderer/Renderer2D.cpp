@@ -123,6 +123,22 @@ namespace Ludo {
 		s_Data.WhiteTexture = nullptr;
 	}
 	
+	void Renderer2D::BeginScene(const Camera& camera, const DirectX::XMFLOAT4X4& transform)
+	{
+		LD_PROFILE_RENDERER_FUNCTION();
+
+		DirectX::XMFLOAT4X4 viewProjection;
+		DirectX::XMStoreFloat4x4(&viewProjection, DirectX::XMMatrixTranspose(
+			DirectX::XMMatrixInverse(nullptr, DirectX::XMLoadFloat4x4(&transform)) * DirectX::XMLoadFloat4x4(&camera.GetProjection())));
+
+		s_Data.TextureMaterial->GetShader()->Bind();
+		s_Data.TextureMaterial->GetShader()->SetViewProjectionMatrix(viewProjection);
+
+		s_Data.QuadIndexCount = 0;
+		s_Data.QuadVertexBufferPtr = s_Data.QuadVertexBufferBase;
+		s_Data.TextureSlotIndex = 1;
+	}
+
 	void Renderer2D::BeginScene(const OrthographicCamera& camera)
 	{
 		LD_PROFILE_RENDERER_FUNCTION();
@@ -173,43 +189,16 @@ namespace Ludo {
 
 	void Renderer2D::DrawQuad(const DirectX::XMFLOAT3& position, const DirectX::XMFLOAT2& size, float rotation, const DirectX::XMFLOAT4& color)
 	{
-		LD_PROFILE_RENDERER_FUNCTION();
-
-		if (s_Data.QuadIndexCount == Renderer2DData::MaxIndices)
-		{
-			FlushAndReset();
-		}
-
-		float halfWidth = size.x / 2;
-		float halfHeight = size.y / 2;
-
-		constexpr float whiteTextureIndex = 0.0f;
-		constexpr float tilingFactor = 1.0f;
-
 		DirectX::XMMATRIX transform = DirectX::XMMatrixScaling(size.x, size.y, 1.0f) *
 			DirectX::XMMatrixRotationZ(-rotation) *
 			DirectX::XMMatrixTranslation(position.x, position.y, position.z);
 
-		DirectX::XMFLOAT2 texCoords[] = {
-			{ 0.0f, 0.0f },
-			{ 0.0f, 1.0f },
-			{ 1.0f, 1.0f },
-			{ 1.0f, 0.0f }
-		};
+		DrawQuad(transform, color);
+	}
 
-		for (int i = 0; i < 4; i++)
-		{
-			DirectX::XMStoreFloat3(&s_Data.QuadVertexBufferPtr->Position, DirectX::XMVector2Transform(DirectX::XMLoadFloat3(&s_Data.QuadVertexPositions[i]), transform));
-			s_Data.QuadVertexBufferPtr->Color = color;
-			s_Data.QuadVertexBufferPtr->TexCoord = texCoords[i];
-			s_Data.QuadVertexBufferPtr->TexIndex = whiteTextureIndex;
-			s_Data.QuadVertexBufferPtr->TilingFactor = tilingFactor;
-			s_Data.QuadVertexBufferPtr++;
-		}
-
-		s_Data.QuadIndexCount += 6;
-
-		s_Data.Stats.QuadCount++;
+	void Renderer2D::DrawQuad(const DirectX::XMFLOAT4X4& transform, const DirectX::XMFLOAT4& color)
+	{
+		DrawQuad(DirectX::XMLoadFloat4x4(&transform), color);
 	}
 
 	void Renderer2D::DrawQuad(const DirectX::XMFLOAT2& position, const DirectX::XMFLOAT2& size, float rotation, const Ref<Texture2D>& texture, const DirectX::XMFLOAT4& color, float tilingFactor)
@@ -229,6 +218,18 @@ namespace Ludo {
 		DrawQuad(position, size, rotation, texture, texCoords, color, tilingFactor);
 	}
 
+	void Renderer2D::DrawQuad(const DirectX::XMFLOAT4X4& transform, const Ref<Texture2D>& texture, const DirectX::XMFLOAT4& color, float tilingFactor)
+	{
+		DirectX::XMFLOAT2 texCoords[] = {
+			{ 0.0f, 0.0f },
+			{ 0.0f, 1.0f },
+			{ 1.0f, 1.0f },
+			{ 1.0f, 0.0f }
+		};
+
+		DrawQuad(DirectX::XMLoadFloat4x4(&transform), texture, texCoords, color, tilingFactor);
+	}
+
 	void Renderer2D::DrawQuad(const DirectX::XMFLOAT2& position, const DirectX::XMFLOAT2& size, float rotation, const Ref<SubTexture2D>& subTexture, const DirectX::XMFLOAT4& color, float tilingFactor)
 	{
 		DrawQuad({ position.x, position.y, 0.0f }, size, rotation, subTexture, color, tilingFactor);
@@ -236,10 +237,58 @@ namespace Ludo {
 
 	void Renderer2D::DrawQuad(const DirectX::XMFLOAT3& position, const DirectX::XMFLOAT2& size, float rotation, const Ref<SubTexture2D>& subTexture, const DirectX::XMFLOAT4& color, float tilingFactor)
 	{
-		DrawQuad(position, size, rotation, subTexture->GetTexture(), subTexture->GetTexCoords(), color, tilingFactor);
+		DirectX::XMMATRIX transform = DirectX::XMMatrixScaling(size.x, size.y, 1.0f) *
+			DirectX::XMMatrixRotationZ(-rotation) *
+			DirectX::XMMatrixTranslation(position.x, position.y, position.z);
+
+		DrawQuad(transform, subTexture->GetTexture(), subTexture->GetTexCoords(), color, tilingFactor);
 	}
 
 	void Renderer2D::DrawQuad(const DirectX::XMFLOAT3& position, const DirectX::XMFLOAT2& size, float rotation, const Ref<Texture2D>& texture, const DirectX::XMFLOAT2* texCoords, const DirectX::XMFLOAT4& color, float tilingFactor)
+	{
+		DirectX::XMMATRIX transform = DirectX::XMMatrixScaling(size.x, size.y, 1.0f) *
+			DirectX::XMMatrixRotationZ(-rotation) *
+			DirectX::XMMatrixTranslation(position.x, position.y, position.z);
+
+		DrawQuad(transform, texture, texCoords, color, tilingFactor);
+	}
+
+	void __fastcall Renderer2D::DrawQuad(const DirectX::XMMATRIX& transform, const DirectX::XMFLOAT4& color)
+	{
+		LD_PROFILE_RENDERER_FUNCTION();
+
+		if (s_Data.QuadIndexCount == Renderer2DData::MaxIndices)
+		{
+			FlushAndReset();
+		}
+
+		constexpr float whiteTextureIndex = 0.0f;
+		constexpr float tilingFactor = 1.0f;
+
+		DirectX::XMFLOAT2 texCoords[] = {
+			{ 0.0f, 0.0f },
+			{ 0.0f, 1.0f },
+			{ 1.0f, 1.0f },
+			{ 1.0f, 0.0f }
+		};
+
+		for (int i = 0; i < 4; i++)
+		{
+			DirectX::XMStoreFloat3(&s_Data.QuadVertexBufferPtr->Position, 
+				DirectX::XMVector2Transform(DirectX::XMLoadFloat3(&s_Data.QuadVertexPositions[i]), transform));
+			s_Data.QuadVertexBufferPtr->Color = color;
+			s_Data.QuadVertexBufferPtr->TexCoord = texCoords[i];
+			s_Data.QuadVertexBufferPtr->TexIndex = whiteTextureIndex;
+			s_Data.QuadVertexBufferPtr->TilingFactor = tilingFactor;
+			s_Data.QuadVertexBufferPtr++;
+		}
+
+		s_Data.QuadIndexCount += 6;
+
+		s_Data.Stats.QuadCount++;
+	}
+
+	void __fastcall Renderer2D::DrawQuad(const DirectX::XMMATRIX& transform, const Ref<Texture2D>& texture, const DirectX::XMFLOAT2* texCoords, const DirectX::XMFLOAT4& tintColor, float tilingFactor)
 	{
 		LD_PROFILE_RENDERER_FUNCTION();
 
@@ -266,14 +315,10 @@ namespace Ludo {
 			s_Data.TextureSlotIndex++;
 		}
 
-		DirectX::XMMATRIX transform = DirectX::XMMatrixScaling(size.x, size.y, 1.0f) *
-			DirectX::XMMatrixRotationZ(-rotation) *
-			DirectX::XMMatrixTranslation(position.x, position.y, position.z);
-
 		for (int i = 0; i < 4; i++)
 		{
 			DirectX::XMStoreFloat3(&s_Data.QuadVertexBufferPtr->Position, DirectX::XMVector2Transform(DirectX::XMLoadFloat3(&s_Data.QuadVertexPositions[i]), transform));
-			s_Data.QuadVertexBufferPtr->Color = color;
+			s_Data.QuadVertexBufferPtr->Color = tintColor;
 			s_Data.QuadVertexBufferPtr->TexCoord = texCoords[i];
 			s_Data.QuadVertexBufferPtr->TexIndex = textureIndex;
 			s_Data.QuadVertexBufferPtr->TilingFactor = tilingFactor;

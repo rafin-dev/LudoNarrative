@@ -33,8 +33,7 @@ namespace Ludo {
 
 #define EVENT_CLASS_CATEGORY(category) virtual int GetCategoryFlags() const override { return category; }
 
-	class 
-		Event
+	class Event
 	{
 		friend class EventDispatcher;
 
@@ -49,10 +48,7 @@ namespace Ludo {
 			return GetCategoryFlags() & category;
 		}
 
-		const bool& Handled = m_Handled;
-
-	protected:
-		bool m_Handled = false;
+		bool Handled = false;
 	};
 
 	class EventDispatcher
@@ -71,7 +67,7 @@ namespace Ludo {
 
 			if (m_Event.GetEventType() == T::GetStaticType())
 			{
-				m_Event.m_Handled = func(*(T*)&m_Event);
+				m_Event.Handled = func(*(T*)&m_Event);
 				return true;
 			}
 

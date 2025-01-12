@@ -3,14 +3,15 @@
 #include "Core.h"
 
 #include "Ludo/Events/KeyEvent.h"
+#include "Ludo/Core/KeyCodes.h"
 
 namespace Ludo {
 
 	class Input 
 	{
 	public:
-		static bool IsKeyPressed(int keyCode);
-		static bool IsMouseButtonDown(int buttonCode);
+		static bool IsKeyPressed(KeyCode keyCode);
+		static bool IsMouseButtonDown(MouseButtonCode buttonCode);
 		static std::pair<float, float> GetMousePosition();
 		static float GetMouseX();
 		static float GetMouseY();

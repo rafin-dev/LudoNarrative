@@ -64,8 +64,8 @@ public:
 		m_FPSs[m_cFPS] = 1 / time;
 		m_cFPS = (m_cFPS + 1) % 10;
 		
-		m_Transform.Position.x += (Ludo::Input::IsKeyPressed(LD_KEY_RIGHT_ARROW) - Ludo::Input::IsKeyPressed(LD_KEY_LEFT_ARROW)) * 2.0f * time;
-		m_Transform.Position.y += (Ludo::Input::IsKeyPressed(LD_KEY_UP_ARROW) - Ludo::Input::IsKeyPressed(LD_KEY_DOWN_ARROW)) * 2.0f * time;
+		m_Transform.Position.x += (Ludo::Input::IsKeyPressed(Ludo::KeyCode::Right_Arrow) - Ludo::Input::IsKeyPressed(Ludo::KeyCode::Right_Arrow)) * 2.0f * time;
+		m_Transform.Position.y += (Ludo::Input::IsKeyPressed(Ludo::KeyCode::Up_Arrow) - Ludo::Input::IsKeyPressed(Ludo::KeyCode::Down_Arrow)) * 2.0f * time;
 
 		m_CameraController.OnUpdate(time);
 
