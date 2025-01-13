@@ -33,7 +33,7 @@ namespace Ludo {
         return m_UploadBuffer.Init(bufferSize);
     }
 
-    void DX12MutableVertexBufferUpdater::UpdateVertexBuffer(ID3D12Resource2* &const vertexBuffer, uint32_t destOffset, void* data, size_t dataSize)
+    void DX12MutableVertexBufferUpdater::UpdateVertexBuffer(ID3D12Resource2*const& vertexBuffer, uint32_t destOffset, void* data, size_t dataSize)
     {
         LD_PROFILE_RENDERER_FUNCTION();
 
@@ -67,7 +67,7 @@ namespace Ludo {
             m_UploadBuffers.emplace_back(new DX12UploadBuffer)->Init(bufferSize);
         }
 
-        m_CurrentFrame = Application::Get().GetCurrentFrame();
+        m_CurrentFrame = (uint32_t)Application::Get().GetCurrentFrame();
 
         return true;
     }
@@ -80,14 +80,14 @@ namespace Ludo {
         }
     }
 
-    void DX12DynamicVertexBufferUpdater::UpdateVertexBuffer(ID3D12Resource2*& const vertexBuffer, uint32_t destOffset, void* data, size_t dataSize)
+    void DX12DynamicVertexBufferUpdater::UpdateVertexBuffer(ID3D12Resource2*const& vertexBuffer, uint32_t destOffset, void* data, size_t dataSize)
     {
         LD_PROFILE_RENDERER_FUNCTION();
 
         auto frame = Application::Get().GetCurrentFrame();
         if (m_CurrentFrame != frame)
         {
-            m_CurrentFrame = frame;
+            m_CurrentFrame = (uint32_t)frame;
             m_UploadCounter = 0;
         }
 

@@ -69,7 +69,7 @@ namespace Ludo {
     {
         LD_PROFILE_RENDERER_FUNCTION();
 
-        for (int i = 0; i < count; i++)
+        for (uint32_t i = 0; i < count; i++)
         {
             SignalAndWait();
         }

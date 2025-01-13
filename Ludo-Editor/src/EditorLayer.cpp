@@ -2,16 +2,16 @@
 
 namespace Ludo {
 
-	EditorLayer::EditorLayer()
+	void EditorLayer::OnAttach()
 	{
 		LD_PROFILE_FUNCTION();
 
-		m_ViewportSize.x = Application::Get().GetWindow().GetWidth();
-		m_ViewportSize.y = Application::Get().GetWindow().GetHeight();
+		m_ViewportSize.x = (float)Application::Get().GetWindow().GetWidth();
+		m_ViewportSize.y = (float)Application::Get().GetWindow().GetHeight();
 
 		FrameBufferSpecification fbSpec;
-		fbSpec.Width = (float)m_ViewportSize.x;
-		fbSpec.Height = (float)m_ViewportSize.y;
+		fbSpec.Width = (uint32_t)m_ViewportSize.x;
+		fbSpec.Height = (uint32_t)m_ViewportSize.y;
 
 		m_FrameBuffer = FrameBuffer::Create(fbSpec);
 
@@ -19,11 +19,41 @@ namespace Ludo {
 
 		m_ActiveScene = CreateRef<Scene>();
 
-		m_SquareEntity =  m_ActiveScene->CreateEntity("Green Square");
+		m_SquareEntity = m_ActiveScene->CreateEntity("Green Square");
 		m_SquareEntity.AddComponent<SpriteRendererComponent>(DirectX::XMFLOAT4{ 0.0f, 1.0f, 0.0f, 1.0f });
 
 		m_CameraEntity = m_ActiveScene->CreateEntity("Camera Entity");
 		m_CameraEntity.AddComponent<CameraComponent>();
+
+		class CameraController : public ScriptableEntity
+		{
+		public:
+			void OnCreate() override
+			{
+			}
+
+			void OnDestroy() override
+			{
+			}
+
+			void OnUpdate(TimeStep ts) override
+			{
+				float* position = (float*)&GetComponent<TransformComponent>().Transform.m[3];
+
+				position[0] += (Input::IsKeyPressed(KeyCode::D) - Input::IsKeyPressed(KeyCode::A)) * ts * 3;
+				position[1] += (Input::IsKeyPressed(KeyCode::W) - Input::IsKeyPressed(KeyCode::S)) * ts * 3;
+			}
+		};
+
+		//m_CameraEntity.AddComponent<NativeScriptComponent>().Bind<CameraController>();
+		m_SquareEntity.AddComponent<NativeScriptComponent>().Bind<CameraController>();
+
+		m_SceneHierarchyPanel.SetContext(m_ActiveScene);
+	}
+
+	void EditorLayer::OnDetach()
+	{
+		LD_PROFILE_FUNCTION();
 	}
 
 	void EditorLayer::OnUpdate(TimeStep ts)
@@ -49,7 +79,6 @@ namespace Ludo {
 
 	void EditorLayer::OnEvent(Event& event)
 	{
-		m_CameraController.OnEvent(event);
 	}
 
 	void EditorLayer::OnImGuiRender()
@@ -69,6 +98,8 @@ namespace Ludo {
 
 			ImGui::EndMainMenuBar();
 		}
+
+		m_SceneHierarchyPanel.OnImGuiRender();
 
 		ImGui::Begin("Info");
 

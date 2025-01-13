@@ -12,6 +12,7 @@
 		}
 
 // used anywhere during runtime
+#pragma warning( disable : 4390 )
 #define CHECK_DX12_HRESULT(x, ...)	LD_CORE_ASSERT(SUCCEEDED(x), __VA_ARGS__) \
 									if (FAILED(x))
 

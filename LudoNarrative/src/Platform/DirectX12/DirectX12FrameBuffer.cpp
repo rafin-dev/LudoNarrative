@@ -139,8 +139,8 @@ namespace Ludo {
 		D3D12_VIEWPORT viewport = {};
 		viewport.TopLeftX = 0;
 		viewport.TopLeftY = 0;
-		viewport.Width = m_Specification.Width;
-		viewport.Height = m_Specification.Height;
+		viewport.Width = (FLOAT)m_Specification.Width;
+		viewport.Height = (FLOAT)m_Specification.Height;
 		viewport.MinDepth = 0.0f;
 		viewport.MaxDepth = 1.0f;
 		commandList->RSSetViewports(1, &viewport);

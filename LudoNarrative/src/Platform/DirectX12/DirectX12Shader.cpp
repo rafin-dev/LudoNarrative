@@ -82,6 +82,9 @@ namespace Ludo {
 		case ShaderDataType::Uint4:   return DXGI_FORMAT_R32G32B32A32_UINT;
 		case ShaderDataType::Bool:    return DXGI_FORMAT_R8_TYPELESS;
 		}
+
+		LD_CORE_ASSERT(false, "Unknown Shader Data Type");
+		return DXGI_FORMAT_UNKNOWN;
 	}
 
 	bool DirectX12Shader::Init(std::unordered_map<DX12ShaderCompiler::ShaderKind, IDxcBlob*> shaders)
@@ -137,7 +140,7 @@ namespace Ludo {
 		pipelineStateDescription.pRootSignature = s_RootSignature;
 
 		// Input Layout
-		pipelineStateDescription.InputLayout.NumElements = ElementLayout.size();
+		pipelineStateDescription.InputLayout.NumElements = (UINT)ElementLayout.size();
 		pipelineStateDescription.InputLayout.pInputElementDescs = ElementLayout.data();
 		pipelineStateDescription.IBStripCutValue = D3D12_INDEX_BUFFER_STRIP_CUT_VALUE_DISABLED;
 
@@ -313,6 +316,7 @@ namespace Ludo {
 		}
 
 		LD_CORE_ASSERT(false, "Syntax Error: Unknown Shader Kind '{0}'", kind);
+		return DX12ShaderCompiler::Unknonw;
 	}
 
 	void DirectX12Shader::ReadFile(const std::filesystem::path& file, std::string& output)

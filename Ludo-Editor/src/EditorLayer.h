@@ -2,12 +2,15 @@
 
 #include <LudoNarrative.h>
 
+#include "Panels/SceneHierarchyPanel.h"
+
 namespace Ludo {
 
 	class EditorLayer : public Layer
 	{
 	public:
-		EditorLayer();
+		void OnAttach() override;
+		void OnDetach() override;
 
 		void OnUpdate(TimeStep ts) override;
 		void OnEvent(Event& event) override;
@@ -25,6 +28,9 @@ namespace Ludo {
 		bool m_ViewportFocused = false;
 		DirectX::XMFLOAT2 m_ViewportSize = { 0.0f, 0.0f };
 		bool m_ResizeFrameBuffer = false;
+
+		// Panels
+		SceneHierarchyPanel m_SceneHierarchyPanel;
 	};
 
 }

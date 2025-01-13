@@ -3,6 +3,8 @@
 
 #include "Ludo/Renderer/Renderer2D.h"
 #include "Ludo/Scene/Entity.h"
+#include "Ludo/Scene/ScriptableEntity.h"
+#include "Ludo/Scene/Components.h"
 
 #include <DirectXMath.h>
 
@@ -29,9 +31,26 @@ namespace Ludo {
 
 	void Scene::OnUpdate(TimeStep ts)
 	{
+		// Update Scripts
+		{
+			m_Registry.view<NativeScriptComponent>().each([=](entt::entity entity, NativeScriptComponent& nsc) 
+			{
+
+				if (nsc.Instance == nullptr)
+				{
+					nsc.Instance = (ScriptableEntity*)nsc.InstantiateScript();
+					nsc.Instance->m_Entity = Entity(entity, this);
+					nsc.Instance->OnCreate();
+				}
+
+				nsc.Instance->OnUpdate(ts);
+
+			});
+		}
+
 
 		// Render 2D Sprites
-
+		
 		// Get main camera
 		Camera* mainCamera = nullptr;
 		DirectX::XMFLOAT4X4* cameraTransform = nullptr;
@@ -39,7 +58,7 @@ namespace Ludo {
 			auto group = m_Registry.group<CameraComponent>(entt::get<TransformComponent>);
 			for (auto entity : group)
 			{
-				auto&& [transform, camera] = group.get<TransformComponent, CameraComponent>(entity);
+				auto [transform, camera] = group.get<TransformComponent, CameraComponent>(entity);
 
 				if (camera.Primary)
 				{
@@ -57,7 +76,7 @@ namespace Ludo {
 			auto group = m_Registry.group<SpriteRendererComponent>(entt::get<TransformComponent>);
 			for (auto entity : group)
 			{
-				auto&& [transform, sprite] = group.get<TransformComponent, SpriteRendererComponent>(entity);
+				auto [transform, sprite] = group.get<TransformComponent, SpriteRendererComponent>(entity);
 
 				Renderer2D::DrawQuad(transform, sprite.Color);
 			}

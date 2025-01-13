@@ -12,15 +12,15 @@ namespace Ludo {
 
 		bool Init(size_t size);
 
-		void ImediateUploadData(ID3D12Resource2* &const destBuffer, void* data, size_t offset, size_t size);
-		void QueuUploadData(ID3D12Resource2*& const destBuffer, void* data, size_t offset, size_t size);
+		void ImediateUploadData(ID3D12Resource2* const & destBuffer, void* data, size_t offset, size_t size);
+		void QueuUploadData(ID3D12Resource2* const & destBuffer, void* data, size_t offset, size_t size);
 		void ClearBuffer();
 
 		void FillBufferData(void* data, size_t offset, uint32_t size);
 
 		bool Resize(size_t size);
 
-		ID3D12Resource2*& const GetBuffer() { return m_UploadBuffer; }
+		ID3D12Resource2* const &  GetBuffer() { return m_UploadBuffer; }
 		size_t GetSize() { return m_Size; }
 
 	private:

@@ -13,7 +13,7 @@ namespace Ludo {
         return CreateUploadBuffer();
     }
 
-    void DX12UploadBuffer::ImediateUploadData(ID3D12Resource2*& const destBuffer, void* data, size_t offset, size_t size)
+    void DX12UploadBuffer::ImediateUploadData(ID3D12Resource2*const& destBuffer, void* data, size_t offset, size_t size)
     {
         LD_PROFILE_RENDERER_FUNCTION();
 
@@ -24,7 +24,7 @@ namespace Ludo {
         DirectX12API::Get()->ImediateCopyBufferRegion(destBuffer, offset, m_UploadBuffer, 0, size);
     }
 
-    void DX12UploadBuffer::QueuUploadData(ID3D12Resource2*& const destBuffer, void* data, size_t offset, size_t size)
+    void DX12UploadBuffer::QueuUploadData(ID3D12Resource2*const& destBuffer, void* data, size_t offset, size_t size)
     {
         LD_PROFILE_RENDERER_FUNCTION();
 

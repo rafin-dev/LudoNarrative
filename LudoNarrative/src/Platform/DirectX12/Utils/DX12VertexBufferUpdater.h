@@ -15,7 +15,7 @@ namespace Ludo {
 		virtual bool Init(size_t bufferSize) { return true; }
 		virtual ~DX12VertexBufferUpdater() = default;
 
-		virtual void UpdateVertexBuffer(ID3D12Resource2* &const vertexBuffer, uint32_t destOffset, void* data, size_t dataSize) {}
+		virtual void UpdateVertexBuffer(ID3D12Resource2* const & vertexBuffer, uint32_t destOffset, void* data, size_t dataSize) {}
 
 		static Scope<DX12VertexBufferUpdater> Create(VertexBuffer::VBUpdateFrequency updateFrequency);
 	};
@@ -28,7 +28,7 @@ namespace Ludo {
 		bool Init(size_t bufferSize) override;
 		~DX12MutableVertexBufferUpdater() override {}
 
-		void UpdateVertexBuffer(ID3D12Resource2* &const vertexBuffer, uint32_t destOffset, void* data, size_t dataSize) override;
+		void UpdateVertexBuffer(ID3D12Resource2* const & vertexBuffer, uint32_t destOffset, void* data, size_t dataSize) override;
 
 	private:
 		DX12UploadBuffer m_UploadBuffer;
@@ -40,7 +40,7 @@ namespace Ludo {
 		virtual bool Init(size_t bufferSize) override;
 		~DX12DynamicVertexBufferUpdater() override;
 
-		virtual void UpdateVertexBuffer(ID3D12Resource2* &const vertexBuffer, uint32_t destOffset, void* data, size_t dataSize) override;
+		virtual void UpdateVertexBuffer(ID3D12Resource2* const & vertexBuffer, uint32_t destOffset, void* data, size_t dataSize) override;
 
 	private:
 		std::vector<DX12UploadBuffer*> m_UploadBuffers;

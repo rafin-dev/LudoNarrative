@@ -1,6 +1,8 @@
 #pragma once
 
 #include "Ludo/Scene/SceneCamera.h"
+#include "Ludo/Scene/ScriptableEntity.h"
+#include "Ludo/Core/TimeStep.h"
 
 #include <DirectXMath.h>
 
@@ -50,6 +52,23 @@ namespace Ludo {
 
 		CameraComponent() = default;
 		CameraComponent(const CameraComponent& other) = default;
+	};
+
+	struct NativeScriptComponent
+	{
+		ScriptableEntity* Instance = nullptr;
+
+		ScriptableEntity*(*InstantiateScript)();
+		void(*DestroyScript)(NativeScriptComponent*);
+
+		template<typename T>
+		void Bind()
+		{
+			static_assert(std::is_base_of_v<ScriptableEntity, T>);
+
+			InstantiateScript = []() { return static_cast<ScriptableEntity*>(new T()); };
+			DestroyScript = [](NativeScriptComponent* nsc) { delete nsc->Instance; nsc->Instance = nullptr; };
+		}
 	};
 
 }

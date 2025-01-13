@@ -9,6 +9,7 @@ namespace Ludo {
 	public:
 		enum ShaderKind
 		{
+			Unknonw = -1,
 			VertexShader = 0,
 			PixelShader
 		};

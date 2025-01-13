@@ -25,7 +25,7 @@ namespace Ludo {
 			return m_ID == ((DirectX12Texture2D&)other).m_ID;
 		}
 
-		ID3D12Resource2*& const GetResource() { return m_Texture; }
+		ID3D12Resource2* const & GetResource() { return m_Texture; }
 
 	private:
 		bool Init();

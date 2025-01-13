@@ -61,7 +61,7 @@ namespace Ludo {
 		{
 			LD_PROFILE_SCOPE("Run Loop Iteration");
 
-			float time = ImGui::GetTime();
+			float time = (float)ImGui::GetTime();
 			TimeStep timeStep = time - m_LastFrameTime;
 			m_LastFrameTime = time;
 

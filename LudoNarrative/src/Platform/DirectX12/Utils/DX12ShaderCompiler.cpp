@@ -95,7 +95,7 @@ namespace Ludo {
     bool DX12ShaderCompiler::CreateBlob(size_t size, IDxcBlob** output)
     {
         IDxcBlobEncoding* blobEnconding = nullptr;
-        HRESULT hr = s_CompilerUtils->CreateBlob(nullptr, size, DXC_CP_ACP, &blobEnconding);
+        HRESULT hr = s_CompilerUtils->CreateBlob(nullptr, (UINT32)size, DXC_CP_ACP, &blobEnconding);
         if (FAILED(hr))
         {
             *output = nullptr;

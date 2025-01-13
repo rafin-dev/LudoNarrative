@@ -19,7 +19,7 @@ namespace Ludo {
         POINT pos;
         GetCursorPos(&pos);
         
-        return std::make_pair<float, float>(pos.x, pos.y);
+        return std::make_pair<float, float>((float)pos.x, (float)pos.y);
     }
 
     float Input::GetMouseX()
@@ -27,7 +27,7 @@ namespace Ludo {
         POINT pos;
         GetCursorPos(&pos);
 
-        return pos.x;
+        return (float)pos.x;
     }
 
     float Input::GetMouseY()
@@ -35,6 +35,6 @@ namespace Ludo {
         POINT pos;
         GetCursorPos(&pos);
 
-        return pos.y;
+        return (float)pos.y;
     }
 }

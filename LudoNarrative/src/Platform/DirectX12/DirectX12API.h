@@ -24,11 +24,11 @@ namespace Ludo {
 
 		static DirectX12API* Get();
 
-		inline auto* const& GetDevice() { return m_Device; }
-		inline auto* const& GetDXGIFactory() { return m_DXGIFactory; }
-		inline auto* const& GetCommandQueue() { return m_GraphicsCommands.GetCommandQueue(); }
-		inline auto* const& GetCommandList() { return m_GraphicsCommands.GetCommandList(); }
-		inline auto &const GetSRVDescriptorHeap() { return m_SrvDescriptorHeap; }
+		inline auto* const & GetDevice() { return m_Device; }
+		inline auto* const & GetDXGIFactory() { return m_DXGIFactory; }
+		inline auto* const & GetCommandQueue() { return m_GraphicsCommands.GetCommandQueue(); }
+		inline auto* const & GetCommandList() { return m_GraphicsCommands.GetCommandList(); }
+		inline auto& GetSRVDescriptorHeap() { return m_SrvDescriptorHeap; }
 
 		inline auto& GetCopyCommandHelper() { return m_CopyCommands; }
 

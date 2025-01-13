@@ -23,6 +23,7 @@
 
 #include "Ludo/Scene/Scene.h"
 #include "Ludo/Scene/Entity.h"
+#include "Ludo/Scene/ScriptableEntity.h"
 #include "Ludo/Scene/Components.h"
 
 // ========== Renderer ==========

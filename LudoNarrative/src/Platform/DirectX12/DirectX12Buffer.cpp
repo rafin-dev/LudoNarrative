@@ -124,7 +124,7 @@ namespace Ludo {
 
 		// ========== Vertex Buffer View ==========
 		m_VertexBufferView.BufferLocation = m_VertexBuffer->GetGPUVirtualAddress();
-		m_VertexBufferView.SizeInBytes = size;
+		m_VertexBufferView.SizeInBytes = (UINT)size;
 		m_VertexBufferView.StrideInBytes = m_Layout.GetStride();
 
 		m_Updater = DX12VertexBufferUpdater::Create(updateFrequency);

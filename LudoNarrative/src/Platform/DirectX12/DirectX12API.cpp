@@ -104,7 +104,7 @@ namespace Ludo {
         ImGui_ImplDX12_InitInfo initInfo = {};
         initInfo.Device = m_Device;
         initInfo.CommandQueue = m_GraphicsCommands.GetCommandQueue();
-        initInfo.NumFramesInFlight = DirectX12Context::GetSwapChainBufferCount();
+        initInfo.NumFramesInFlight = (int)DirectX12Context::GetSwapChainBufferCount();
         initInfo.RTVFormat = DXGI_FORMAT_R8G8B8A8_UNORM;
         initInfo.SrvDescriptorHeap = m_SrvDescriptorHeap.GetDescriptorHeap();
         initInfo.SrvDescriptorAllocFn = [](ImGui_ImplDX12_InitInfo*, D3D12_CPU_DESCRIPTOR_HANDLE* out_cpu_handle, D3D12_GPU_DESCRIPTOR_HANDLE* out_gpu_handle)

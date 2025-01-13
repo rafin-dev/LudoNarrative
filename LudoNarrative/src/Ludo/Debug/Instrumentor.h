@@ -208,7 +208,7 @@ namespace Ludo {
 
 #else
 
-#define LD_PROFILE 1
+#define LD_PROFILE 0
 
 #endif
 

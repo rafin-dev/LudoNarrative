@@ -155,7 +155,7 @@ namespace Ludo {
 	{
 		LD_PROFILE_RENDERER_FUNCTION();
 
-		uint32_t dataSize = (uint8_t*)s_Data.QuadVertexBufferPtr - (uint8_t*)s_Data.QuadVertexBufferBase;
+		uint32_t dataSize = (uint32_t)((uint8_t*)s_Data.QuadVertexBufferPtr - (uint8_t*)s_Data.QuadVertexBufferBase);
 		s_Data.QuadVertexBuffer->SetData(s_Data.QuadVertexBufferBase, dataSize);
 
 		Flush();
@@ -170,7 +170,7 @@ namespace Ludo {
 			return;
 		}
 
-		for (int i = 0; i < s_Data.TextureSlotIndex; i++)
+		for (uint32_t i = 0; i < s_Data.TextureSlotIndex; i++)
 		{
 			s_Data.TextureSlots[i]->Bind(i);
 		}
@@ -299,7 +299,7 @@ namespace Ludo {
 
 		float textureIndex = 0.0f;
 
-		for (int i = 1; i < s_Data.TextureSlotIndex; i++)
+		for (uint32_t i = 1; i < s_Data.TextureSlotIndex; i++)
 		{
 			if (s_Data.TextureSlots[i] == texture)
 			{

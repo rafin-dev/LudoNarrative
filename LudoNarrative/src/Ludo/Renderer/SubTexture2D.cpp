@@ -14,8 +14,8 @@ namespace Ludo {
 
 	Ref<SubTexture2D> SubTexture2D::CreateFromCoords(const Ref<Texture2D>& texture, const DirectX::XMFLOAT2& coords, const DirectX::XMFLOAT2& cellSize, const DirectX::XMFLOAT2& spriteSize)
 	{
-		float atlasWidth = texture->GetWidth();
-		float atlasHeight = texture->GetHeight();
+		float atlasWidth = (float)texture->GetWidth();
+		float atlasHeight = (float)texture->GetHeight();
 
 		DirectX::XMFLOAT2 min = { (coords.x * cellSize.x) / atlasWidth, (coords.y * cellSize.y) / atlasHeight };
 		DirectX::XMFLOAT2 max = { ((coords.x + spriteSize.x) * cellSize.x) / atlasWidth, ((coords.y + spriteSize.y) * cellSize.y) / atlasHeight };

@@ -5,7 +5,7 @@
 
 namespace Ludo {
 
-	typedef enum class KeyCode : uint16_t
+	enum class KeyCode : uint16_t
 	{
 		Space               = 0x20,
 		Key_0               = 0x30,
@@ -128,7 +128,7 @@ namespace Ludo {
 		Right_ALT			= 0xA5,
 	};
 
-	typedef enum class MouseButtonCode : uint16_t
+	enum class MouseButtonCode : uint16_t
 	{
 		Left   =  0x01,
 		Right  =  0x02,

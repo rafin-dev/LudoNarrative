@@ -128,16 +128,18 @@ namespace Ludo {
 			InitImGui = true;
 		}
 		
-		std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> converter;
-		std::wstring wTitle = converter.from_bytes(m_Data.Title);
+		int wchars_num = MultiByteToWideChar(CP_UTF8, 0, m_Data.Title.c_str(), -1, NULL, 0);
+		std::vector<wchar_t> wTitle;
+		wTitle.reserve(wchars_num);
+		MultiByteToWideChar(CP_UTF8, 0, m_Data.Title.c_str(), -1, wTitle.data(), wchars_num);
 
-		RECT wr = { 0, 0, m_Data.Width, m_Data.Height };
+		RECT wr = { 0, 0, (LONG)m_Data.Width, (LONG)m_Data.Height };
 		AdjustWindowRect(&wr, WS_OVERLAPPEDWINDOW, FALSE);
 
 		HWND handle = CreateWindowEx(
 			0,                            // Custom Style
 			s_ClassName,                  // WindowClass
-			wTitle.c_str(),               // Title
+			wTitle.data(),               // Title
 			WS_OVERLAPPEDWINDOW,          // Style
 			CW_USEDEFAULT, CW_USEDEFAULT, // Posiition
 			wr.right - wr.left,           // Width
@@ -214,9 +216,9 @@ namespace Ludo {
 
 		// Input
 		// Keyboard
-		{ WM_KEYDOWN, ThrowEvent(KeyPressedEvent(wParam, lParam & 0xFFFF)) },
-		{ WM_KEYUP, ThrowEvent(KeyReleasedEvent(wParam)) },
-		{ WM_CHAR, ThrowEvent(CharTypedEvent(wParam)) },
+		{ WM_KEYDOWN, ThrowEvent(KeyPressedEvent((int)wParam, (int)lParam & 0xFFFF)) },
+		{ WM_KEYUP, ThrowEvent(KeyReleasedEvent((int)wParam)) },
+		{ WM_CHAR, ThrowEvent(CharTypedEvent((wchar_t)wParam)) },
 
 		// Mouse
 		{ WM_MOUSEMOVE, ThrowEvent(MouseMovedEvent(GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam))) },

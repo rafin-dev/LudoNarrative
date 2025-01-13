@@ -33,7 +33,7 @@ namespace Ludo {
         swapChainDesc.SampleDesc.Count = 1;
         swapChainDesc.SampleDesc.Quality = 0;
         swapChainDesc.BufferUsage = DXGI_USAGE_BACK_BUFFER | DXGI_USAGE_RENDER_TARGET_OUTPUT;
-        swapChainDesc.BufferCount = GetSwapChainBufferCount();
+        swapChainDesc.BufferCount = (UINT)GetSwapChainBufferCount();
         swapChainDesc.Scaling = DXGI_SCALING_STRETCH;
         swapChainDesc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD;
         swapChainDesc.AlphaMode = DXGI_ALPHA_MODE_IGNORE;
@@ -60,7 +60,7 @@ namespace Ludo {
         // ========== RTV decriptor heap ==========
         D3D12_DESCRIPTOR_HEAP_DESC descRTVheap = {};
         descRTVheap.Type = D3D12_DESCRIPTOR_HEAP_TYPE_RTV;
-        descRTVheap.NumDescriptors = GetSwapChainBufferCount();
+        descRTVheap.NumDescriptors = (UINT)GetSwapChainBufferCount();
         descRTVheap.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
         descRTVheap.NodeMask = 0;
 
@@ -70,7 +70,7 @@ namespace Ludo {
         // ========== Render Target View CPU Descriptor handle ==========
         auto firstHandle = m_rtvDescriptorHeap->GetCPUDescriptorHandleForHeapStart();
         auto CPUhandleIncrement = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
-        for (int i = 0; i < GetSwapChainBufferCount(); i++)
+        for (uint32_t i = 0; i < GetSwapChainBufferCount(); i++)
         {
             m_rtvCPUhandles[i] = firstHandle;
             m_rtvCPUhandles[i].ptr += CPUhandleIncrement * i;
@@ -117,7 +117,7 @@ namespace Ludo {
     {
         LD_PROFILE_FUNCTION();
 
-        for (size_t i = 0; i < GetSwapChainBufferCount(); i++)
+        for (UINT i = 0; i < GetSwapChainBufferCount(); i++)
         {
             HRESULT hr = m_SwapChain->GetBuffer(i, IID_PPV_ARGS(&m_Buffers[i]));
             CHECK_DX12_HRESULT(hr, "Failed to retrieve D3D12 Buffer")
@@ -244,23 +244,25 @@ namespace Ludo {
         commandList->OMSetRenderTargets(1, &m_rtvCPUhandles[m_CurrentBackBuffer], false, &depthStencilViewHandle);
 
         // Viewport
+        uint32_t width = m_Window->GetWidth(), height = m_Window->GetHeight();
+
         D3D12_VIEWPORT viewport = {};
         viewport.TopLeftX = 0;
         viewport.TopLeftY = 0;
-        viewport.Width = m_Window->GetWidth();
-        viewport.Height = m_Window->GetHeight();
+        viewport.Width = (FLOAT)width;
+        viewport.Height = (FLOAT)height;
         viewport.MinDepth = 0.0f;
         viewport.MaxDepth = 1.0f;
 
-        s_ViewportWidth = viewport.Width;
-        s_ViewportHeight = viewport.Height;
+        s_ViewportWidth = width;
+        s_ViewportHeight = height;
 
         // Scissor rectangle
         RECT scissorRect = {};
         scissorRect.left = 0;
         scissorRect.top = 0;
-        scissorRect.right = viewport.Width;
-        scissorRect.bottom = viewport.Height;
+        scissorRect.right = (LONG)viewport.Width;
+        scissorRect.bottom = (LONG)viewport.Height;
 
         // Rasterizer
         commandList->RSSetViewports(1, &viewport);
@@ -310,7 +312,7 @@ namespace Ludo {
         DirectX12API::Get()->Flush(GetSwapChainBufferCount());
 
         ReleaseBuffers();
-        HRESULT hr = m_SwapChain->ResizeBuffers(GetSwapChainBufferCount(), m_Nwidth, m_Nheight, DXGI_FORMAT_UNKNOWN,
+        HRESULT hr = m_SwapChain->ResizeBuffers((UINT)GetSwapChainBufferCount(), m_Nwidth, m_Nheight, DXGI_FORMAT_UNKNOWN,
             DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH | DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING);
         CHECK_DX12_HRESULT(hr, "Failed to Resize DirectX12 Swap Chain for the window: {0} [{1}, {2}]", m_Window->GetTitle(), m_Window->GetWidth(), m_Window->GetHeight());
         RetrieveBuffers();
@@ -331,8 +333,8 @@ namespace Ludo {
         auto& commandList = DirectX12API::Get()->GetCommandList();
 
         D3D12_VIEWPORT viewport = {};
-        viewport.Width = s_ViewportWidth;
-        viewport.Height = s_ViewportHeight;
+        viewport.Width = (FLOAT)s_ViewportWidth;
+        viewport.Height = (FLOAT)s_ViewportHeight;
         viewport.MaxDepth = 1.0f;
 
         commandList->RSSetViewports(1, &viewport);
