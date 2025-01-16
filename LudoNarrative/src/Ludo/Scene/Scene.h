@@ -28,6 +28,7 @@ namespace Ludo {
 		uint32_t m_ViewportWidth = 0, m_ViewportHeight = 0;
 
 		friend class SceneHierarchyPanel;
+		friend class SceneSerializer;
 		friend class Entity;
 	};
 

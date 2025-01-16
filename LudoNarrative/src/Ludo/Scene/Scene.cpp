@@ -37,8 +37,10 @@ namespace Ludo {
 	{
 		// Update Scripts
 		{
-			m_Registry.view<NativeScriptComponent>().each([=](entt::entity entity, NativeScriptComponent& nsc) 
+			auto group = m_Registry.group<NativeScriptComponent>();
+			for (auto entity : group)
 			{
+				auto& nsc = group.get<NativeScriptComponent>(entity);
 
 				if (nsc.Instance == nullptr)
 				{
@@ -48,10 +50,8 @@ namespace Ludo {
 				}
 
 				nsc.Instance->OnUpdate(ts);
-
-			});
+			}
 		}
-
 
 		// Render 2D Sprites
 		

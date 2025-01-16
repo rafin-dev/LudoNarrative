@@ -239,14 +239,14 @@ namespace Ludo {
 
 			if (ImGui::BeginPopup("AddComponent"))
 			{
-				if (!m_SelectedEntity.HasComponent<CameraComponent>() && ImGui::MenuItem("Camera Component"))
+				if (ImGui::MenuItem("Camera Component", nullptr, false, !m_SelectedEntity.HasComponent<CameraComponent>()))
 				{
 					m_SelectedEntity.AddComponent<CameraComponent>();
 
 					ImGui::CloseCurrentPopup();
 				}
 
-				if (!m_SelectedEntity.HasComponent<SpriteRendererComponent>() && ImGui::MenuItem("Sprite Renderer"))
+				if (ImGui::MenuItem("Sprite Renderer", nullptr, false, !m_SelectedEntity.HasComponent<SpriteRendererComponent>()))
 				{
 					m_SelectedEntity.AddComponent<SpriteRendererComponent>();
 

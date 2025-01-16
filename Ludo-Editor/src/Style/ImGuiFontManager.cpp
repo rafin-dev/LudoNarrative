@@ -2,6 +2,8 @@
 
 namespace Ludo {
 
+    static ImFont* s_OriginalFont;
+
     ImGuiFontManager* ImGuiFontManager::Get()
     {
         static ImGuiFontManager instance;
@@ -19,9 +21,22 @@ namespace Ludo {
         auto boldFont = !fontDesc.BoldFont.empty() ? io.Fonts->AddFontFromFileTTF(fontDesc.BoldFont.string().c_str(), fontDesc.SizeInPixels) : regularFont;
         auto italicFont = !fontDesc.ItalicFont.empty() ? io.Fonts->AddFontFromFileTTF(fontDesc.ItalicFont.string().c_str(), fontDesc.SizeInPixels) : regularFont;
 
-        auto font = &m_Fonts.insert(std::pair(name, Font(regularFont, boldFont, italicFont))).first->second;
+        Font* font = &m_Fonts.insert(std::pair(name, Font(name, regularFont, boldFont, italicFont))).first->second;
 
         return FontInstance(font);
+    }
+
+    void ImGuiFontManager::RemoveFont(const std::string& name)
+    {
+        auto ite = m_Fonts.find(name);
+        LD_ASSERT(ite != m_Fonts.end(), "Font {0} does not exist", name);
+
+        if (name == m_DefaultFont.Name)
+        {
+            m_DefaultFont = Font("##DefaultImGui##", s_OriginalFont, s_OriginalFont, s_OriginalFont);
+        }
+
+        m_Fonts.erase(ite);
     }
 
     ImGuiFontManager::FontInstance ImGuiFontManager::GetFont(const std::string& name)
@@ -65,8 +80,8 @@ namespace Ludo {
 
     void ImGuiFontManager::Init()
     {
-        auto defaultImGuiFont = ImGui::GetFont();
-        m_DefaultFont = Font(defaultImGuiFont, defaultImGuiFont, defaultImGuiFont);
+        s_OriginalFont = ImGui::GetFont();
+        m_DefaultFont = Font("##DefaultImGui##", s_OriginalFont, s_OriginalFont, s_OriginalFont);
     }
 
 }

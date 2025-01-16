@@ -4,3 +4,6 @@
 [submodule "LudoNarrative/vendor/imgui"]
 	path = LudoNarrative/vendor/imgui
 	url = https://github.com/ocornut/imgui.git
+[submodule "LudoNarrative/vendor/yaml-cpp"]
+	path = LudoNarrative/vendor/yaml-cpp
+	url = https://github.com/jbeder/yaml-cpp.git

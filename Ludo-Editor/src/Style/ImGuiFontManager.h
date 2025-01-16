@@ -32,8 +32,10 @@ namespace Ludo {
 			ImFont* BoldFont = nullptr;
 			ImFont* ItalicFont = nullptr;
 
-			Font(ImFont* regular, ImFont* bold, ImFont* italic)
-				: RegularFont(regular), BoldFont(bold), ItalicFont(italic) 
+			std::string Name = std::string();
+
+			Font(const std::string& name, ImFont* regular, ImFont* bold, ImFont* italic)
+				: Name(name), RegularFont(regular), BoldFont(bold), ItalicFont(italic) 
 			{}
 			Font() = default;
 		};
@@ -58,6 +60,7 @@ namespace Ludo {
 		};
 
 		FontInstance AddFont(const std::string& name,const CustomFontDescription& fontDesc);
+		void RemoveFont(const std::string& name);
 		FontInstance GetFont(const std::string& name);
 
 		void PushDefaultFontBoldStyle();

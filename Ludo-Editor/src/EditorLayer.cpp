@@ -20,9 +20,10 @@ namespace Ludo {
 
 		m_FrameBuffer = FrameBuffer::Create(fbSpec);
 
-		m_Texture = Texture2D::Create("assets/textures/Checkerboard.png");
-
 		m_ActiveScene = CreateRef<Scene>();
+
+#if 0
+		m_Texture = Texture2D::Create("assets/textures/Checkerboard.png");
 
 		m_ActiveScene->CreateEntity("Green Square").AddComponent<SpriteRendererComponent>(DirectX::XMFLOAT4{ 0.0f, 1.0f, 0.0f, 1.0f });
 		m_ActiveScene->CreateEntity("Red Square").AddComponent<SpriteRendererComponent>().Color = { 1.0f, 0.0f, 0.0f, 1.0f };
@@ -50,6 +51,7 @@ namespace Ludo {
 		Entity cameraEntity = m_ActiveScene->CreateEntity("Camera Entity");
 		cameraEntity.AddComponent<CameraComponent>();
 		cameraEntity.AddComponent<NativeScriptComponent>().Bind<CameraController>();
+#endif
 
 		m_SceneHierarchyPanel.SetContext(m_ActiveScene);
 	}
@@ -96,6 +98,18 @@ namespace Ludo {
 		{
 			if (ImGui::BeginMenu("File"))
 			{
+				if (ImGui::MenuItem("Serialize"))
+				{
+					SceneSerializer serializer(m_ActiveScene);
+					serializer.SerializeToYamlFile("assets/scenes/Example.LudoNarrative");
+				}
+
+				if (ImGui::MenuItem("Deserialize"))
+				{
+					SceneSerializer serializer(m_ActiveScene);
+					serializer.DeserializeFromYamlFile("assets/scenes/Example.LudoNarrative");
+				}
+
 				if (ImGui::MenuItem("Exit")) { Application::Get().Close(); }
 
 				ImGui::EndMenu();

@@ -18,8 +18,12 @@ IncludeDir["ImGui"] = "%{wks.location}/LudoNarrative/vendor/imgui"
 IncludeDir["stb_image"] = "%{wks.location}/LudoNarrative/vendor/stb_image"
 IncludeDir["dxc"] = "%{wks.location}/LudoNarrative/vendor/dxc"
 IncludeDir["entt"] = "%{wks.location}/LudoNarrative/vendor/entt/include"
+IncludeDir["yaml_cpp"] = "%{wks.location}/LudoNarrative/vendor/yaml-cpp/include"
 
+group "Dependencies"
 include "imgui_premake5"
+include "yaml-cpp_premake5"
+group ""
 
 project "LudoNarrative"
     location "LudoNarrative"
@@ -49,13 +53,20 @@ project "LudoNarrative"
         "%{IncludeDir.Vendor}",
         "%{IncludeDir.ImGui}",
         "%{IncludeDir.stb_image}",
-        "%{IncludeDir.entt}"
+        "%{IncludeDir.entt}",
+        "%{IncludeDir.yaml_cpp}"
     }
 
     links
     {
-        "ImGui"
+        "ImGui",
+        "yaml-cpp"
     }
+
+    defines
+	{
+		"YAML_CPP_STATIC_DEFINE"
+	}
 
     filter "system:windows"
         systemversion "latest"
@@ -99,7 +110,8 @@ project "Sandbox"
         "%{wks.location}/LudoNarrative/src",
         "%{wks.location}/LudoNarrative/vendor/spdlog/include",
         "%{IncludeDir.Vendor}",
-        "%{IncludeDir.entt}"
+        "%{IncludeDir.entt}",
+        "%{IncludeDir.yaml_cpp}"
     }
 
     defines
@@ -156,7 +168,8 @@ project "Ludo-Editor"
         "%{wks.location}/LudoNarrative/src",
         "%{wks.location}/LudoNarrative/vendor/spdlog/include",
         "%{IncludeDir.Vendor}",
-        "%{IncludeDir.entt}"
+        "%{IncludeDir.entt}",
+        "%{IncludeDir.yaml_cpp}"
     }
 
     defines
