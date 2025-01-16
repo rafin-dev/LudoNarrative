@@ -230,6 +230,18 @@ namespace Ludo {
 		DrawQuad(DirectX::XMLoadFloat4x4(&transform), texture, texCoords, color, tilingFactor);
 	}
 
+	void LD_SIMD_CALLING_CONVENTION Renderer2D::DrawQuad(const DirectX::XMMATRIX& transform, const Ref<Texture2D>& texture, const DirectX::XMFLOAT4& color, float tilingFactor)
+	{
+		DirectX::XMFLOAT2 texCoords[] = {
+			{ 0.0f, 0.0f },
+			{ 0.0f, 1.0f },
+			{ 1.0f, 1.0f },
+			{ 1.0f, 0.0f }
+		};
+
+		DrawQuad(transform, texture, texCoords, color, tilingFactor);
+	}
+
 	void Renderer2D::DrawQuad(const DirectX::XMFLOAT2& position, const DirectX::XMFLOAT2& size, float rotation, const Ref<SubTexture2D>& subTexture, const DirectX::XMFLOAT4& color, float tilingFactor)
 	{
 		DrawQuad({ position.x, position.y, 0.0f }, size, rotation, subTexture, color, tilingFactor);
@@ -253,7 +265,12 @@ namespace Ludo {
 		DrawQuad(transform, texture, texCoords, color, tilingFactor);
 	}
 
-	void __fastcall Renderer2D::DrawQuad(const DirectX::XMMATRIX& transform, const DirectX::XMFLOAT4& color)
+	void LD_SIMD_CALLING_CONVENTION Renderer2D::DrawQuad(const DirectX::XMMATRIX& transform, const Ref<SubTexture2D>& subTexture, const DirectX::XMFLOAT4& color, float tilingFactor)
+	{
+		DrawQuad(transform, subTexture->GetTexture(), subTexture->GetTexCoords(), color, tilingFactor);
+	}
+
+	void LD_SIMD_CALLING_CONVENTION Renderer2D::DrawQuad(const DirectX::XMMATRIX& transform, const DirectX::XMFLOAT4& color)
 	{
 		LD_PROFILE_RENDERER_FUNCTION();
 
@@ -288,7 +305,7 @@ namespace Ludo {
 		s_Data.Stats.QuadCount++;
 	}
 
-	void __fastcall Renderer2D::DrawQuad(const DirectX::XMMATRIX& transform, const Ref<Texture2D>& texture, const DirectX::XMFLOAT2* texCoords, const DirectX::XMFLOAT4& tintColor, float tilingFactor)
+	void LD_SIMD_CALLING_CONVENTION Renderer2D::DrawQuad(const DirectX::XMMATRIX& transform, const Ref<Texture2D>& texture, const DirectX::XMFLOAT2* texCoords, const DirectX::XMFLOAT4& tintColor, float tilingFactor)
 	{
 		LD_PROFILE_RENDERER_FUNCTION();
 

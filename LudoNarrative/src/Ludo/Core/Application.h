@@ -15,7 +15,7 @@ namespace Ludo {
 		Application
 	{
 	public:
-		Application(const std::string& name = "LudoNarrative");
+		Application(const std::string& name = "LudoNarrative", uint32_t windowWidth = 1280, uint32_t windowHeight = 720);
 		virtual ~Application();
 
 		void Run();

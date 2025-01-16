@@ -29,11 +29,16 @@ namespace Ludo {
 
 		// ========== Primitives ==========
 		// Roation is in radians
+		
+		// All "static void DrawQuad(...)"s will end calling a "static __fastcall DrawQuad(const DirectX::XMMATRIX& transform, ...)"
+		// The reaseon why the texture one is private is because it's shared by textures and subTextures
+		// So it doens't follow the parameter convention of them and is only internal
 
 		// Colored Quads
 		static void DrawQuad(const DirectX::XMFLOAT2& position, const DirectX::XMFLOAT2& size, float rotation, const DirectX::XMFLOAT4& color);
 		static void DrawQuad(const DirectX::XMFLOAT3& position, const DirectX::XMFLOAT2& size, float rotation, const DirectX::XMFLOAT4& color);
 		static void DrawQuad(const DirectX::XMFLOAT4X4& transform, const DirectX::XMFLOAT4& color);
+		static void LD_SIMD_CALLING_CONVENTION DrawQuad(const DirectX::XMMATRIX& transform, const DirectX::XMFLOAT4& color);
 
 		// Textured Quads
 		static void DrawQuad(const DirectX::XMFLOAT2& position, const DirectX::XMFLOAT2& size, float rotation, const Ref<Texture2D>& texture, 
@@ -45,6 +50,9 @@ namespace Ludo {
 		static void DrawQuad(const DirectX::XMFLOAT4X4& transform, const Ref<Texture2D>& texture,
 			const DirectX::XMFLOAT4& color = { 1.0f, 1.0f, 1.0f, 1.0f },
 			float tilingFactor = 1.0f);
+		static void __fastcall DrawQuad(const DirectX::XMMATRIX& transform, const Ref<Texture2D>& texture,
+			const DirectX::XMFLOAT4& color = { 1.0f, 1.0f, 1.0f, 1.0f },
+			float tilingFactor = 1.0f);
 
 		// SubTextured Quads
 		static void DrawQuad(const DirectX::XMFLOAT2& position, const DirectX::XMFLOAT2& size, float rotation, const Ref<SubTexture2D>& subTexture,
@@ -54,6 +62,9 @@ namespace Ludo {
 			const DirectX::XMFLOAT4& color = { 1.0f, 1.0f, 1.0f, 1.0f },
 			float tilingFactor = 1.0f);
 		static void DrawQuad(const DirectX::XMFLOAT4X4& transform, const Ref<SubTexture2D>& subTexture,
+			const DirectX::XMFLOAT4& color = { 1.0f, 1.0f, 1.0f, 1.0f },
+			float tilingFactor = 1.0f);
+		static void __fastcall DrawQuad(const DirectX::XMMATRIX& transform, const Ref<SubTexture2D>& subTexture,
 			const DirectX::XMFLOAT4& color = { 1.0f, 1.0f, 1.0f, 1.0f },
 			float tilingFactor = 1.0f);
 		// ================================
@@ -79,10 +90,7 @@ namespace Ludo {
 			const DirectX::XMFLOAT4& color = { 1.0f, 1.0f, 1.0f, 1.0f },
 			float tilingFactor = 1.0f);
 
-		// The "__fastcall" is windows x64 convetions to properly pass SIMD aligned parameters
-		// TODO: Add a macro that chages depending on the target platform
-		static void __fastcall DrawQuad(const DirectX::XMMATRIX& transform, const DirectX::XMFLOAT4& color);
-		static void __fastcall DrawQuad(const DirectX::XMMATRIX& transform, const Ref<Texture2D>& texture, const DirectX::XMFLOAT2* texCoords, const DirectX::XMFLOAT4& tintColor,
+		static void LD_SIMD_CALLING_CONVENTION DrawQuad(const DirectX::XMMATRIX& transform, const Ref<Texture2D>& texture, const DirectX::XMFLOAT2* texCoords, const DirectX::XMFLOAT4& tintColor,
 			float tilingFactor);
 		
 		static void FlushAndReset();

@@ -12,7 +12,6 @@ namespace Ludo {
 
 	Scene::Scene()
 	{
-		
 	}
 
 	Scene::~Scene()
@@ -27,6 +26,11 @@ namespace Ludo {
 		entity.AddComponent<TagComponent>(name.empty() ? "Entity" : name);
 
 		return entity;
+	}
+
+	void Scene::DestroyEntity(Entity entity)
+	{
+		m_Registry.destroy(entity);
 	}
 
 	void Scene::OnUpdate(TimeStep ts)
@@ -53,7 +57,7 @@ namespace Ludo {
 		
 		// Get main camera
 		Camera* mainCamera = nullptr;
-		DirectX::XMFLOAT4X4* cameraTransform = nullptr;
+		DirectX::XMFLOAT4X4 cameraTransform;
 		{
 			auto group = m_Registry.group<CameraComponent>(entt::get<TransformComponent>);
 			for (auto entity : group)
@@ -63,7 +67,7 @@ namespace Ludo {
 				if (camera.Primary)
 				{
 					mainCamera = &camera.Camera;
-					cameraTransform = &transform.Transform;
+					cameraTransform = transform.GetTransform();
 					break;
 				}
 			}
@@ -71,14 +75,16 @@ namespace Ludo {
 
 		if (mainCamera)
 		{
-			Renderer2D::BeginScene(*mainCamera, *cameraTransform);
+			Renderer2D::BeginScene(*mainCamera, cameraTransform);
 
 			auto group = m_Registry.group<SpriteRendererComponent>(entt::get<TransformComponent>);
 			for (auto entity : group)
 			{
 				auto [transform, sprite] = group.get<TransformComponent, SpriteRendererComponent>(entity);
+				DirectX::XMMATRIX spriteTransform;
+				transform.GetTransform(&spriteTransform);
 
-				Renderer2D::DrawQuad(transform, sprite.Color);
+				Renderer2D::DrawQuad(spriteTransform, sprite.Color);
 			}
 
 			Renderer2D::EndScene();
@@ -101,5 +107,28 @@ namespace Ludo {
 		}
 
 	}
+
+#define LD_BLANK_COMPONENT_ADD_EVENT(x) template<>\
+										 void Scene::OnComponentAdded(Entity entity, x& component) {}
+
+	template<typename T>
+	void Scene::OnComponentAdded(Entity entity, T& component)
+	{
+		static_assert(false);
+	}
+
+	LD_BLANK_COMPONENT_ADD_EVENT(TagComponent);
+
+	LD_BLANK_COMPONENT_ADD_EVENT(TransformComponent);
+
+	template<>
+	void Scene::OnComponentAdded<CameraComponent>(Entity entity, CameraComponent& component)
+	{
+		component.Camera.SetViewportSize(m_ViewportWidth, m_ViewportHeight);
+	}
+
+	LD_BLANK_COMPONENT_ADD_EVENT(SpriteRendererComponent);
+
+	LD_BLANK_COMPONENT_ADD_EVENT(NativeScriptComponent);
 
 }

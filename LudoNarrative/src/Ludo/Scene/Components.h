@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Ludo/Core/Core.h"
 #include "Ludo/Scene/SceneCamera.h"
 #include "Ludo/Scene/ScriptableEntity.h"
 #include "Ludo/Core/TimeStep.h"
@@ -20,18 +21,32 @@ namespace Ludo {
 
 	struct TransformComponent
 	{
-		DirectX::XMFLOAT4X4 Transform;
+		DirectX::XMFLOAT3 Translation = { 0.0f, 0.0f, 0.0f };
+		DirectX::XMFLOAT3 Rotation = { 0.0f, 0.0f, 0.0f };
+		DirectX::XMFLOAT3 Scale = { 1.0f, 1.0f, 1.0f };
 
-		TransformComponent()
-		{
-			DirectX::XMStoreFloat4x4(&Transform, DirectX::XMMatrixIdentity());
-		}
+		TransformComponent() = default;
 		TransformComponent(const TransformComponent& other) = default;
-		TransformComponent(const DirectX::XMFLOAT4X4& transfrom)
-			: Transform(transfrom) {}
+		TransformComponent(const DirectX::XMFLOAT3& translation)
+			: Translation(translation) {}
 
-		operator DirectX::XMFLOAT4X4& () { return Transform; }
-		operator const DirectX::XMFLOAT4X4& () const { return Transform; }
+		DirectX::XMFLOAT4X4 GetTransform() const
+		{
+			DirectX::XMFLOAT4X4 transform;
+			DirectX::XMStoreFloat4x4(&transform,
+				DirectX::XMMatrixScaling(Scale.x, Scale.y, Scale.z) *
+				DirectX::XMMatrixRotationX(Rotation.x)* DirectX::XMMatrixRotationY(Rotation.y)* DirectX::XMMatrixRotationZ(Rotation.z)*
+				DirectX::XMMatrixTranslation(Translation.x, Translation.y, Translation.z));
+			return transform;
+		}
+
+		void LD_SIMD_CALLING_CONVENTION GetTransform(DirectX::XMMATRIX* transformOutput) // I really dont know if I need this "__fastcall", but I use it just in case
+		{
+			*transformOutput =
+				DirectX::XMMatrixScaling(Scale.x, Scale.y, Scale.z) *
+				DirectX::XMMatrixRotationX(Rotation.x) * DirectX::XMMatrixRotationY(Rotation.y) * DirectX::XMMatrixRotationZ(Rotation.z) *
+				DirectX::XMMatrixTranslation(Translation.x, Translation.y, Translation.z);
+		}
 	};
 
 	struct SpriteRendererComponent

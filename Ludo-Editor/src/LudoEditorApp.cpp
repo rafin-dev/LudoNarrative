@@ -9,7 +9,7 @@ namespace Ludo {
 	{
 	public:
 		LudoEditor()
-			: Application("Ludo Editor")
+			: Application("Ludo Editor", 1600, 900)
 		{
 			PushLayer(new EditorLayer());
 		}
