@@ -108,6 +108,20 @@ namespace Ludo {
 
 	}
 
+	Entity Scene::GetPrimaryCameraEntity()
+	{
+		auto view = m_Registry.view<CameraComponent>();
+		for (auto entity : view)
+		{
+			if (view.get<CameraComponent>(entity).Primary)
+			{
+				return Entity(entity, this);
+			}
+		}
+
+		return Entity();
+	}
+
 #define LD_BLANK_COMPONENT_ADD_EVENT(x) template<>\
 										 void Scene::OnComponentAdded(Entity entity, x& component) {}
 

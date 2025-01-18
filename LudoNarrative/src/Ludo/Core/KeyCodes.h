@@ -120,7 +120,7 @@ namespace Ludo {
 
 		Num_Lock			= 0x90,
 		Scroll_Lock			= 0x91,
-		Left_SHift			= 0xA0,
+		Left_Shift			= 0xA0,
 		Right_Shift			= 0xA1,
 		Left_CTRL			= 0xA2,
 		Right_CTRL			= 0xA3,

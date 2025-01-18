@@ -12,8 +12,10 @@
 
 // ========== Core ==========
 #include "Ludo/Core/Application.h"
+#include "Ludo/Core/Core.h"
 #include "Ludo/Core/Layer.h"
 #include "Ludo/Core/Log.h"
+#include "Ludo/Utils/PlatformUtils.h"
 
 #include "Ludo/Core/Input.h"
 #include "Ludo/Core/KeyCodes.h"

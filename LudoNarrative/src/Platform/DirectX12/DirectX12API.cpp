@@ -6,9 +6,11 @@
 #include "Platform/DirectX12/DirectX12Context.h"
 #include "Platform/DirectX12/DirectX12Shader.h"
 
-#include "imgui/imgui.h"
-#include "imgui/backends/imgui_impl_dx12.h"
-#include "imgui/backends/imgui_impl_win32.h"
+#include <imgui/imgui.h>
+#include <imgui/backends/imgui_impl_dx12.h>
+#include <imgui/backends/imgui_impl_win32.h>
+
+#include <ImGuizmo/ImGuizmo.h>
 
 namespace Ludo {
 
@@ -202,6 +204,7 @@ namespace Ludo {
         ImGui_ImplDX12_NewFrame();
         ImGui_ImplWin32_NewFrame();
         ImGui::NewFrame();
+        ImGuizmo::BeginFrame();
     }
 
     void DirectX12API::EndImGui()

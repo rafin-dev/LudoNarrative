@@ -18,6 +18,12 @@ namespace Ludo {
 		void OnImGuiRender() override;
 
 	private:
+		bool OnKeyPressed(KeyPressedEvent& event);
+
+		void NewScene();
+		void OpenScene();
+		void SaveSceneAs();
+
 		void SetImGuiDarkTheme();
 
 		Ref<FrameBuffer> m_FrameBuffer;
@@ -28,6 +34,8 @@ namespace Ludo {
 		bool m_ViewportFocused = false;
 		DirectX::XMFLOAT2 m_ViewportSize = { 0.0f, 0.0f };
 		bool m_ResizeFrameBuffer = false;
+
+		int m_GizmoType = -1;
 
 		// Panels
 		SceneHierarchyPanel m_SceneHierarchyPanel;

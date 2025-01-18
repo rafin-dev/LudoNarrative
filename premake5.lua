@@ -19,6 +19,7 @@ IncludeDir["stb_image"] = "%{wks.location}/LudoNarrative/vendor/stb_image"
 IncludeDir["dxc"] = "%{wks.location}/LudoNarrative/vendor/dxc"
 IncludeDir["entt"] = "%{wks.location}/LudoNarrative/vendor/entt/include"
 IncludeDir["yaml_cpp"] = "%{wks.location}/LudoNarrative/vendor/yaml-cpp/include"
+IncludeDir["ImGuizmo"] = "%{wks.location}/LudoNarrative/vendor/ImGuizmo"
 
 group "Dependencies"
 include "imgui_premake5"
@@ -43,7 +44,8 @@ project "LudoNarrative"
         "%{prj.location}/src/**.cpp",
         "%{prj.location}/vendor/stb_image/**.h",
         "%{prj.location}/vendor/stb_image/**.cpp",
-        "%{prj.location}/vendor/dxc/inc/**.h"
+        "%{prj.location}/vendor/ImGuizmo/ImGuizmo.h",
+        "%{prj.location}/vendor/ImGuizmo/ImGuizmo.cpp"
     }
 
     includedirs
@@ -54,7 +56,8 @@ project "LudoNarrative"
         "%{IncludeDir.ImGui}",
         "%{IncludeDir.stb_image}",
         "%{IncludeDir.entt}",
-        "%{IncludeDir.yaml_cpp}"
+        "%{IncludeDir.yaml_cpp}",
+        "%{IncludeDir.ImGuizmo}"
     }
 
     links
@@ -67,6 +70,9 @@ project "LudoNarrative"
 	{
 		"YAML_CPP_STATIC_DEFINE"
 	}
+
+    filter "files:LudoNarrative/vendor/ImGuizmo/*.cpp"
+        flags { "NoPCH" }
 
     filter "system:windows"
         systemversion "latest"
@@ -169,7 +175,8 @@ project "Ludo-Editor"
         "%{wks.location}/LudoNarrative/vendor/spdlog/include",
         "%{IncludeDir.Vendor}",
         "%{IncludeDir.entt}",
-        "%{IncludeDir.yaml_cpp}"
+        "%{IncludeDir.yaml_cpp}",
+        "%{IncludeDir.ImGuizmo}"
     }
 
     defines

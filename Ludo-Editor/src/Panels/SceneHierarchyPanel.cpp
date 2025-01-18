@@ -13,6 +13,7 @@ namespace Ludo {
 
 	void SceneHierarchyPanel::SetContext(const Ref<Scene>& context)
 	{
+		m_SelectedEntity = Entity();
 		m_Context = context;
 	}
 

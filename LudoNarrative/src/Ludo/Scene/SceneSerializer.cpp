@@ -208,8 +208,6 @@ namespace Ludo {
 		std::string sceneName = data["Scene"].as<std::string>();
 		LD_CORE_TRACE("Deserializing Scene {0}", sceneName);
 
-
-		m_Scene->m_Registry.clear();
 		auto entities = data["Entities"];
 		if (entities)
 		{
@@ -246,7 +244,7 @@ namespace Ludo {
 					auto& camera = cameraComponent.Camera;
 					camera.SetProjectionType((SceneCamera::ProjectionType)cameraData["ProjectionType"].as<int>());
 
-					camera.SetPerspectiveVerticalFov(cameraData["PerspectiveFOV"].as<float>());
+					camera.SetPerspectiveVerticalFov(DirectX::XMConvertToRadians(cameraData["PerspectiveFOV"].as<float>()));
 					camera.SetPerspectiveNearClip(cameraData["PerspectiveNear"].as<float>());
 					camera.SetPerspectiveFarClip(cameraData["PerspectiveFar"].as<float>());
 

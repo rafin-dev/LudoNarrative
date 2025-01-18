@@ -2,38 +2,32 @@
 
 #include "Event.h"
 
+#include "Ludo/Core/KeyCodes.h"
+
 namespace Ludo {
 
 	// Currently some key events will have an undefined keycode
 	// Don't rely on these as they are platform dependent and thus, undefined behaviour
 
-	class 
-		
-		
-		
-	
-	
-	
-	
-	KeyEvent : public Event
+	class KeyEvent : public Event
 	{
 	public:
-		inline int GetKeyCode() const { return m_KeyCode; }
+		inline KeyCode GetKeyCode() const { return m_KeyCode; }
 
 		EVENT_CLASS_CATEGORY(EventCategoryKeyboard | EventCategoryInput)
 
 	protected:
-		KeyEvent(int keycode)
+		KeyEvent(KeyCode keycode)
 			: m_KeyCode(keycode) {}
 
-		int m_KeyCode;
+		KeyCode m_KeyCode;
 	};
 
 	// Might split this into two events: KeyPressedEvent and KeyHoldEvent
 	class KeyPressedEvent : public KeyEvent
 	{
 	public:
-		KeyPressedEvent(int keycode, int repeatCount)
+		KeyPressedEvent(KeyCode keycode, int repeatCount)
 			: KeyEvent(keycode), m_RepeatCount(repeatCount) {}
 
 		inline int GetRepeatCount() const { return m_RepeatCount; }
@@ -41,7 +35,7 @@ namespace Ludo {
 		std::string ToString() const override
 		{
 			std::stringstream stringStream;
-			stringStream << "KeyPressedEvent: " << m_KeyCode << " (" << m_RepeatCount << " repeats)";
+			stringStream << "KeyPressedEvent: " << (int)m_KeyCode << " (" << m_RepeatCount << " repeats)";
 			return stringStream.str();
 		}
 
@@ -54,13 +48,13 @@ namespace Ludo {
 	class KeyReleasedEvent : public KeyEvent
 	{
 	public:
-		KeyReleasedEvent(int keycode)
+		KeyReleasedEvent(KeyCode keycode)
 			: KeyEvent(keycode) {}
 
 		std::string ToString() const override
 		{
 			std::stringstream stringStream;
-			stringStream << "KeyReleasedEvent: " << m_KeyCode;
+			stringStream << "KeyReleasedEvent: " << (int)m_KeyCode;
 			return stringStream.str();
 		}
 

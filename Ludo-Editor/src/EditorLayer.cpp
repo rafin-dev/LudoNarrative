@@ -2,6 +2,11 @@
 
 #include "Style/ImGuiThemeManager.h"
 
+#include <ImGuizmo/ImGuizmo.h>
+
+#define _USE_MATH_DEFINES
+#include <cmath>
+
 namespace Ludo {
 
 	void EditorLayer::OnAttach()
@@ -21,37 +26,6 @@ namespace Ludo {
 		m_FrameBuffer = FrameBuffer::Create(fbSpec);
 
 		m_ActiveScene = CreateRef<Scene>();
-
-#if 0
-		m_Texture = Texture2D::Create("assets/textures/Checkerboard.png");
-
-		m_ActiveScene->CreateEntity("Green Square").AddComponent<SpriteRendererComponent>(DirectX::XMFLOAT4{ 0.0f, 1.0f, 0.0f, 1.0f });
-		m_ActiveScene->CreateEntity("Red Square").AddComponent<SpriteRendererComponent>().Color = { 1.0f, 0.0f, 0.0f, 1.0f };
-
-		class CameraController : public ScriptableEntity
-		{
-		public:
-			void OnCreate() override
-			{
-			}
-
-			void OnDestroy() override
-			{
-			}
-
-			void OnUpdate(TimeStep ts) override
-			{
-				auto& position = GetComponent<TransformComponent>().Translation;
-
-				position.x += (Input::IsKeyPressed(KeyCode::D) - Input::IsKeyPressed(KeyCode::A)) * ts * 3;
-				position.y += (Input::IsKeyPressed(KeyCode::W) - Input::IsKeyPressed(KeyCode::S)) * ts * 3;
-			}
-		};
-
-		Entity cameraEntity = m_ActiveScene->CreateEntity("Camera Entity");
-		cameraEntity.AddComponent<CameraComponent>();
-		cameraEntity.AddComponent<NativeScriptComponent>().Bind<CameraController>();
-#endif
 
 		m_SceneHierarchyPanel.SetContext(m_ActiveScene);
 	}
@@ -84,6 +58,8 @@ namespace Ludo {
 
 	void EditorLayer::OnEvent(Event& event)
 	{
+		EventDispatcher dispatcher(event);
+		dispatcher.Dispatch<KeyPressedEvent>(LUDO_BIND_EVENT_FN(EditorLayer::OnKeyPressed));
 	}
 
 	void EditorLayer::OnImGuiRender()
@@ -98,16 +74,19 @@ namespace Ludo {
 		{
 			if (ImGui::BeginMenu("File"))
 			{
-				if (ImGui::MenuItem("Serialize"))
+				if (ImGui::MenuItem("New", "Ctrl+N"))
 				{
-					SceneSerializer serializer(m_ActiveScene);
-					serializer.SerializeToYamlFile("assets/scenes/Example.LudoNarrative");
+					NewScene();
 				}
 
-				if (ImGui::MenuItem("Deserialize"))
+				if (ImGui::MenuItem("Open...", "Ctrl+O"))
 				{
-					SceneSerializer serializer(m_ActiveScene);
-					serializer.DeserializeFromYamlFile("assets/scenes/Example.LudoNarrative");
+					OpenScene();
+				}
+
+				if (ImGui::MenuItem("Save As...", "Ctrl+Shift+S"))
+				{
+					SaveSceneAs();
 				}
 
 				if (ImGui::MenuItem("Exit")) { Application::Get().Close(); }
@@ -135,15 +114,156 @@ namespace Ludo {
 		ImGui::Begin("Viewport");
 
 		m_ViewportFocused = ImGui::IsWindowFocused();
-		Application::Get().ImGuiBlockEvent(!ImGui::IsWindowHovered());
+
+		if (ImGui::IsAnyItemActive())
+		{
+			Application::Get().ImGuiBlockEvent(!m_ViewportFocused || !ImGui::IsWindowHovered());
+		}
+		else
+		{
+			Application::Get().ImGuiBlockEvent(!m_ViewportFocused && !ImGui::IsWindowHovered());
+		}
+		
 
 		ImVec2 viewportPanelSize = ImGui::GetContentRegionAvail();
 		m_ResizeFrameBuffer = viewportPanelSize.x != m_ViewportSize.x || viewportPanelSize.y != m_ViewportSize.y;
 		m_ViewportSize = { viewportPanelSize.x, viewportPanelSize.y };
 		ImGui::Image(m_FrameBuffer->GetImTextureID(), viewportPanelSize);
 
+		// Gizmos
+		Entity selectedEntity = m_SceneHierarchyPanel.GetSelectedEntity();
+		auto cameraEntity = m_ActiveScene->GetPrimaryCameraEntity();
+		if (selectedEntity && cameraEntity && m_GizmoType != -1)
+		{
+			ImGuizmo::SetOrthographic(false);
+			ImGuizmo::SetDrawlist();
+			ImGuizmo::SetRect(ImGui::GetWindowPos().x, ImGui::GetWindowPos().y, ImGui::GetWindowWidth(), ImGui::GetWindowHeight());
+
+			const auto& camera = cameraEntity.GetComponent<CameraComponent>().Camera;
+
+			const DirectX::XMFLOAT4X4& cameraProjection = camera.GetProjection();
+			DirectX::XMMATRIX cameraTransform; cameraEntity.GetComponent<TransformComponent>().GetTransform(&cameraTransform);
+			DirectX::XMFLOAT4X4 cameraView;
+			DirectX::XMStoreFloat4x4(&cameraView, DirectX::XMMatrixInverse(nullptr, cameraTransform));
+
+			auto& tc = selectedEntity.GetComponent<TransformComponent>();
+			DirectX::XMFLOAT4X4 transform = tc.GetTransform();
+
+			bool snap = Input::IsKeyPressed(KeyCode::Left_CTRL);
+			float snapValue = m_GizmoType == ImGuizmo::OPERATION::ROTATE ? 45.0f : 0.5f;
+
+			float snapValues[3] = { snapValue, snapValue, snapValue };
+
+			ImGuizmo::Manipulate((float*)&cameraView, (float*)&cameraProjection, 
+				(ImGuizmo::OPERATION)m_GizmoType, ImGuizmo::MODE::LOCAL,
+				(float*)&transform, nullptr, snap ? snapValues : nullptr);
+
+			if (ImGuizmo::IsUsing())
+			{
+				DirectX::XMVECTOR translation;
+				DirectX::XMVECTOR quaternionRotation;
+				DirectX::XMVECTOR scale;
+				DirectX::XMMatrixDecompose(&scale, &quaternionRotation, &translation, DirectX::XMLoadFloat4x4(&transform));
+
+				DirectX::XMStoreFloat3(&tc.Translation, translation);
+
+				DirectX::XMFLOAT4 q;
+				DirectX::XMStoreFloat4(&q, quaternionRotation);
+				float roll = atan2(2 * (q.w * q.x + q.y * q.z), 1 - 2 * (q.x * q.x + q.y * q.y));
+				float pitch = 2.0f * atan2(std::sqrt(1 + 2 * (q.w * q.y - q.x * q.z)), std::sqrt(1 - 2 * (q.w * q.y - q.x * q.z))) - DirectX::XM_PI / 2.0f;
+				float yaw = atan2(2 * (q.w * q.z + q.x * q.y), 1 - 2 * (q.y * q.y + q.z * q.z));
+				tc.Rotation = DirectX::XMFLOAT3{ roll, pitch, yaw };
+
+				DirectX::XMStoreFloat3(&tc.Scale, scale);
+			}
+		}
+
 		ImGui::End();
 		ImGui::PopStyleVar();
+	}
+
+	bool EditorLayer::OnKeyPressed(KeyPressedEvent& event)
+	{
+		if (event.GetRepeatCount() > 1)
+		{
+			return false;
+		}
+
+		bool control = Input::IsKeyPressed(KeyCode::Left_CTRL) || Input::IsKeyPressed(KeyCode::Right_CTRL);
+		bool shift = Input::IsKeyPressed(KeyCode::Left_Shift) || Input::IsKeyPressed(KeyCode::Right_Shift);
+
+		switch (event.GetKeyCode())
+		{
+		case KeyCode::N:
+			if (shift)
+			{
+				NewScene();
+			}
+
+			break;
+
+		case KeyCode::O:
+
+			if (control)
+			{
+				OpenScene();
+			}
+
+			break;
+
+		case KeyCode::S:
+			if (Input::IsKeyPressed(KeyCode::CTRL) && control && shift)
+			{
+				SaveSceneAs();
+			}
+			break;
+
+			// Gizmo Shortcuts
+		case KeyCode::Q:
+			m_GizmoType = -1;
+			break;
+
+		case KeyCode::W:
+			m_GizmoType = ImGuizmo::OPERATION::TRANSLATE;
+			break;
+		case KeyCode::E:	
+			m_GizmoType = ImGuizmo::OPERATION::ROTATE;
+			break;
+		case KeyCode::R:
+			m_GizmoType = ImGuizmo::OPERATION::SCALE;
+			break;
+		}
+	}
+
+	void EditorLayer::NewScene()
+	{
+		m_ActiveScene = CreateRef<Scene>();
+		m_SceneHierarchyPanel.SetContext(m_ActiveScene);
+		m_ActiveScene->OnViewportResize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
+	}
+
+	void EditorLayer::OpenScene()
+	{
+		auto path = FileDialogs::OpenFile("LudoNarrative Scene (*.LudoNarrative)\0*.LudoNarrative\0");
+		if (!path.empty())
+		{
+			m_ActiveScene = CreateRef<Scene>();
+			m_SceneHierarchyPanel.SetContext(m_ActiveScene);
+			m_ActiveScene->OnViewportResize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
+
+			SceneSerializer serializer(m_ActiveScene);
+			serializer.DeserializeFromYamlFile(path);
+		}
+	}
+
+	void EditorLayer::SaveSceneAs()
+	{
+		auto path = FileDialogs::SaveFile("LudoNarrative Scene (*.LudoNarrative)\0*.LudoNarrative\0");
+		if (!path.empty())
+		{
+			SceneSerializer serializer(m_ActiveScene);
+			serializer.SerializeToYamlFile(path);
+		}
 	}
 
 	void EditorLayer::SetImGuiDarkTheme()

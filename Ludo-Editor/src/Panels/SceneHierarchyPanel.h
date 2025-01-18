@@ -14,6 +14,8 @@ namespace Ludo {
 
 		void OnImGuiRender();
 
+		Entity GetSelectedEntity() const { return m_SelectedEntity; }
+
 	private:
 		void DrawEntityNode(Entity entity);
 		void DrawComponents(Entity entity);

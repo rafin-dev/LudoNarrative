@@ -7,3 +7,6 @@
 [submodule "LudoNarrative/vendor/yaml-cpp"]
 	path = LudoNarrative/vendor/yaml-cpp
 	url = https://github.com/jbeder/yaml-cpp.git
+[submodule "LudoNarrative/vendor/ImGuizmo"]
+	path = LudoNarrative/vendor/ImGuizmo
+	url = https://github.com/CedricGuillemet/ImGuizmo.git
