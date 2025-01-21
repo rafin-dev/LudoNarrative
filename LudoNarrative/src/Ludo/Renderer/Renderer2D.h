@@ -5,6 +5,7 @@
 #include "Ludo/Renderer/Camera.h"
 #include "Ludo/Renderer/Texture.h"
 #include "Ludo/Renderer/SubTexture2D.h"
+#include "Ludo/Renderer/EditorCamera.h"
 
 namespace Ludo {
 
@@ -22,6 +23,7 @@ namespace Ludo {
 		static void Shutdown();
 
 		static void BeginScene(const Camera& camera, const DirectX::XMFLOAT4X4& transform);
+		static void BeginScene(const EditorCamera& camera);
 		static void BeginScene(const OrthographicCamera& camera);
 		static void EndScene();
 		static void Flush();
@@ -30,7 +32,7 @@ namespace Ludo {
 		// ========== Primitives ==========
 		// Roation is in radians
 		
-		// All "static void DrawQuad(...)"s will end calling a "static __fastcall DrawQuad(const DirectX::XMMATRIX& transform, ...)"
+		// All "static void DrawQuad(...)"s will end calling a "static LD_SIMD_CALLING_CONVENTION DrawQuad(const DirectX::XMMATRIX& transform, ...)"
 		// The reaseon why the texture one is private is because it's shared by textures and subTextures
 		// So it doens't follow the parameter convention of them and is only internal
 
@@ -50,7 +52,7 @@ namespace Ludo {
 		static void DrawQuad(const DirectX::XMFLOAT4X4& transform, const Ref<Texture2D>& texture,
 			const DirectX::XMFLOAT4& color = { 1.0f, 1.0f, 1.0f, 1.0f },
 			float tilingFactor = 1.0f);
-		static void __fastcall DrawQuad(const DirectX::XMMATRIX& transform, const Ref<Texture2D>& texture,
+		static void LD_SIMD_CALLING_CONVENTION DrawQuad(const DirectX::XMMATRIX& transform, const Ref<Texture2D>& texture,
 			const DirectX::XMFLOAT4& color = { 1.0f, 1.0f, 1.0f, 1.0f },
 			float tilingFactor = 1.0f);
 
@@ -64,7 +66,7 @@ namespace Ludo {
 		static void DrawQuad(const DirectX::XMFLOAT4X4& transform, const Ref<SubTexture2D>& subTexture,
 			const DirectX::XMFLOAT4& color = { 1.0f, 1.0f, 1.0f, 1.0f },
 			float tilingFactor = 1.0f);
-		static void __fastcall DrawQuad(const DirectX::XMMATRIX& transform, const Ref<SubTexture2D>& subTexture,
+		static void LD_SIMD_CALLING_CONVENTION DrawQuad(const DirectX::XMMATRIX& transform, const Ref<SubTexture2D>& subTexture,
 			const DirectX::XMFLOAT4& color = { 1.0f, 1.0f, 1.0f, 1.0f },
 			float tilingFactor = 1.0f);
 		// ================================

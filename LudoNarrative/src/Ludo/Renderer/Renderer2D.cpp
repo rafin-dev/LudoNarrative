@@ -139,6 +139,19 @@ namespace Ludo {
 		s_Data.TextureSlotIndex = 1;
 	}
 
+	void Renderer2D::BeginScene(const EditorCamera& camera)
+	{
+		s_Data.TextureMaterial->GetShader()->Bind();
+
+		DirectX::XMFLOAT4X4 viewProjection = camera.GetViewProjection();
+		DirectX::XMStoreFloat4x4(&viewProjection, DirectX::XMMatrixTranspose(DirectX::XMLoadFloat4x4(&viewProjection)));
+		s_Data.TextureMaterial->GetShader()->SetViewProjectionMatrix(viewProjection);
+
+		s_Data.QuadIndexCount = 0;
+		s_Data.QuadVertexBufferPtr = s_Data.QuadVertexBufferBase;
+		s_Data.TextureSlotIndex = 1;
+	}
+
 	void Renderer2D::BeginScene(const OrthographicCamera& camera)
 	{
 		LD_PROFILE_RENDERER_FUNCTION();

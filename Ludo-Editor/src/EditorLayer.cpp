@@ -25,6 +25,8 @@ namespace Ludo {
 
 		m_FrameBuffer = FrameBuffer::Create(fbSpec);
 
+		m_EditorCamera = EditorCamera(30.0f, 1.0f, 0.01f, 1000.0f);
+
 		m_ActiveScene = CreateRef<Scene>();
 
 		m_SceneHierarchyPanel.SetContext(m_ActiveScene);
@@ -45,19 +47,27 @@ namespace Ludo {
 
 			m_FrameBuffer->Resize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
 			m_ActiveScene->OnViewportResize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
+			m_EditorCamera.SetViewportSize(m_ViewportSize.x, m_ViewportSize.y);
+		}
+
+		if (m_ViewportActive)
+		{
+			m_EditorCamera.OnUpdate(ts);
 		}
 
 		Renderer2D::ResetStats();
 
 		m_FrameBuffer->Bind();
 
-		m_ActiveScene->OnUpdate(ts);
+		m_ActiveScene->OnUpdateEditor(ts, m_EditorCamera);
 
 		m_FrameBuffer->Unbind();
 	}
 
 	void EditorLayer::OnEvent(Event& event)
 	{
+		m_EditorCamera.OnEvent(event);
+
 		EventDispatcher dispatcher(event);
 		dispatcher.Dispatch<KeyPressedEvent>(LUDO_BIND_EVENT_FN(EditorLayer::OnKeyPressed));
 	}
@@ -113,15 +123,15 @@ namespace Ludo {
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2{ 0.0f, 0.0f });
 		ImGui::Begin("Viewport");
 
-		m_ViewportFocused = ImGui::IsWindowFocused();
+		m_ViewportActive = ImGui::IsWindowHovered() || ImGui::IsWindowFocused();
 
 		if (ImGui::IsAnyItemActive())
 		{
-			Application::Get().ImGuiBlockEvent(!m_ViewportFocused || !ImGui::IsWindowHovered());
+			Application::Get().ImGuiBlockEvent(!ImGui::IsWindowHovered() || !ImGui::IsWindowFocused());
 		}
 		else
 		{
-			Application::Get().ImGuiBlockEvent(!m_ViewportFocused && !ImGui::IsWindowHovered());
+			Application::Get().ImGuiBlockEvent(!ImGui::IsWindowHovered() && !ImGui::IsWindowFocused());
 		}
 		
 
@@ -132,19 +142,11 @@ namespace Ludo {
 
 		// Gizmos
 		Entity selectedEntity = m_SceneHierarchyPanel.GetSelectedEntity();
-		auto cameraEntity = m_ActiveScene->GetPrimaryCameraEntity();
-		if (selectedEntity && cameraEntity && m_GizmoType != -1)
+		if (selectedEntity && m_GizmoType != -1)
 		{
 			ImGuizmo::SetOrthographic(false);
 			ImGuizmo::SetDrawlist();
 			ImGuizmo::SetRect(ImGui::GetWindowPos().x, ImGui::GetWindowPos().y, ImGui::GetWindowWidth(), ImGui::GetWindowHeight());
-
-			const auto& camera = cameraEntity.GetComponent<CameraComponent>().Camera;
-
-			const DirectX::XMFLOAT4X4& cameraProjection = camera.GetProjection();
-			DirectX::XMMATRIX cameraTransform; cameraEntity.GetComponent<TransformComponent>().GetTransform(&cameraTransform);
-			DirectX::XMFLOAT4X4 cameraView;
-			DirectX::XMStoreFloat4x4(&cameraView, DirectX::XMMatrixInverse(nullptr, cameraTransform));
 
 			auto& tc = selectedEntity.GetComponent<TransformComponent>();
 			DirectX::XMFLOAT4X4 transform = tc.GetTransform();
@@ -154,7 +156,7 @@ namespace Ludo {
 
 			float snapValues[3] = { snapValue, snapValue, snapValue };
 
-			ImGuizmo::Manipulate((float*)&cameraView, (float*)&cameraProjection, 
+			ImGuizmo::Manipulate((float*)&m_EditorCamera.GetViewMatrix(), (float*)&m_EditorCamera.GetProjection(),
 				(ImGuizmo::OPERATION)m_GizmoType, ImGuizmo::MODE::LOCAL,
 				(float*)&transform, nullptr, snap ? snapValues : nullptr);
 

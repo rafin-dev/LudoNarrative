@@ -26,12 +26,14 @@ namespace Ludo {
 
 		void SetImGuiDarkTheme();
 
+		EditorCamera m_EditorCamera;
+
 		Ref<FrameBuffer> m_FrameBuffer;
 		Ref<Texture2D> m_Texture;
 	
 		Ref<Scene> m_ActiveScene;
 
-		bool m_ViewportFocused = false;
+		bool m_ViewportActive = false;
 		DirectX::XMFLOAT2 m_ViewportSize = { 0.0f, 0.0f };
 		bool m_ResizeFrameBuffer = false;
 
