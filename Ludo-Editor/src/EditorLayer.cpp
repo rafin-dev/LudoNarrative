@@ -22,6 +22,11 @@ namespace Ludo {
 		FrameBufferSpecification fbSpec;
 		fbSpec.Width = (uint32_t)m_ViewportSize.x;
 		fbSpec.Height = (uint32_t)m_ViewportSize.y;
+		fbSpec.Attachments = {
+			FrameBufferTextureFormat::RGBA8,
+			FrameBufferTextureFormat::RGBA8,
+			FrameBufferTextureFormat::Depth
+		};
 
 		m_FrameBuffer = FrameBuffer::Create(fbSpec);
 

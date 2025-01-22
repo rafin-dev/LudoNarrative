@@ -98,8 +98,11 @@ namespace Ludo {
 
 	bool EditorCamera::OnMouseScrolledEvent(MouseScrolledEvent& event)
 	{
-		float delta = event.GetYOffset() * 0.01f;
-		MouseZoom(delta);
+		float yOffset = event.GetYOffset();
+		for (int i = 0; i < std::abs(yOffset); i++)
+		{
+			MouseZoom(yOffset > 0 ? 0.01f : -0.01f);
+		}
 		UpdateView();
 
 		return false;

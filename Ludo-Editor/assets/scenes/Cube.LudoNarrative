@@ -2,20 +2,11 @@ Scene: Untitled Scene
 Entities:
   - Entity: 1234567
     TagComponent:
-      Tag: Top
-    TransformComponent:
-      Translation: [0, 0.5, 0.35]
-      Rotation: [1.5707964, 0.7853982, 0]
-      Scale: [1, 1, 1]
-    SpriteRendererComponent:
-      Color: [0.28318584, 0.8477562, 1, 1]
-  - Entity: 1234567
-    TagComponent:
       Tag: Right
     TransformComponent:
       Translation: [0.35, 0, 0]
       Rotation: [0, -0.7853982, 0]
-      Scale: [1, 1, 1]
+      Scale: [0.99, 1, 1]
     SpriteRendererComponent:
       Color: [0.055916667, 0.3266341, 0.5265487, 1]
   - Entity: 1234567
@@ -24,7 +15,7 @@ Entities:
     TransformComponent:
       Translation: [-0.35, 0, 0]
       Rotation: [0, 0.7853982, 0]
-      Scale: [1, 1, 1]
+      Scale: [0.99, 1, 1]
     SpriteRendererComponent:
       Color: [0.27136034, 0.779775, 0.8761062, 1]
   - Entity: 1234567
@@ -45,3 +36,12 @@ Entities:
         OrthographicFar: 10
       Primary: true
       FixedAspectRatio: false
+  - Entity: 1234567
+    TagComponent:
+      Tag: Top
+    TransformComponent:
+      Translation: [0, 0.5, 0.355]
+      Rotation: [1.5707964, 0.7853982, 0]
+      Scale: [1, 1, 1]
+    SpriteRendererComponent:
+      Color: [0.28318584, 0.8477562, 1, 1]

@@ -30,8 +30,15 @@ VS_OUTPUT main(VS_INPUT input)
 Texture2D<float4> Textures[] : register(t0);
 SamplerState Sampler : register(s0);
 
-float4 main(VS_OUTPUT input) : SV_Target
+struct PS_OUTPUT
+{
+    float4 Color : SV_Target0;
+};
+
+PS_OUTPUT main(VS_OUTPUT input)
 {
     float4 texel = Textures[int(input.TexIndex)].Sample(Sampler, input.TexPos * input.TilingFactor);
-    return texel * input.Color;
+    PS_OUTPUT output;
+    output.Color = texel * input.Color;
+    return output;
 }

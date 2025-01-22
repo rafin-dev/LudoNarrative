@@ -12,7 +12,7 @@ struct VS_INPUT
 struct VS_OUTPUT
 {
     float4 Position : SV_Position;
-    float4 Color : COLOR;
+    float4 Color : COLOR0;
     float2 TexPos : UV;
     float TexIndex : TEXCOORD;
     float TilingFactor : TilingFactor;

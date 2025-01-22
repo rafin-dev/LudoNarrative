@@ -97,7 +97,7 @@ namespace Ludo {
         HRESULT hr = m_Fence->SetEventOnCompletion(m_FenceValue, m_FenceEvent);
         CHECK_DX12_HRESULT(hr, "Failed to set Event for Fence");
 
-        auto result = WaitForSingleObject(m_FenceEvent, 2000);
+        auto result = WaitForSingleObject(m_FenceEvent, INFINITE);
         LD_CORE_ASSERT(result == WAIT_OBJECT_0, "Command Queue took more than 2 seconds to finish execution");
     }
 

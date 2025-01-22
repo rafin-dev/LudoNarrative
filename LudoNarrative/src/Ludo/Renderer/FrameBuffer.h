@@ -4,11 +4,44 @@
 
 namespace Ludo {
 
+	enum class FrameBufferTextureFormat
+	{
+		None = 0,
+
+		// Color
+		RGBA8,
+
+		// Depth/Stencil
+		DEPTH24STENCIL8,
+
+		// Defaults
+		Depth = DEPTH24STENCIL8
+	};
+
+	struct FrameBufferTextureSpecification
+	{
+		FrameBufferTextureSpecification() = default;
+		FrameBufferTextureSpecification(FrameBufferTextureFormat format)
+			: TextureFormat(format) { }
+
+		FrameBufferTextureFormat TextureFormat = FrameBufferTextureFormat::None;
+	};
+
+	struct FrameBufferAttachmentSpecification
+	{
+		FrameBufferAttachmentSpecification() = default;
+		FrameBufferAttachmentSpecification(std::initializer_list<FrameBufferTextureSpecification> attachments)
+			: Attachments(attachments) { }
+
+		std::vector<FrameBufferTextureSpecification> Attachments;
+	};
+
 	struct FrameBufferSpecification
 	{
 		uint32_t Width;
 		uint32_t Height;
-		uint32_t Samples;
+		FrameBufferAttachmentSpecification Attachments;
+		uint32_t Samples = 1;
 
 		bool SwapChainTarget = false;
 	};
@@ -25,7 +58,7 @@ namespace Ludo {
 
 		virtual void Resize(uint32_t width, uint32_t height) = 0;
 
-		virtual ImTextureID GetImTextureID() const = 0;
+		virtual ImTextureID GetImTextureID(uint32_t index = 0) const = 0;
 
 		static Ref<FrameBuffer> Create(const FrameBufferSpecification& spec);
 	};
