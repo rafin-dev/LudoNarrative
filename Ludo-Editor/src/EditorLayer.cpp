@@ -24,7 +24,7 @@ namespace Ludo {
 		fbSpec.Height = (uint32_t)m_ViewportSize.y;
 		fbSpec.Attachments = {
 			FrameBufferTextureFormat::RGBA8,
-			FrameBufferTextureFormat::RGBA8,
+			FrameBufferTextureFormat::RED_INTEGER,
 			FrameBufferTextureFormat::Depth
 		};
 

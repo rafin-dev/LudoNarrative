@@ -23,6 +23,8 @@ namespace Ludo {
 
 		const FrameBufferSpecification& GetSpecification() const override { return m_Specification; }
 
+		static std::vector<DXGI_FORMAT> s_CurrentBoundFormats;
+
 	private:
 		bool Init();
 		void ShutDown();
@@ -34,6 +36,8 @@ namespace Ludo {
 		// Attachments
 		std::vector<ID3D12Resource2*> m_ColorAttachments;
 		ID3D12Resource2* m_DepthAttachment = nullptr;
+
+		std::vector<DXGI_FORMAT> m_Formats = std::vector<DXGI_FORMAT>(9, DXGI_FORMAT_UNKNOWN);
 
 		// Views
 		std::vector<D3D12_CPU_DESCRIPTOR_HANDLE> m_RenderTargetViews;

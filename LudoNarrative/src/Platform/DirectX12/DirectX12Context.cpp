@@ -3,6 +3,7 @@
 
 #include "Platform/DirectX12/Utils/DX12Utils.h"
 #include "Platform/DirectX12/DirectX12API.h"
+#include "Platform/DirectX12/DirectX12FrameBuffer.h"
 
 #include "Ludo/Renderer/RenderCommand.h"
 
@@ -242,6 +243,18 @@ namespace Ludo {
         s_CurrentBAckBufferRTVHandle = m_rtvCPUhandles[m_CurrentBackBuffer];
         s_DepthStencilHandle = m_DepthStencilDescriptorHeap->GetCPUDescriptorHandleForHeapStart();
         commandList->OMSetRenderTargets(1, &m_rtvCPUhandles[m_CurrentBackBuffer], false, &depthStencilViewHandle);
+        DirectX12FrameBuffer::s_CurrentBoundFormats =
+        {
+            DXGI_FORMAT_R8G8B8A8_UNORM,
+            DXGI_FORMAT_UNKNOWN,
+            DXGI_FORMAT_UNKNOWN,
+            DXGI_FORMAT_UNKNOWN,
+            DXGI_FORMAT_UNKNOWN,
+            DXGI_FORMAT_UNKNOWN,
+            DXGI_FORMAT_UNKNOWN,
+            DXGI_FORMAT_UNKNOWN,
+            DXGI_FORMAT_D32_FLOAT
+        };
 
         // Viewport
         uint32_t width = m_Window->GetWidth(), height = m_Window->GetHeight();
@@ -339,6 +352,18 @@ namespace Ludo {
 
         commandList->RSSetViewports(1, &viewport);
         DirectX12API::Get()->GetCommandList()->OMSetRenderTargets(1, &s_CurrentBAckBufferRTVHandle, false, &s_DepthStencilHandle);
+        DirectX12FrameBuffer::s_CurrentBoundFormats =
+        {
+            DXGI_FORMAT_R8G8B8A8_UNORM,
+            DXGI_FORMAT_UNKNOWN,
+            DXGI_FORMAT_UNKNOWN,
+            DXGI_FORMAT_UNKNOWN,
+            DXGI_FORMAT_UNKNOWN,
+            DXGI_FORMAT_UNKNOWN,
+            DXGI_FORMAT_UNKNOWN,
+            DXGI_FORMAT_UNKNOWN,
+            DXGI_FORMAT_D32_FLOAT
+        };
     }
 
 }

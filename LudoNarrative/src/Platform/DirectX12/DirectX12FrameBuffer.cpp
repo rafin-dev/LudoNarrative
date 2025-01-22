@@ -23,9 +23,11 @@ namespace Ludo {
 		{
 			switch (fbTxFormat)
 			{
-			case Ludo::FrameBufferTextureFormat::RGBA8:
+			case FrameBufferTextureFormat::RGBA8:
 				return DXGI_FORMAT_R8G8B8A8_UNORM;
-			case Ludo::FrameBufferTextureFormat::DEPTH24STENCIL8:
+			case FrameBufferTextureFormat::RED_INTEGER:
+				return DXGI_FORMAT_R32_SINT;
+			case FrameBufferTextureFormat::DEPTH24STENCIL8:
 				return DXGI_FORMAT_D24_UNORM_S8_UINT;
 			}
 
@@ -33,6 +35,8 @@ namespace Ludo {
 			return DXGI_FORMAT_UNKNOWN;
 		}
 	}
+
+	std::vector<DXGI_FORMAT> DirectX12FrameBuffer::s_CurrentBoundFormats(9, DXGI_FORMAT_UNKNOWN);
 
 	DirectX12FrameBuffer::DirectX12FrameBuffer(const FrameBufferSpecification& spec)
 		: m_Specification(spec)
@@ -118,6 +122,7 @@ namespace Ludo {
 				textureDesc.Format = DXGIFormat;
 				clearValue.Format = DXGIFormat;
 				rtvDesc.Format = DXGIFormat;
+				m_Formats[i] = DXGIFormat;
 
 				hr = device->CreateCommittedResource(&heapProperties,
 					D3D12_HEAP_FLAG_NONE,
@@ -148,6 +153,7 @@ namespace Ludo {
 		if (m_DepthAttachmentSpec.TextureFormat != FrameBufferTextureFormat::None)
 		{
 			DXGI_FORMAT DXGIFormat = Utils::GetDXGIFormatFromFrameBufferTextureFormat(m_DepthAttachmentSpec.TextureFormat);
+			m_Formats.back() = DXGIFormat;
 
 			D3D12_DEPTH_STENCIL_VIEW_DESC depthStencilViewDesc = {};
 			depthStencilViewDesc.Format = DXGIFormat;
@@ -224,6 +230,7 @@ namespace Ludo {
 		commandList->RSSetViewports(1, &viewport);
 
 		commandList->OMSetRenderTargets(m_ColorAttachments.size(), !m_RenderTargetViews.empty() ? m_RenderTargetViews.data() : nullptr, false, depthStencilView);
+		s_CurrentBoundFormats = m_Formats;
 	}
 
 	void DirectX12FrameBuffer::Unbind()

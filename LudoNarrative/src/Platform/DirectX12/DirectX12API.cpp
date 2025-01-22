@@ -19,7 +19,7 @@ namespace Ludo {
         LD_PROFILE_FUNCTION();
 
         HRESULT hr = S_OK;
-
+        
 #ifdef LUDO_DEBUG
         // Initialize Debug Layer
         // D3D12 Debug

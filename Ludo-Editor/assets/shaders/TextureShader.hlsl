@@ -33,6 +33,7 @@ SamplerState Sampler : register(s0);
 struct PS_OUTPUT
 {
     float4 Color : SV_Target0;
+    int Color2 : SV_Target1;
 };
 
 PS_OUTPUT main(VS_OUTPUT input)
@@ -40,5 +41,6 @@ PS_OUTPUT main(VS_OUTPUT input)
     float4 texel = Textures[int(input.TexIndex)].Sample(Sampler, input.TexPos * input.TilingFactor);
     PS_OUTPUT output;
     output.Color = texel * input.Color;
+    output.Color2 = 50;
     return output;
 }

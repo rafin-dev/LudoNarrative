@@ -41,19 +41,23 @@ namespace Ludo {
 		bool Init(std::unordered_map<DX12ShaderCompiler::ShaderKind, IDxcBlob*> shaders);
 		void ShutDown();
 
+		ID3D12PipelineState* CreatePSOforFrameBufferFormats(std::vector<DXGI_FORMAT>& formats);
+
 		void ReadFile(const std::filesystem::path& file, std::string& output);
 		void ParseShaders(const std::string& source, std::unordered_map<DX12ShaderCompiler::ShaderKind, std::string>& shadersSrcs);
 		void CompileShaders(const std::unordered_map<DX12ShaderCompiler::ShaderKind, std::string> shadersSources, 
 							std::unordered_map<DX12ShaderCompiler::ShaderKind, IDxcBlob*>& output);
 
-		ID3D12PipelineState* m_PipelineStateObject = nullptr;
+		std::unordered_map<DX12ShaderCompiler::ShaderKind, IDxcBlob*> m_Shaders;
+		std::map<std::vector<DXGI_FORMAT>, ID3D12PipelineState*> m_PipelineStates;
+		std::vector<D3D12_INPUT_ELEMENT_DESC> m_ElementLayout;
+
+		std::string m_Name = "None";
 
 		std::vector<DX12UploadBuffer> m_ShaderResources;
 
 		uint32_t m_LastFrame = 0;
 		uint32_t m_CurrentShaderResource = 0;
-
-		std::string m_Name = "None";
 
 		BufferLayout m_VertexBufferLayout;
 		BufferLayout m_MaterialLayout;

@@ -10,6 +10,7 @@ namespace Ludo {
 
 		// Color
 		RGBA8,
+		RED_INTEGER,
 
 		// Depth/Stencil
 		DEPTH24STENCIL8,
