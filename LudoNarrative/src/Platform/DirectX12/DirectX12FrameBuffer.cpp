@@ -261,8 +261,8 @@ namespace Ludo {
 		s_CurrentBoundFormats = m_Formats;
 	}
 
-#define Align(x, y) (((x + y/2) / y) * y)
-
+#define Align(x, y) ((int)std::ceil((float)x / (float)y) * (int)y)
+	
 	void DirectX12FrameBuffer::Unbind()
 	{
 		LD_PROFILE_RENDERER_FUNCTION();

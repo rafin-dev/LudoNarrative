@@ -92,7 +92,7 @@ namespace Ludo {
 		return m_Height;
 	}
 
-#define Align(x, y) std::max(((int)(x) / (int)(y)) * (int)(y), (int)(y));
+#define Align(x, y) ((int)std::ceil((float)x / (float)y) * (int)y)
 
 	void DirectX12Texture2D::SetData(void* data, uint32_t size)
 	{
