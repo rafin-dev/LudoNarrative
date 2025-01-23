@@ -84,7 +84,7 @@ namespace Ludo {
 				DirectX::XMMATRIX spriteTransform;
 				transform.GetTransform(&spriteTransform);
 
-				Renderer2D::DrawQuad(spriteTransform, sprite.Color);
+				Renderer2D::DrawQuad((int)entity, spriteTransform, sprite.Color);
 			}
 
 			Renderer2D::EndScene();
@@ -102,7 +102,7 @@ namespace Ludo {
 			DirectX::XMMATRIX spriteTransform;
 			transform.GetTransform(&spriteTransform);
 
-			Renderer2D::DrawQuad(spriteTransform, sprite.Color);
+			Renderer2D::DrawQuad((int)entity, spriteTransform, sprite.Color);
 		}
 
 		Renderer2D::EndScene();

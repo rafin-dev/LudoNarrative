@@ -19,6 +19,7 @@ namespace Ludo {
 
 	private:
 		bool OnKeyPressed(KeyPressedEvent& event);
+		bool OnMouseButtonPressedEvent(MouseButtonPressedEvent& event);
 
 		void NewScene();
 		void OpenScene();
@@ -36,7 +37,8 @@ namespace Ludo {
 		bool m_ViewportActive = false;
 		DirectX::XMFLOAT2 m_ViewportSize = { 0.0f, 0.0f };
 		bool m_ResizeFrameBuffer = false;
-		DirectX::XMFLOAT2 m_ViewportBounds[2];
+		DirectX::XMFLOAT2 m_MinViewportBounds;
+		int MouseX = 0, MouseY = 0;
 
 		int m_GizmoType = -1;
 

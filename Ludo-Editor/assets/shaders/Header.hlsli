@@ -7,6 +7,7 @@ struct VS_INPUT
     float2 TexPos : TEXCOORD;
     float TexIndex : TexIndex;
     float TilingFactor : TilingFactor;
+    int EntityID : ENTITYID;
 };
 
 struct VS_OUTPUT
@@ -16,4 +17,5 @@ struct VS_OUTPUT
     float2 TexPos : UV;
     float TexIndex : TEXCOORD;
     float TilingFactor : TilingFactor;
+    int EntityID : ENTITYID;
 };

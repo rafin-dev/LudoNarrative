@@ -20,6 +20,7 @@ VS_OUTPUT main(VS_INPUT input)
     output.TexPos = input.TexPos;
     output.TexIndex = input.TexIndex;
     output.TilingFactor = input.TilingFactor;
+    output.EntityID = input.EntityID;
     
     return output;
 }
@@ -33,7 +34,7 @@ SamplerState Sampler : register(s0);
 struct PS_OUTPUT
 {
     float4 Color : SV_Target0;
-    int ID : SV_Target1;
+    int EntityID : SV_Target1;
 };
 
 PS_OUTPUT main(VS_OUTPUT input)
@@ -41,6 +42,6 @@ PS_OUTPUT main(VS_OUTPUT input)
     float4 texel = Textures[int(input.TexIndex)].Sample(Sampler, input.TexPos * input.TilingFactor);
     PS_OUTPUT output;
     output.Color = texel * input.Color;
-    output.ID = 50;
+    output.EntityID = input.EntityID;
     return output;
 }

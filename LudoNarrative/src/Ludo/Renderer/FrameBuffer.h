@@ -26,9 +26,12 @@ namespace Ludo {
 			: TextureFormat(format) { }
 		FrameBufferTextureSpecification(FrameBufferTextureFormat format, bool readBack)
 			: TextureFormat(format), AllowReadBack(readBack) { }
+		FrameBufferTextureSpecification(FrameBufferTextureFormat format, bool readBack, DirectX::XMFLOAT4& clearColor)
+			: TextureFormat(format), AllowReadBack(readBack), ClearColor(clearColor) { }
 
 		FrameBufferTextureFormat TextureFormat = FrameBufferTextureFormat::None;
 		bool AllowReadBack = false;
+		DirectX::XMFLOAT4 ClearColor = { 0.0f, 0.0f, 0.0f, 0.0f };
 	};
 
 	struct FrameBufferAttachmentSpecification

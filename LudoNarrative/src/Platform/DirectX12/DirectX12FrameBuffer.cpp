@@ -236,12 +236,11 @@ namespace Ludo {
 		}
 
 		auto& commandList = DirectX12API::Get()->GetCommandList();
-
-		float color[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
-		for (auto& rtv : m_RenderTargetViews)
+		for (uint32_t i = 0; i < m_RenderTargetViews.size(); i++)
 		{
-			commandList->ClearRenderTargetView(rtv, color, 0, nullptr);
+			commandList->ClearRenderTargetView(m_RenderTargetViews[i], (float*)&m_ColorAttachmentsSpecs[i].ClearColor, 0, nullptr);
 		}
+
 		D3D12_CPU_DESCRIPTOR_HANDLE* depthStencilView = nullptr;
 		if (m_DepthAttachment != nullptr)
 		{
@@ -431,6 +430,8 @@ namespace Ludo {
 
 	bool DirectX12FrameBuffer::CreateReadBack(uint32_t index)
 	{
+		LD_PROFILE_FUNCTION();
+
 		// ========== Heap & Resource properties ==========
 		D3D12_HEAP_PROPERTIES heapProperties = {};
 		heapProperties.Type = D3D12_HEAP_TYPE_READBACK;

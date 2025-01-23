@@ -41,6 +41,7 @@ namespace Ludo {
 		static void DrawQuad(const DirectX::XMFLOAT3& position, const DirectX::XMFLOAT2& size, float rotation, const DirectX::XMFLOAT4& color);
 		static void DrawQuad(const DirectX::XMFLOAT4X4& transform, const DirectX::XMFLOAT4& color);
 		static void LD_SIMD_CALLING_CONVENTION DrawQuad(const DirectX::XMMATRIX& transform, const DirectX::XMFLOAT4& color);
+		static void LD_SIMD_CALLING_CONVENTION DrawQuad(int entityID, const DirectX::XMMATRIX& transform, const DirectX::XMFLOAT4& color);
 
 		// Textured Quads
 		static void DrawQuad(const DirectX::XMFLOAT2& position, const DirectX::XMFLOAT2& size, float rotation, const Ref<Texture2D>& texture, 
@@ -69,6 +70,9 @@ namespace Ludo {
 		static void LD_SIMD_CALLING_CONVENTION DrawQuad(const DirectX::XMMATRIX& transform, const Ref<SubTexture2D>& subTexture,
 			const DirectX::XMFLOAT4& color = { 1.0f, 1.0f, 1.0f, 1.0f },
 			float tilingFactor = 1.0f);
+		static void LD_SIMD_CALLING_CONVENTION DrawQuad(int entityID, const DirectX::XMMATRIX& transform, const Ref<SubTexture2D>& subTexture,
+			const DirectX::XMFLOAT4& color = { 1.0f, 1.0f, 1.0f, 1.0f },
+			float tilingFactor = 1.0f);
 		// ================================
 
 		// ========== Statistics ==========
@@ -92,7 +96,7 @@ namespace Ludo {
 			const DirectX::XMFLOAT4& color = { 1.0f, 1.0f, 1.0f, 1.0f },
 			float tilingFactor = 1.0f);
 
-		static void LD_SIMD_CALLING_CONVENTION DrawQuad(const DirectX::XMMATRIX& transform, const Ref<Texture2D>& texture, const DirectX::XMFLOAT2* texCoords, const DirectX::XMFLOAT4& tintColor,
+		static void LD_SIMD_CALLING_CONVENTION DrawQuad(int entityID, const DirectX::XMMATRIX& transform, const Ref<Texture2D>& texture, const DirectX::XMFLOAT2* texCoords, const DirectX::XMFLOAT4& tintColor,
 			float tilingFactor);
 		
 		static void FlushAndReset();

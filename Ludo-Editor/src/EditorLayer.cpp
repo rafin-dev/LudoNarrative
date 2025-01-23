@@ -22,9 +22,10 @@ namespace Ludo {
 		FrameBufferSpecification fbSpec;
 		fbSpec.Width = (uint32_t)m_ViewportSize.x;
 		fbSpec.Height = (uint32_t)m_ViewportSize.y;
+		DirectX::XMFLOAT4 clearColorID = { -1.0f, 0.0f, 0.0f, 0.0f };
 		fbSpec.Attachments = {
 				FrameBufferTextureFormat::RGBA8,
-			{	FrameBufferTextureFormat::RED_INTEGER, true },
+			{	FrameBufferTextureFormat::RED_INTEGER, true, clearColorID},
 				FrameBufferTextureFormat::Depth
 		};
 
@@ -67,16 +68,10 @@ namespace Ludo {
 		m_ActiveScene->OnUpdateEditor(ts, m_EditorCamera);
 
 		auto [mx, my] = ImGui::GetMousePos();
-		mx -= m_ViewportBounds[0].x;
-		my -= m_ViewportBounds[0].y;
-
-		int mouseX = (int)mx;
-		int mouseY = (int)my;
-
-		if (mouseX >= 0 && mouseY >= 0 && mouseX < (int)m_FrameBuffer->GetSpecification().Width && mouseY < (int)m_FrameBuffer->GetSpecification().Height)
-		{
-			LD_CORE_TRACE("{0}", m_FrameBuffer->ReadPixel(1, mouseX, mouseY) == 50);
-		}
+		mx -= m_MinViewportBounds.x;
+		my -= m_MinViewportBounds.y;
+		MouseX = (int)mx;
+		MouseY = (int)my;
 
 		m_FrameBuffer->Unbind();
 	}
@@ -87,6 +82,7 @@ namespace Ludo {
 
 		EventDispatcher dispatcher(event);
 		dispatcher.Dispatch<KeyPressedEvent>(LUDO_BIND_EVENT_FN(EditorLayer::OnKeyPressed));
+		dispatcher.Dispatch<MouseButtonPressedEvent>(LUDO_BIND_EVENT_FN(EditorLayer::OnMouseButtonPressedEvent));
 	}
 
 	void EditorLayer::OnImGuiRender()
@@ -163,9 +159,7 @@ namespace Ludo {
 		minBounds.x += viewportOffset.x;
 		minBounds.y += viewportOffset.y;
 
-		ImVec2 maxBounds = { minBounds.x + windowSize.x, minBounds.y + windowSize.y };
-		m_ViewportBounds[0] = { minBounds.x, minBounds.y };
-		m_ViewportBounds[1] = { maxBounds.x, maxBounds.y };
+		m_MinViewportBounds = { minBounds.x, minBounds.y };
 
 		// Gizmos
 		Entity selectedEntity = m_SceneHierarchyPanel.GetSelectedEntity();
@@ -262,6 +256,27 @@ namespace Ludo {
 			m_GizmoType = ImGuizmo::OPERATION::SCALE;
 			break;
 		}
+
+		return false;
+	}
+
+	bool EditorLayer::OnMouseButtonPressedEvent(MouseButtonPressedEvent& event)
+	{
+		if (event.GetMouseButton() == MouseButtonCode::Left)
+		{
+			if (MouseX >= 0 && MouseY >= 0 && MouseX < (int)m_FrameBuffer->GetSpecification().Width && MouseY < (int)m_FrameBuffer->GetSpecification().Height)
+			{
+				int ID =  m_FrameBuffer->ReadPixel(1, MouseX, MouseY);
+
+				if (ID != -1)
+				{
+					m_SceneHierarchyPanel.SetSelectedEntity(Entity((entt::entity)ID, m_ActiveScene.get()));
+					return true;
+				}
+			}
+		}
+
+		return false;
 	}
 
 	void EditorLayer::NewScene()
