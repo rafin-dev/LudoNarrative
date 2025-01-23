@@ -18,8 +18,9 @@ namespace Ludo {
 		void Unbind() override;
 
 		void Resize(uint32_t width, uint32_t height) override;
+		int ReadPixel(uint32_t attachmentIndex, uint32_t x, uint32_t y) override;
 
-		ImTextureID GetImTextureID(uint32_t index = 0) const override;
+		ImTextureID GetImTextureID(uint32_t index = 0) override;
 
 		const FrameBufferSpecification& GetSpecification() const override { return m_Specification; }
 
@@ -29,6 +30,8 @@ namespace Ludo {
 		bool Init();
 		void ShutDown();
 
+		bool CreateReadBack(uint32_t index);
+
 		// Descriptor Heaps
 		ID3D12DescriptorHeap* m_rtvDescriptorHeap = nullptr;
 		ID3D12DescriptorHeap* m_DepthStencilDescriptorHeap = nullptr;
@@ -37,7 +40,11 @@ namespace Ludo {
 		std::vector<ID3D12Resource2*> m_ColorAttachments;
 		ID3D12Resource2* m_DepthAttachment = nullptr;
 
+		std::vector<ID3D12Resource2*> m_ReadBacks;
+		std::vector<size_t> m_ReadBackAlignment;
+
 		std::vector<DXGI_FORMAT> m_Formats = std::vector<DXGI_FORMAT>(9, DXGI_FORMAT_UNKNOWN);
+		std::vector<size_t> m_Sizes;
 
 		// Views
 		std::vector<D3D12_CPU_DESCRIPTOR_HANDLE> m_RenderTargetViews;

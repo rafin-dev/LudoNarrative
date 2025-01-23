@@ -34,6 +34,24 @@ namespace Ludo {
 			LD_CORE_ASSERT(false, "Unknown format Speciffied");
 			return DXGI_FORMAT_UNKNOWN;
 		}
+
+		size_t GetSizeFromDXGIFormat(DXGI_FORMAT format)
+		{
+			switch (format)
+			{
+			case DXGI_FORMAT_R8G8B8A8_UNORM:
+				return 4;
+			case DXGI_FORMAT_D32_FLOAT:
+				return 4;
+			case DXGI_FORMAT_R32_SINT:
+				return 4;
+			case DXGI_FORMAT_D24_UNORM_S8_UINT:
+				return 4;
+			}
+
+			LD_CORE_ASSERT(false, "Unknwon Format");
+			return 0;
+		}
 	}
 
 	std::vector<DXGI_FORMAT> DirectX12FrameBuffer::s_CurrentBoundFormats(9, DXGI_FORMAT_UNKNOWN);
@@ -55,6 +73,9 @@ namespace Ludo {
 				m_DepthAttachmentSpec = spec.TextureFormat;
 			}
 		}
+		m_ReadBacks.resize(m_ColorAttachmentsSpecs.size());
+		m_ReadBackAlignment.resize(m_ColorAttachmentsSpecs.size());
+		m_Sizes.resize(m_ColorAttachmentsSpecs.size());
 
 		Init();
 		Invalidate();
@@ -116,13 +137,14 @@ namespace Ludo {
 			rtvDesc.Texture2D.MipSlice = 0;
 			rtvDesc.Texture2D.PlaneSlice = 0;
 
-			for (uint32_t i = 0; i < m_ColorAttachments.size(); i++)
+			for (uint32_t i = 0; i < m_ColorAttachmentsSpecs.size(); i++)
 			{
 				auto DXGIFormat = Utils::GetDXGIFormatFromFrameBufferTextureFormat(m_ColorAttachmentsSpecs[i].TextureFormat);
 				textureDesc.Format = DXGIFormat;
 				clearValue.Format = DXGIFormat;
 				rtvDesc.Format = DXGIFormat;
 				m_Formats[i] = DXGIFormat;
+				m_Sizes[i] = Utils::GetSizeFromDXGIFormat(DXGIFormat);
 
 				hr = device->CreateCommittedResource(&heapProperties,
 					D3D12_HEAP_FLAG_NONE,
@@ -132,6 +154,13 @@ namespace Ludo {
 				CHECK_DX12_HRESULT(hr, "Failed to create Render Target Resource with size: [{0}, {1}]", m_Specification.Width, m_Specification.Height);
 
 				device->CreateRenderTargetView(m_ColorAttachments[i], &rtvDesc, m_RenderTargetViews[i]);
+
+				if (m_ColorAttachmentsSpecs[i].AllowReadBack)
+				{
+					CHECK_AND_RELEASE_COMPTR(m_ReadBacks[i]);
+					bool success = CreateReadBack(i);
+					LD_CORE_ASSERT(success, "Failed to create ReadBack Buffer for Color Attachment {0}", i);
+				}
 			}
 		}
 
@@ -229,13 +258,17 @@ namespace Ludo {
 		viewport.MaxDepth = 1.0f;
 		commandList->RSSetViewports(1, &viewport);
 
-		commandList->OMSetRenderTargets(m_ColorAttachments.size(), !m_RenderTargetViews.empty() ? m_RenderTargetViews.data() : nullptr, false, depthStencilView);
+		commandList->OMSetRenderTargets(m_RenderTargetViews.size(), m_RenderTargetViews.empty() ? nullptr : &m_RenderTargetViews[0], true, depthStencilView);
 		s_CurrentBoundFormats = m_Formats;
 	}
+
+#define Align(x, y) (((x + y/2) / y) * y)
 
 	void DirectX12FrameBuffer::Unbind()
 	{
 		LD_PROFILE_RENDERER_FUNCTION();
+
+		DirectX12Context::SetSwapChainRenderTarget();
 
 		D3D12_RESOURCE_BARRIER barrier = {};
 		barrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
@@ -243,12 +276,43 @@ namespace Ludo {
 		barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_RENDER_TARGET;
 		barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE;
 
-		DirectX12Context::SetSwapChainRenderTarget();
+		auto& commandList = DirectX12API::Get()->GetCommandList();
 
-		for (auto& colorAttachment : m_ColorAttachments)
+		for (uint32_t i = 0; i < m_ColorAttachments.size(); i++)
 		{
-			barrier.Transition.pResource = colorAttachment;
-			DirectX12API::Get()->GetCommandList()->ResourceBarrier(1, &barrier);
+			barrier.Transition.pResource = m_ColorAttachments[i];
+
+			if (m_ColorAttachmentsSpecs[i].AllowReadBack)
+			{
+				barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_RENDER_TARGET;
+				barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_COPY_SOURCE;
+				commandList->ResourceBarrier(1, &barrier);
+
+				D3D12_TEXTURE_COPY_LOCATION src = {};
+				src.pResource = m_ColorAttachments[i];
+				src.Type = D3D12_TEXTURE_COPY_TYPE_SUBRESOURCE_INDEX;
+				src.SubresourceIndex = 0;
+
+				D3D12_TEXTURE_COPY_LOCATION dest = {};
+				dest.pResource = m_ReadBacks[i];
+				dest.Type = D3D12_TEXTURE_COPY_TYPE_PLACED_FOOTPRINT;
+				dest.PlacedFootprint.Offset = 0;
+				dest.PlacedFootprint.Footprint.Width = m_Specification.Width;
+				dest.PlacedFootprint.Footprint.Height = m_Specification.Height;
+				dest.PlacedFootprint.Footprint.Depth = 1;
+				dest.PlacedFootprint.Footprint.RowPitch = Align(m_Specification.Width * m_Sizes[i], D3D12_TEXTURE_DATA_PITCH_ALIGNMENT); // Assure the row Pitch is a multiple of 256
+				dest.PlacedFootprint.Footprint.Format = m_Formats[i];
+
+				// Weird code to deal with texture data alignment
+				m_ReadBackAlignment[i] = (dest.PlacedFootprint.Footprint.RowPitch - (dest.PlacedFootprint.Footprint.Width * m_Sizes[i])) / m_Sizes[i];
+
+				commandList->CopyTextureRegion(&dest, 0, 0, 0, &src, nullptr);
+
+				barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_COPY_SOURCE;
+				barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE;
+			}
+
+			commandList->ResourceBarrier(1, &barrier);
 		}
 	}
 
@@ -260,14 +324,32 @@ namespace Ludo {
 		Invalidate();
 	}
 
-	ImTextureID DirectX12FrameBuffer::GetImTextureID(uint32_t index) const
+	int DirectX12FrameBuffer::ReadPixel(uint32_t attachmentIndex, uint32_t x, uint32_t y)
+	{
+		LD_CORE_ASSERT(attachmentIndex < m_ColorAttachments.size(), "Atempt to read from inexistent color attchment {0}", attachmentIndex);
+		LD_CORE_ASSERT(m_ColorAttachmentsSpecs[attachmentIndex].AllowReadBack, "Atempt to read from Color Attachment {0} wich doesn't support ReadBack", attachmentIndex);
+
+		int32_t* data = nullptr;
+		HRESULT hr = m_ReadBacks[attachmentIndex]->Map(0, nullptr, (void**)&data);
+		CHECK_DX12_HRESULT(hr, "Failed to Map ReadBack Resource");
+
+		//int32_t pixel = data[(Align(m_Specification.Width, 255) * y) + x];
+		int32_t pixel = data[(m_Specification.Width + m_ReadBackAlignment[attachmentIndex]) * y + x];
+
+		D3D12_RANGE range = { 0, 0 };
+		m_ReadBacks[attachmentIndex]->Unmap(0, &range);
+
+		return pixel;
+	}
+
+	ImTextureID DirectX12FrameBuffer::GetImTextureID(uint32_t index)
 	{
 		LD_CORE_ASSERT(index < m_ColorAttachments.size(), "Atempt to bound non existent Color Attachment");
 
 		if (index != m_CurrentBoundColorAttachment)
 		{
 			D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
-			srvDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+			srvDesc.Format = m_Formats[index];
 			srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
 			srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
 			srvDesc.Texture2D.MipLevels = 1;
@@ -275,6 +357,8 @@ namespace Ludo {
 			srvDesc.Texture2D.PlaneSlice = 0;
 			srvDesc.Texture2D.ResourceMinLODClamp = 0.0f;
 			DirectX12API::Get()->GetDevice()->CreateShaderResourceView(m_ColorAttachments[index], &srvDesc, m_ImGuiColorCpuHandle);
+		
+			m_CurrentBoundColorAttachment = index;
 		}
 
 		return m_ImTextureID;
@@ -299,12 +383,12 @@ namespace Ludo {
 
 		// ========== CPU Handles ==========
 		m_RenderTargetViews.resize(m_ColorAttachmentsSpecs.size());
-		D3D12_CPU_DESCRIPTOR_HANDLE firstHandle = m_rtvDescriptorHeap->GetCPUDescriptorHandleForHeapStart();
-		UINT RTVstride = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
+		auto heapStart = m_rtvDescriptorHeap->GetCPUDescriptorHandleForHeapStart();
+		auto incrementSize = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
 		for (uint32_t i = 0; i < m_ColorAttachmentsSpecs.size(); i++)
 		{
-			m_RenderTargetViews[i] = firstHandle;
-			m_RenderTargetViews[i].ptr += RTVstride * i;
+			m_RenderTargetViews[i] = heapStart;
+			m_RenderTargetViews[i].ptr += incrementSize * i;
 		}
 
 		// ========== Depth Stencil View Descriptor Heap ==========
@@ -330,6 +414,11 @@ namespace Ludo {
 
 		DirectX12API::Get()->GetSRVDescriptorHeap().Free(m_ImGuiColorCpuHandle, m_ImGuiColorGpuHandle);
 
+		for (auto& readBack : m_ReadBacks)
+		{
+			CHECK_AND_RELEASE_COMPTR(readBack);
+		}
+
 		for (auto& colorAttchment : m_ColorAttachments)
 		{
 			CHECK_AND_RELEASE_COMPTR(colorAttchment);
@@ -338,6 +427,37 @@ namespace Ludo {
 
 		CHECK_AND_RELEASE_COMPTR(m_rtvDescriptorHeap);
 		CHECK_AND_RELEASE_COMPTR(m_DepthStencilDescriptorHeap);
+	}
+
+	bool DirectX12FrameBuffer::CreateReadBack(uint32_t index)
+	{
+		// ========== Heap & Resource properties ==========
+		D3D12_HEAP_PROPERTIES heapProperties = {};
+		heapProperties.Type = D3D12_HEAP_TYPE_READBACK;
+		heapProperties.CPUPageProperty = D3D12_CPU_PAGE_PROPERTY_UNKNOWN;
+		heapProperties.MemoryPoolPreference = D3D12_MEMORY_POOL_UNKNOWN;
+		heapProperties.CreationNodeMask = 0;
+		heapProperties.VisibleNodeMask = 0;
+
+		D3D12_RESOURCE_DESC resourceDescription = {};
+		resourceDescription.Dimension = D3D12_RESOURCE_DIMENSION_BUFFER;
+		resourceDescription.Alignment = D3D12_DEFAULT_RESOURCE_PLACEMENT_ALIGNMENT;
+		float rowPitch = Align(m_Specification.Width * m_Sizes[index], D3D12_TEXTURE_DATA_PITCH_ALIGNMENT);
+		resourceDescription.Width = rowPitch * m_Specification.Height;
+		resourceDescription.Height = 1;
+		resourceDescription.DepthOrArraySize = 1;
+		resourceDescription.MipLevels = 1;
+		resourceDescription.Format = DXGI_FORMAT_UNKNOWN;
+		resourceDescription.SampleDesc.Count = 1;
+		resourceDescription.SampleDesc.Quality = 0;
+		resourceDescription.Layout = D3D12_TEXTURE_LAYOUT_ROW_MAJOR;
+		resourceDescription.Flags = D3D12_RESOURCE_FLAG_NONE;
+
+		HRESULT hr = DirectX12API::Get()->GetDevice()->CreateCommittedResource(&heapProperties, D3D12_HEAP_FLAG_NONE, &resourceDescription, D3D12_RESOURCE_STATE_COPY_DEST, nullptr,
+			IID_PPV_ARGS(&m_ReadBacks[index]));
+		CHECK_DX12_HRESULT(hr, "Failed to create ReadBack Buffer for Color Attachment {0}", index);
+
+		return SUCCEEDED(hr);
 	}
 
 }

@@ -36,6 +36,7 @@ namespace Ludo {
 		bool m_ViewportActive = false;
 		DirectX::XMFLOAT2 m_ViewportSize = { 0.0f, 0.0f };
 		bool m_ResizeFrameBuffer = false;
+		DirectX::XMFLOAT2 m_ViewportBounds[2];
 
 		int m_GizmoType = -1;
 

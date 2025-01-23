@@ -23,9 +23,9 @@ namespace Ludo {
 		fbSpec.Width = (uint32_t)m_ViewportSize.x;
 		fbSpec.Height = (uint32_t)m_ViewportSize.y;
 		fbSpec.Attachments = {
-			FrameBufferTextureFormat::RGBA8,
-			FrameBufferTextureFormat::RED_INTEGER,
-			FrameBufferTextureFormat::Depth
+				FrameBufferTextureFormat::RGBA8,
+			{	FrameBufferTextureFormat::RED_INTEGER, true },
+				FrameBufferTextureFormat::Depth
 		};
 
 		m_FrameBuffer = FrameBuffer::Create(fbSpec);
@@ -65,6 +65,18 @@ namespace Ludo {
 		m_FrameBuffer->Bind();
 
 		m_ActiveScene->OnUpdateEditor(ts, m_EditorCamera);
+
+		auto [mx, my] = ImGui::GetMousePos();
+		mx -= m_ViewportBounds[0].x;
+		my -= m_ViewportBounds[0].y;
+
+		int mouseX = (int)mx;
+		int mouseY = (int)my;
+
+		if (mouseX >= 0 && mouseY >= 0 && mouseX < (int)m_FrameBuffer->GetSpecification().Width && mouseY < (int)m_FrameBuffer->GetSpecification().Height)
+		{
+			LD_CORE_TRACE("{0}", m_FrameBuffer->ReadPixel(1, mouseX, mouseY) == 50);
+		}
 
 		m_FrameBuffer->Unbind();
 	}
@@ -127,6 +139,7 @@ namespace Ludo {
 
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2{ 0.0f, 0.0f });
 		ImGui::Begin("Viewport");
+		auto viewportOffset = ImGui::GetCursorPos(); // Includes Tab Bar
 
 		m_ViewportActive = ImGui::IsWindowHovered() || ImGui::IsWindowFocused();
 
@@ -144,6 +157,15 @@ namespace Ludo {
 		m_ResizeFrameBuffer = viewportPanelSize.x != m_ViewportSize.x || viewportPanelSize.y != m_ViewportSize.y;
 		m_ViewportSize = { viewportPanelSize.x, viewportPanelSize.y };
 		ImGui::Image(m_FrameBuffer->GetImTextureID(), viewportPanelSize);
+
+		auto windowSize = ImGui::GetWindowSize();
+		ImVec2 minBounds = ImGui::GetWindowPos();
+		minBounds.x += viewportOffset.x;
+		minBounds.y += viewportOffset.y;
+
+		ImVec2 maxBounds = { minBounds.x + windowSize.x, minBounds.y + windowSize.y };
+		m_ViewportBounds[0] = { minBounds.x, minBounds.y };
+		m_ViewportBounds[1] = { maxBounds.x, maxBounds.y };
 
 		// Gizmos
 		Entity selectedEntity = m_SceneHierarchyPanel.GetSelectedEntity();

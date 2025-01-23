@@ -335,16 +335,16 @@ namespace Ludo {
 			pipelineStateDescription.RTVFormats[i] = formats[i];
 
 			// RenderTarget BlendState
-			pipelineStateDescription.BlendState.RenderTarget[0].BlendEnable = Utils::IsBlendValid(formats[i]);
-			pipelineStateDescription.BlendState.RenderTarget[0].SrcBlend = D3D12_BLEND_SRC_ALPHA;
-			pipelineStateDescription.BlendState.RenderTarget[0].DestBlend = D3D12_BLEND_INV_SRC_ALPHA;
-			pipelineStateDescription.BlendState.RenderTarget[0].BlendOp = D3D12_BLEND_OP_ADD;
-			pipelineStateDescription.BlendState.RenderTarget[0].SrcBlendAlpha = D3D12_BLEND_INV_DEST_ALPHA;
-			pipelineStateDescription.BlendState.RenderTarget[0].DestBlendAlpha = D3D12_BLEND_ONE;
-			pipelineStateDescription.BlendState.RenderTarget[0].BlendOpAlpha = D3D12_BLEND_OP_ADD;
-			pipelineStateDescription.BlendState.RenderTarget[0].LogicOpEnable = FALSE;
-			pipelineStateDescription.BlendState.RenderTarget[0].LogicOp = D3D12_LOGIC_OP_NOOP;
-			pipelineStateDescription.BlendState.RenderTarget[0].RenderTargetWriteMask = D3D12_COLOR_WRITE_ENABLE_ALL;
+			pipelineStateDescription.BlendState.RenderTarget[i].BlendEnable = Utils::IsBlendValid(formats[i]) ? TRUE : FALSE;
+			pipelineStateDescription.BlendState.RenderTarget[i].SrcBlend = D3D12_BLEND_SRC_ALPHA;
+			pipelineStateDescription.BlendState.RenderTarget[i].DestBlend = D3D12_BLEND_INV_SRC_ALPHA;
+			pipelineStateDescription.BlendState.RenderTarget[i].BlendOp = D3D12_BLEND_OP_ADD;
+			pipelineStateDescription.BlendState.RenderTarget[i].SrcBlendAlpha = D3D12_BLEND_INV_DEST_ALPHA;
+			pipelineStateDescription.BlendState.RenderTarget[i].DestBlendAlpha = D3D12_BLEND_ONE;
+			pipelineStateDescription.BlendState.RenderTarget[i].BlendOpAlpha = D3D12_BLEND_OP_ADD;
+			pipelineStateDescription.BlendState.RenderTarget[i].LogicOpEnable = FALSE;
+			pipelineStateDescription.BlendState.RenderTarget[i].LogicOp = D3D12_LOGIC_OP_NOOP;
+			pipelineStateDescription.BlendState.RenderTarget[i].RenderTargetWriteMask = D3D12_COLOR_WRITE_ENABLE_ALL;
 		}
 
 		// DSVFormat
