@@ -19,7 +19,7 @@ namespace Ludo {
 		DirectX::XMFLOAT3 Position;
 		DirectX::XMFLOAT4 Color;
 		DirectX::XMFLOAT2 TexCoord;
-		float TexIndex;
+		uint32_t TexIndex;
 		float TilingFactor;
 
 		// Editor only
@@ -68,7 +68,7 @@ namespace Ludo {
 			{ "Position", ShaderDataType::Float3	},
 			{ "Color", ShaderDataType::Float4		},
 			{ "TexCoord", ShaderDataType::Float2	},
-			{ "TexIndex", ShaderDataType::Float		},
+			{ "TexIndex", ShaderDataType::Uint		},
 			{ "TilingFactor", ShaderDataType::Float },
 			{ "EntityID", ShaderDataType::Int		}
 		};
@@ -299,7 +299,20 @@ namespace Ludo {
 
 	void LD_SIMD_CALLING_CONVENTION Renderer2D::DrawSprite(const DirectX::XMMATRIX& transform, const SpriteRendererComponent& sprite, int entityID)
 	{
-		DrawQuad(entityID, transform, sprite.Color);
+		if (sprite.SpriteTexture)
+		{
+			DirectX::XMFLOAT2 texCoords[] = {
+			{ 0.0f, 0.0f },
+			{ 0.0f, 1.0f },
+			{ 1.0f, 1.0f },
+			{ 1.0f, 0.0f }
+			};
+			DrawQuad(entityID, transform, sprite.SpriteTexture, texCoords, sprite.SpriteColor, sprite.SpriteTilingFactor);
+		}
+		else
+		{
+			DrawQuad(entityID, transform, sprite.SpriteColor);
+		}
 	}
 
 	void LD_SIMD_CALLING_CONVENTION Renderer2D::DrawQuad(int entityID, const DirectX::XMMATRIX& transform, const Ref<SubTexture2D>& subTexture, const DirectX::XMFLOAT4& color, float tilingFactor)
@@ -316,7 +329,7 @@ namespace Ludo {
 			FlushAndReset();
 		}
 
-		constexpr float whiteTextureIndex = 0.0f;
+		constexpr uint32_t whiteTextureIndex = 0;
 		constexpr float tilingFactor = 1.0f;
 
 		DirectX::XMFLOAT2 texCoords[] = {
@@ -352,20 +365,20 @@ namespace Ludo {
 			FlushAndReset();
 		}
 
-		float textureIndex = 0.0f;
+		uint32_t textureIndex = 0.0f;
 
 		for (uint32_t i = 1; i < s_Data.TextureSlotIndex; i++)
 		{
 			if (s_Data.TextureSlots[i] == texture)
 			{
-				textureIndex = (float)i;
+				textureIndex = i;
 				break;
 			}
 		}
 
 		if (textureIndex == 0.0f)
 		{
-			textureIndex = (float)s_Data.TextureSlotIndex;
+			textureIndex = s_Data.TextureSlotIndex;
 			s_Data.TextureSlots[s_Data.TextureSlotIndex] = texture;
 			s_Data.TextureSlotIndex++;
 		}

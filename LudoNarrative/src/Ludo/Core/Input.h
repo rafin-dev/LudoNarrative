@@ -15,6 +15,8 @@ namespace Ludo {
 		static std::pair<float, float> GetMousePosition();
 		static float GetMouseX();
 		static float GetMouseY();
+	
+		static void SetMousePos(int x, int y);
 	};
 
 }

@@ -253,7 +253,7 @@ namespace Ludo {
 		}
 
 		auto ite = s_MsgCallBacks.find(uMsg);
-
+	
 		if (ite != s_MsgCallBacks.end())
 		{
 			if (ite->second(hwnd, uMsg, wParam, lParam))

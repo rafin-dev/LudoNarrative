@@ -19,7 +19,7 @@ namespace Ludo {
 		Init();
 	}
 
-	DirectX12Texture2D::DirectX12Texture2D(const std::string& path)
+	DirectX12Texture2D::DirectX12Texture2D(const std::filesystem::path& path)
 		: m_Path(path), m_ID(s_IDcounter++)
 	{
 		LD_PROFILE_FUNCTION();

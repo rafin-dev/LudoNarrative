@@ -148,7 +148,11 @@ namespace Ludo {
 			
 			auto& spriteRenderer = entity.GetComponent<SpriteRendererComponent>();
 
-			out << YAML::Key << "Color" << YAML::Value << spriteRenderer.Color;
+			out << YAML::Key << "TexturePath" << YAML::Value << spriteRenderer.SpriteTexturePath.string();
+
+			out << YAML::Key << "Color" << YAML::Value << spriteRenderer.SpriteColor;
+
+			out << YAML::Key << "TilingFactor" << YAML::Value << spriteRenderer.SpriteTilingFactor;
 
 			out << YAML::EndMap; // SpriteRendererComponent
 		}
@@ -260,7 +264,15 @@ namespace Ludo {
 				if (spriteRendererComponentData)
 				{
 					auto& spriteRendererComponent = entity.AddComponent<SpriteRendererComponent>();
-					spriteRendererComponent.Color = spriteRendererComponentData["Color"].as<DirectX::XMFLOAT4>();
+					spriteRendererComponent.SpriteTexturePath = spriteRendererComponentData["TexturePath"].as<std::string>();
+
+					if (std::filesystem::exists(spriteRendererComponent.SpriteTexturePath))
+					{
+						spriteRendererComponent.SpriteTexture = Texture2D::Create(spriteRendererComponent.SpriteTexturePath);
+					}
+
+					spriteRendererComponent.SpriteColor = spriteRendererComponentData["Color"].as<DirectX::XMFLOAT4>();
+					spriteRendererComponent.SpriteTilingFactor = spriteRendererComponentData["TilingFactor"].as<float>();
 				}
 			}
 		}

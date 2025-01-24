@@ -10,7 +10,7 @@ namespace Ludo {
 	{
 	public:
 		DirectX12Texture2D(uint32_t width, uint32_t height);
-		DirectX12Texture2D(const std::string& path);
+		DirectX12Texture2D(const std::filesystem::path& path);
 		virtual ~DirectX12Texture2D() override;
 
 		virtual uint32_t GetWidth() const override;

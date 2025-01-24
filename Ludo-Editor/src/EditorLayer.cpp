@@ -149,7 +149,6 @@ namespace Ludo {
 			Application::Get().ImGuiBlockEvent(!ImGui::IsWindowHovered() && !ImGui::IsWindowFocused());
 		}
 		
-
 		ImVec2 viewportPanelSize = ImGui::GetContentRegionAvail();
 		m_ResizeFrameBuffer = viewportPanelSize.x != m_ViewportSize.x || viewportPanelSize.y != m_ViewportSize.y;
 		m_ViewportSize = { viewportPanelSize.x, viewportPanelSize.y };
@@ -201,6 +200,41 @@ namespace Ludo {
 
 				DirectX::XMStoreFloat3(&tc.Scale, scale);
 			}
+		}
+
+		if (ImGui::BeginDragDropTarget())
+		{
+			if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
+			{
+				const wchar_t* path = (const wchar_t*)payload->Data;
+				OpenScene(path);
+			}
+			ImGui::EndDragDropTarget();
+		}
+
+		ImVec2 minPlusPadding = ImGui::GetWindowContentRegionMin();
+		minPlusPadding.x += 5.0f;
+		minPlusPadding.y += 5.0f;
+
+		ImGui::SetNextItemAllowOverlap();
+		ImGui::SetCursorPos(minPlusPadding);
+		
+		ImGui::AlignTextToFramePadding();
+		ImGui::Text("Gizmo");
+		ImGui::SameLine();
+		if (ImGui::Button("Position"))
+		{
+			m_GizmoType = ImGuizmo::OPERATION::TRANSLATE;
+		}
+		ImGui::SameLine();
+		if (ImGui::Button("Rotation"))
+		{
+			m_GizmoType = ImGuizmo::OPERATION::ROTATE;
+		}
+		ImGui::SameLine();
+		if (ImGui::Button("Scale"))
+		{
+			m_GizmoType = ImGuizmo::OPERATION::SCALE;
 		}
 
 		ImGui::End();
@@ -264,7 +298,7 @@ namespace Ludo {
 
 	bool EditorLayer::OnMouseButtonReleasedEvent(MouseButtonReleasedEvent& event)
 	{
-		if (m_GizmoHovered || Input::IsKeyPressed(KeyCode::Left_ALT) || event.GetMouseButton() != MouseButtonCode::Left)
+		if (m_GizmoHovered || ImGui::IsAnyItemHovered() || Input::IsKeyPressed(KeyCode::Left_ALT) || event.GetMouseButton() != MouseButtonCode::Left)
 		{
 			return false;
 		}
@@ -307,6 +341,18 @@ namespace Ludo {
 			SceneSerializer serializer(m_ActiveScene);
 			serializer.DeserializeFromYamlFile(path);
 		}
+	}
+
+	void EditorLayer::OpenScene(const std::filesystem::path& path)
+	{
+		LD_CORE_ASSERT(std::filesystem::exists(path), "Scene File Does not exist");
+
+		m_ActiveScene = CreateRef<Scene>();
+		m_SceneHierarchyPanel.SetContext(m_ActiveScene);
+		m_ActiveScene->OnViewportResize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
+
+		SceneSerializer serializer(m_ActiveScene);
+		serializer.DeserializeFromYamlFile(path);
 	}
 
 	void EditorLayer::SaveSceneAs()

@@ -4,6 +4,7 @@
 #include "Ludo/Scene/SceneCamera.h"
 #include "Ludo/Scene/ScriptableEntity.h"
 #include "Ludo/Core/TimeStep.h"
+#include "Ludo/Renderer/Texture.h"
 
 #include <DirectXMath.h>
 
@@ -51,12 +52,18 @@ namespace Ludo {
 
 	struct SpriteRendererComponent
 	{
-		DirectX::XMFLOAT4 Color = { 1.0f, 1.0f, 1.0f, 1.0f };
+		Ref<Texture2D> SpriteTexture;
+		DirectX::XMFLOAT4 SpriteColor = { 1.0f, 1.0f, 1.0f, 1.0f };
+		float SpriteTilingFactor = 1.0f;
+		std::filesystem::path SpriteTexturePath = "None";
 
 		SpriteRendererComponent() = default;
 		SpriteRendererComponent(const SpriteRendererComponent& other) = default;
 		SpriteRendererComponent(const DirectX::XMFLOAT4& color)
-			: Color(color) {}
+			: SpriteColor(color) {
+		}
+		SpriteRendererComponent(const Ref<Texture2D>& texture, const DirectX::XMFLOAT4& color = { 1.0f, 1.0f, 1.0f, 1.0f }, float tilingFactor = 1.0f)
+			: SpriteColor(color), SpriteTexture(texture), SpriteTilingFactor(tilingFactor) {}
 	};
 
 	struct CameraComponent

@@ -1,9 +1,11 @@
 #pragma once
 
-#include <LudoNarrative.h>
-
 #include "Panels/SceneHierarchyPanel.h"
 #include "Panels/ContentBrowserPanel.h"
+
+#include <LudoNarrative.h>
+
+#include <filesystem>
 
 namespace Ludo {
 
@@ -24,6 +26,7 @@ namespace Ludo {
 
 		void NewScene();
 		void OpenScene();
+		void OpenScene(const std::filesystem::path& path);
 		void SaveSceneAs();
 
 		void SetImGuiDarkTheme();

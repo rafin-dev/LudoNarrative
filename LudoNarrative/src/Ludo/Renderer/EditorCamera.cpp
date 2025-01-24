@@ -1,6 +1,7 @@
 #include "ldpch.h"
 #include "EditorCamera.h"
 
+#include "Ludo/Core/Application.h"
 #include "Ludo/Core/Input.h"
 
 namespace Ludo {
@@ -15,20 +16,32 @@ namespace Ludo {
 	{
 		if (Input::IsKeyPressed(KeyCode::Left_ALT))
 		{
+			bool anyMouseButtonDown = false;
+		
 			const DirectX::XMFLOAT2 mouse = { Input::GetMouseX(), Input::GetMouseY() };
 			DirectX::XMFLOAT2 delta = { (mouse.x - m_InitialMousePosition.x) * 0.003f, (mouse.y - m_InitialMousePosition.y) * 0.003f };
-
+		
 			if (Input::IsMouseButtonDown(MouseButtonCode::Middle))
 			{
 				MousePan(delta);
+				anyMouseButtonDown = true;
 			}
 			else if (Input::IsMouseButtonDown(MouseButtonCode::Left))
 			{
 				MouseRotate(delta);
+				anyMouseButtonDown = true;
 			}
 			else if (Input::IsMouseButtonDown(MouseButtonCode::Right))
 			{
 				MouseZoom(delta.y);
+				anyMouseButtonDown = true;
+			}
+			
+			if (anyMouseButtonDown)
+			{
+				ImGui::SetMouseCursor(ImGuiMouseCursor_None);
+				auto& window = Application::Get().GetWindow();
+				Input::SetMousePos(window.GetWidth() / 2, window.GetHeight() / 2);
 			}
 		}
 

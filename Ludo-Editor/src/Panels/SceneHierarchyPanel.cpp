@@ -2,8 +2,6 @@
 
 #include "Style/ImGuiFontManager.h"
 
-#include <imgui/imgui_internal.h>
-
 namespace Ludo {
 
 	SceneHierarchyPanel::SceneHierarchyPanel(const Ref<Scene>& context)
@@ -56,6 +54,28 @@ namespace Ludo {
 		ImGui::End();
 	}
 
+	void SceneHierarchyPanel::SetSelectedEntity(Entity entity)
+	{
+		m_SelectedEntity = entity;
+		if (!m_SelectedEntity)
+		{
+			return;
+		}
+
+		if (m_SelectedEntity.HasComponent<SpriteRendererComponent>())
+		{
+			auto& sprite = entity.GetComponent<SpriteRendererComponent>();
+			if (sprite.SpriteTexture)
+			{
+				m_SelectedEntityImGuiTexture = ImGuiTexture::Create(sprite.SpriteTexture);
+			}
+			else
+			{
+				m_SelectedEntityImGuiTexture = nullptr;
+			}
+		}
+	}
+
 	void SceneHierarchyPanel::DrawEntityNode(Entity entity)
 	{
 		ImGuiTreeNodeFlags flags = ((m_SelectedEntity == entity) ? ImGuiTreeNodeFlags_Selected : 0) | ImGuiTreeNodeFlags_OpenOnArrow;
@@ -64,7 +84,7 @@ namespace Ludo {
 		bool open = ImGui::TreeNodeEx((void*)(uint64_t)(uint32_t)entity, flags, entity.GetComponent<TagComponent>().Tag.c_str());
 		if (ImGui::IsItemClicked())
 		{
-			m_SelectedEntity = entity;
+			SetSelectedEntity(entity);
 		}
 
 		if (ImGui::BeginPopupContextItem())
@@ -87,51 +107,7 @@ namespace Ludo {
 			m_Context->DestroyEntity(entity);
 			if (m_SelectedEntity == entity)
 			{
-				m_SelectedEntity = Entity();
-			}
-		}
-	}
-
-	template<typename T>
-	static void DrawComponent(Entity entity, const std::string& label, bool Removable, bool DefaultOpen, void(*ImGuiRender)(Entity, T&))
-	{
-		if (entity.HasComponent<T>())
-		{
-			bool removeComponent = false;
-			ImVec2 contentRegionAvail = ImGui::GetContentRegionAvail();
-
-			ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2{ 4.0f, 4.0f });
-			ImGui::Separator();
-
-			ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_AllowItemOverlap | ImGuiTreeNodeFlags_Selected;
-			flags |= ImGuiTreeNodeFlags_Framed | ImGuiTreeNodeFlags_SpanAvailWidth | ImGuiTreeNodeFlags_FramePadding;
-			if (DefaultOpen) { flags |= ImGuiTreeNodeFlags_DefaultOpen; }
-			bool open = ImGui::TreeNodeEx((void*)typeid(T).hash_code(), flags, label.c_str());
-
-			float lineHeight = GImGui->Font->FontSize + GImGui->Style.FramePadding.y * 2.0f;
-			ImGui::SameLine(contentRegionAvail.x - lineHeight * 0.5f);
-			if (ImGui::Button("+", ImVec2{ lineHeight, lineHeight }))
-			{
-				ImGui::OpenPopup("ComponentSettings");
-			}
-			ImGui::PopStyleVar();
-
-			if (ImGui::BeginPopup("ComponentSettings"))
-			{
-				if (ImGui::MenuItem("Remove Component", nullptr, false, Removable)) { removeComponent = true; }
-
-				ImGui::EndPopup();
-			}
-
-			if (open)
-			{
-				ImGuiRender(entity, entity.GetComponent<T>());
-				ImGui::TreePop();
-			}
-
-			if (removeComponent)
-			{
-				entity.RemoveComponent<T>();
+				SetSelectedEntity(Entity());
 			}
 		}
 	}
@@ -214,10 +190,11 @@ namespace Ludo {
 		ImGui::DragFloat("##z", &values.z, 0.1f, 0.0f, 0.0f, "%.2f");
 		ImGui::PopID();
 		ImGui::PopItemWidth();
-		
+
 		ImGui::PopStyleVar(1);
 		ImGui::Columns(1);
 	}
+
 
 	void SceneHierarchyPanel::DrawComponents(Entity entity)
 	{
@@ -259,7 +236,7 @@ namespace Ludo {
 			ImGui::PopItemWidth();
 		}
 
-		DrawComponent<TransformComponent>(entity, "Transform", false, true, [](Entity entity, TransformComponent& transform)
+		DrawComponent<TransformComponent>(entity, "Transform", false, true, [](Entity entity, TransformComponent& transform, auto*)
 			{
 				DrawVec3Control("Position", transform.Translation);
 
@@ -277,7 +254,7 @@ namespace Ludo {
 				ImGui::Spacing();
 			});
 
-		DrawComponent<CameraComponent>(entity, "Camera", true, true, [](Entity entity, CameraComponent& cameraComponent) 
+		DrawComponent<CameraComponent>(entity, "Camera", true, true, [](Entity entity, CameraComponent& cameraComponent, auto*) 
 		{
 			auto& camera = cameraComponent.Camera;
 
@@ -334,12 +311,55 @@ namespace Ludo {
 			ImGui::Checkbox("Fixed Aspect Ratio", &cameraComponent.FixedAspectRatio);
 		});
 
-		DrawComponent<SpriteRendererComponent>(entity, "Sprite Renderer", true, true, [](Entity entity, SpriteRendererComponent& spriteComponent) 
+		DrawComponent<SpriteRendererComponent>(entity, "Sprite Renderer", true, true, [](Entity entity, SpriteRendererComponent& spriteComponent, SceneHierarchyPanel* panel)
 		{
-			ImGui::ColorEdit4("Color", (float*)&spriteComponent.Color);
+			char buffer[256];
+			memset(buffer, 0, sizeof(buffer));
+			strcpy_s(buffer, sizeof(buffer), spriteComponent.SpriteTexturePath.string().c_str());
+			if (ImGui::InputText("Texture Path", buffer, 256))
+			{
+				panel->SetSelectedEntityTexture(buffer);
+			}
+
+			if (ImGui::BeginDragDropTarget())
+			{
+				if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
+				{
+					const wchar_t* path = (const wchar_t*)payload->Data;
+					panel->SetSelectedEntityTexture(path);
+				}
+				ImGui::EndDragDropTarget();
+			}
+
+			auto width = ImGui::GetContentRegionAvail().x / 2;
+			if (panel->GetSelectedEntityImGuiTexture())
+			{
+				ImGui::SetCursorPosX((ImGui::GetWindowSize().x - width) * 0.5f);
+				auto cursorPos = ImGui::GetCursorPos();
+				ImGui::ColorButton("##IBG", ImVec4(0.1f, 0.1f, 0.1f, 1.0f), ImGuiColorEditFlags_NoTooltip | ImGuiColorEditFlags_NoDragDrop, ImVec2{ width, width });
+
+				ImGui::SetNextItemAllowOverlap();
+				ImGui::SetCursorPos(cursorPos);
+				ImGui::Image(panel->GetSelectedEntityImGuiTexture()->GetImTextureID(), { width, width }, ImVec2(0, 0), ImVec2(1, 1), 
+					ImVec4(spriteComponent.SpriteColor.x, spriteComponent.SpriteColor.y, spriteComponent.SpriteColor.z, spriteComponent.SpriteColor.w));
+			}
+
+			ImGui::ColorEdit4("Color", (float*)&spriteComponent.SpriteColor);
+			ImGui::InputFloat("Tilign Factor", &spriteComponent.SpriteTilingFactor);
 		});
 
 		ImGui::Separator();
+	}
+
+	void SceneHierarchyPanel::SetSelectedEntityTexture(const std::filesystem::path& path)
+	{
+		if (std::filesystem::exists(path))
+		{
+			auto& sprite = m_SelectedEntity.GetComponent<SpriteRendererComponent>();
+			sprite.SpriteTexturePath = path;
+			sprite.SpriteTexture = Texture2D::Create(path);
+			m_SelectedEntityImGuiTexture = ImGuiTexture::Create(sprite.SpriteTexture);
+		}
 	}
 
 }

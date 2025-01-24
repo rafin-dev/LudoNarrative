@@ -1,6 +1,9 @@
 #include "ldpch.h"
 
+#include "Ludo/Core/Application.h"
 #include "Ludo/Core/Input.h"
+
+#include "Platform/Windows/WindowsWindow.h"
 
 namespace Ludo {
 
@@ -36,5 +39,13 @@ namespace Ludo {
         GetCursorPos(&pos);
 
         return (float)pos.y;
+    }
+
+    void Input::SetMousePos(int x, int y)
+    {
+        RECT windowRect;
+        GetWindowRect(static_cast<WindowsWindow&>(Application::Get().GetWindow()).GetHandle(), &windowRect);
+
+        SetCursorPos(windowRect.left + x, windowRect.top + y);
     }
 }
