@@ -126,10 +126,6 @@ namespace Ludo {
 
 			D3D12_CLEAR_VALUE clearValue = {};
 			clearValue.Format = DXGI_FORMAT_UNKNOWN;
-			clearValue.Color[0] = 0.0f;
-			clearValue.Color[1] = 0.0f;
-			clearValue.Color[2] = 0.0f;
-			clearValue.Color[3] = 0.0f;
 
 			D3D12_RENDER_TARGET_VIEW_DESC rtvDesc = {};
 			rtvDesc.Format = DXGI_FORMAT_UNKNOWN;
@@ -145,6 +141,12 @@ namespace Ludo {
 				rtvDesc.Format = DXGIFormat;
 				m_Formats[i] = DXGIFormat;
 				m_Sizes[i] = Utils::GetSizeFromDXGIFormat(DXGIFormat);
+
+				float* clearColor = (float*)&m_ColorAttachmentsSpecs[i].ClearColor;
+				clearValue.Color[0] = clearColor[0];
+				clearValue.Color[1] = clearColor[1];
+				clearValue.Color[2] = clearColor[2];
+				clearValue.Color[3] = clearColor[3];
 
 				hr = device->CreateCommittedResource(&heapProperties,
 					D3D12_HEAP_FLAG_NONE,

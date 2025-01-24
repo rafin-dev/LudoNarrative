@@ -28,7 +28,7 @@ VS_OUTPUT main(VS_INPUT input)
 #kind pixel
 #include "assets/shaders/Header.hlsli"
 
-Texture2D<float4> Textures[] : register(t0);
+Texture2D<float4> Textures[32] : register(t0);
 SamplerState Sampler : register(s0);
 
 struct PS_OUTPUT

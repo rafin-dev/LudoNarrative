@@ -551,12 +551,11 @@ namespace Ludo {
 		*	- s0	Sampler for "Textures"
 		*/
 
-		D3D12_ROOT_PARAMETER1 rootConstants = {};
-		rootConstants.ParameterType = D3D12_ROOT_PARAMETER_TYPE_32BIT_CONSTANTS;
-		rootConstants.ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
-		rootConstants.Constants.ShaderRegister = 0;
-		rootConstants.Constants.RegisterSpace = 0;
-		rootConstants.Constants.Num32BitValues = 32;
+		D3D12_ROOT_PARAMETER1 cameraCBV = {};
+		cameraCBV.ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
+		cameraCBV.ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
+		cameraCBV.Descriptor.ShaderRegister = 0;
+		cameraCBV.Descriptor.RegisterSpace = 0;
 
 		D3D12_ROOT_PARAMETER1 materialCBV = {};
 		materialCBV.ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
@@ -593,7 +592,7 @@ namespace Ludo {
 		samplers.DescriptorTable.pDescriptorRanges = &samplerRange;
 #endif
 
-		D3D12_ROOT_PARAMETER1 parameters[] = { rootConstants, materialCBV, textures };
+		D3D12_ROOT_PARAMETER1 parameters[] = { cameraCBV, materialCBV, textures };
 
 		D3D12_STATIC_SAMPLER_DESC staticSampler = {};
 		staticSampler.Filter = D3D12_FILTER_MIN_MAG_MIP_POINT;

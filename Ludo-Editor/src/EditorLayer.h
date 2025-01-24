@@ -3,6 +3,7 @@
 #include <LudoNarrative.h>
 
 #include "Panels/SceneHierarchyPanel.h"
+#include "Panels/ContentBrowserPanel.h"
 
 namespace Ludo {
 
@@ -19,7 +20,7 @@ namespace Ludo {
 
 	private:
 		bool OnKeyPressed(KeyPressedEvent& event);
-		bool OnMouseButtonPressedEvent(MouseButtonPressedEvent& event);
+		bool OnMouseButtonReleasedEvent(MouseButtonReleasedEvent& event);
 
 		void NewScene();
 		void OpenScene();
@@ -41,9 +42,11 @@ namespace Ludo {
 		int MouseX = 0, MouseY = 0;
 
 		int m_GizmoType = -1;
+		bool m_GizmoHovered = false;
 
 		// Panels
 		SceneHierarchyPanel m_SceneHierarchyPanel;
+		ContentBrowserPanel m_ContentBrowserPanel;
 	};
 
 }

@@ -82,7 +82,7 @@ namespace Ludo {
 
 		EventDispatcher dispatcher(event);
 		dispatcher.Dispatch<KeyPressedEvent>(LUDO_BIND_EVENT_FN(EditorLayer::OnKeyPressed));
-		dispatcher.Dispatch<MouseButtonPressedEvent>(LUDO_BIND_EVENT_FN(EditorLayer::OnMouseButtonPressedEvent));
+		dispatcher.Dispatch<MouseButtonReleasedEvent>(LUDO_BIND_EVENT_FN(EditorLayer::OnMouseButtonReleasedEvent));
 	}
 
 	void EditorLayer::OnImGuiRender()
@@ -121,6 +121,7 @@ namespace Ludo {
 		}
 
 		m_SceneHierarchyPanel.OnImGuiRender();
+		m_ContentBrowserPanel.OnImGuiRender();
 
 		ImGui::Begin("Stats");
 
@@ -181,6 +182,7 @@ namespace Ludo {
 				(ImGuizmo::OPERATION)m_GizmoType, ImGuizmo::MODE::LOCAL,
 				(float*)&transform, nullptr, snap ? snapValues : nullptr);
 
+			m_GizmoHovered = ImGuizmo::IsOver();
 			if (ImGuizmo::IsUsing())
 			{
 				DirectX::XMVECTOR translation;
@@ -260,20 +262,27 @@ namespace Ludo {
 		return false;
 	}
 
-	bool EditorLayer::OnMouseButtonPressedEvent(MouseButtonPressedEvent& event)
+	bool EditorLayer::OnMouseButtonReleasedEvent(MouseButtonReleasedEvent& event)
 	{
-		if (event.GetMouseButton() == MouseButtonCode::Left)
+		if (m_GizmoHovered || Input::IsKeyPressed(KeyCode::Left_ALT) || event.GetMouseButton() != MouseButtonCode::Left)
 		{
-			if (MouseX >= 0 && MouseY >= 0 && MouseX < (int)m_FrameBuffer->GetSpecification().Width && MouseY < (int)m_FrameBuffer->GetSpecification().Height)
-			{
-				int ID =  m_FrameBuffer->ReadPixel(1, MouseX, MouseY);
+			return false;
+		}
 
-				if (ID != -1)
-				{
-					m_SceneHierarchyPanel.SetSelectedEntity(Entity((entt::entity)ID, m_ActiveScene.get()));
-					return true;
-				}
+		if (MouseX >= 0 && MouseY >= 0 && MouseX < (int)m_FrameBuffer->GetSpecification().Width && MouseY < (int)m_FrameBuffer->GetSpecification().Height)
+		{
+			int ID =  m_FrameBuffer->ReadPixel(1, MouseX, MouseY);
+
+			if (ID == -1)
+			{
+				m_SceneHierarchyPanel.SetSelectedEntity(Entity());
 			}
+			else 
+			{
+				m_SceneHierarchyPanel.SetSelectedEntity(Entity((entt::entity)ID, m_ActiveScene.get()));
+			}
+
+			return true;
 		}
 
 		return false;

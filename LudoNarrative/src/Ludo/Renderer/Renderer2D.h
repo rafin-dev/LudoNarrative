@@ -6,6 +6,7 @@
 #include "Ludo/Renderer/Texture.h"
 #include "Ludo/Renderer/SubTexture2D.h"
 #include "Ludo/Renderer/EditorCamera.h"
+#include "Ludo/Scene/Components.h"
 
 namespace Ludo {
 
@@ -41,7 +42,6 @@ namespace Ludo {
 		static void DrawQuad(const DirectX::XMFLOAT3& position, const DirectX::XMFLOAT2& size, float rotation, const DirectX::XMFLOAT4& color);
 		static void DrawQuad(const DirectX::XMFLOAT4X4& transform, const DirectX::XMFLOAT4& color);
 		static void LD_SIMD_CALLING_CONVENTION DrawQuad(const DirectX::XMMATRIX& transform, const DirectX::XMFLOAT4& color);
-		static void LD_SIMD_CALLING_CONVENTION DrawQuad(int entityID, const DirectX::XMMATRIX& transform, const DirectX::XMFLOAT4& color);
 
 		// Textured Quads
 		static void DrawQuad(const DirectX::XMFLOAT2& position, const DirectX::XMFLOAT2& size, float rotation, const Ref<Texture2D>& texture, 
@@ -70,9 +70,10 @@ namespace Ludo {
 		static void LD_SIMD_CALLING_CONVENTION DrawQuad(const DirectX::XMMATRIX& transform, const Ref<SubTexture2D>& subTexture,
 			const DirectX::XMFLOAT4& color = { 1.0f, 1.0f, 1.0f, 1.0f },
 			float tilingFactor = 1.0f);
-		static void LD_SIMD_CALLING_CONVENTION DrawQuad(int entityID, const DirectX::XMMATRIX& transform, const Ref<SubTexture2D>& subTexture,
-			const DirectX::XMFLOAT4& color = { 1.0f, 1.0f, 1.0f, 1.0f },
-			float tilingFactor = 1.0f);
+		
+		// Sprite
+		static void LD_SIMD_CALLING_CONVENTION DrawSprite(const DirectX::XMMATRIX& transform, const SpriteRendererComponent& sprite, int entityID);
+		
 		// ================================
 
 		// ========== Statistics ==========
@@ -91,6 +92,12 @@ namespace Ludo {
 
 	private:
 		// Internal use
+		static void LD_SIMD_CALLING_CONVENTION DrawQuad(int entityID, const DirectX::XMMATRIX& transform, const DirectX::XMFLOAT4& color);
+
+		static void LD_SIMD_CALLING_CONVENTION DrawQuad(int entityID, const DirectX::XMMATRIX& transform, const Ref<SubTexture2D>& subTexture,
+			const DirectX::XMFLOAT4& color = { 1.0f, 1.0f, 1.0f, 1.0f },
+			float tilingFactor = 1.0f);
+		
 		static void DrawQuad(const DirectX::XMFLOAT3& position, const DirectX::XMFLOAT2& size, float rotation, 
 			const Ref<Texture2D>& texture, const DirectX::XMFLOAT2* texCoords,
 			const DirectX::XMFLOAT4& color = { 1.0f, 1.0f, 1.0f, 1.0f },

@@ -4,16 +4,9 @@
 #include "VertexArray.h"
 #include "Material.h"
 #include "RenderCommand.h"
+#include "UniformBuffer.h"
 
 namespace Ludo {
-
-	static void CreateTransform(DirectX::XMFLOAT4X4* matrixOutput, const DirectX::XMFLOAT3& pos, const DirectX::XMFLOAT2& size, float rotation)
-	{
-		DirectX::XMStoreFloat4x4(matrixOutput, DirectX::XMMatrixTranspose(
-			DirectX::XMMatrixScaling(size.x, size.y, 1.0f) *
-			DirectX::XMMatrixRotationZ(DirectX::XMConvertToRadians(-rotation)) *
-			DirectX::XMMatrixTranslation(pos.x, pos.y, pos.z)));
-	}
 
 	// Operator to make Texture2D comparison synatx look a bit nicer
 	inline bool operator==(const Ref<Texture2D>& a, const Ref<Texture2D>& b)
@@ -28,6 +21,8 @@ namespace Ludo {
 		DirectX::XMFLOAT2 TexCoord;
 		float TexIndex;
 		float TilingFactor;
+
+		// Editor only
 		int EntityID;
 	};
 
@@ -40,7 +35,7 @@ namespace Ludo {
 
 		Ref<VertexArray> QuadVertexArray;
 		Ref<VertexBuffer> QuadVertexBuffer;
-		Ref<Material> TextureMaterial;
+		Ref<Shader> TextureShader;
 		Ref<Texture2D> WhiteTexture;
 
 		uint32_t QuadIndexCount = 0;
@@ -53,6 +48,13 @@ namespace Ludo {
 		DirectX::XMFLOAT3 QuadVertexPositions[4];
 
 		Renderer2D::Statistics Stats;
+
+		struct CameraData
+		{
+			DirectX::XMFLOAT4X4 ViewProjectionMatrix;
+		};
+		CameraData CameraBuffer;
+		Ref<UniformBuffer> CameraUniformBuffer;
 	};
 
 	static Renderer2DData s_Data;
@@ -63,12 +65,12 @@ namespace Ludo {
 
 		// ========== Vertex Array ==========
 		BufferLayout vbLayout = {
-			{ "Position", ShaderDataType::Float3 },
-			{ "Color", ShaderDataType::Float4 },
-			{ "TexCoord", ShaderDataType::Float2 },
-			{ "TexIndex", ShaderDataType::Float },
+			{ "Position", ShaderDataType::Float3	},
+			{ "Color", ShaderDataType::Float4		},
+			{ "TexCoord", ShaderDataType::Float2	},
+			{ "TexIndex", ShaderDataType::Float		},
 			{ "TilingFactor", ShaderDataType::Float },
-			{ "EntityID", ShaderDataType::Int }
+			{ "EntityID", ShaderDataType::Int		}
 		};
 
 		s_Data.QuadVertexBuffer = VertexBuffer::Create(s_Data.MaxVertices * sizeof(QuadVertex), vbLayout, VertexBuffer::DYNAMIC);
@@ -91,6 +93,8 @@ namespace Ludo {
 			offset += 4;
 		}
 
+		s_Data.CameraUniformBuffer = UniformBuffer::Create(sizeof(Renderer2DData::CameraData), 0);
+
 		auto quadIB = IndexBuffer::Create(quadIndices, s_Data.MaxIndices);
 		delete[] quadIndices;
 
@@ -98,8 +102,7 @@ namespace Ludo {
 		s_Data.QuadVertexArray->AddVertexBuffer(s_Data.QuadVertexBuffer);
 		s_Data.QuadVertexArray->SetIndexBuffer(quadIB);
 
-		auto textureShader = Shader::Create("TextureShader", "assets/shaders/TextureShader.hlsl", s_Data.QuadVertexBuffer->GetLayout(), {});
-		s_Data.TextureMaterial = Material::Create(textureShader);
+		s_Data.TextureShader = Shader::Create("TextureShader", "assets/shaders/TextureShader.hlsl", s_Data.QuadVertexBuffer->GetLayout(), {});
 
 		s_Data.WhiteTexture = Texture2D::Create(1, 1);
 		uint32_t whiteTextureData = 0xffffffff;
@@ -121,8 +124,9 @@ namespace Ludo {
 		for (auto& texture : s_Data.TextureSlots) { texture = nullptr; }
 		s_Data.QuadVertexArray = nullptr;
 		s_Data.QuadVertexBuffer = nullptr;
-		s_Data.TextureMaterial = nullptr;
+		s_Data.TextureShader = nullptr;
 		s_Data.WhiteTexture = nullptr;
+		s_Data.CameraUniformBuffer = nullptr;
 	}
 	
 	void Renderer2D::BeginScene(const Camera& camera, const DirectX::XMFLOAT4X4& transform)
@@ -133,8 +137,9 @@ namespace Ludo {
 		DirectX::XMStoreFloat4x4(&viewProjection, DirectX::XMMatrixTranspose(
 			DirectX::XMMatrixInverse(nullptr, DirectX::XMLoadFloat4x4(&transform)) * DirectX::XMLoadFloat4x4(&camera.GetProjection())));
 
-		s_Data.TextureMaterial->GetShader()->Bind();
-		s_Data.TextureMaterial->GetShader()->SetViewProjectionMatrix(viewProjection);
+		s_Data.TextureShader->Bind();
+		s_Data.CameraBuffer.ViewProjectionMatrix = viewProjection;
+		s_Data.CameraUniformBuffer->SetData(&s_Data.CameraBuffer, sizeof(Renderer2DData::CameraData), 0);
 
 		s_Data.QuadIndexCount = 0;
 		s_Data.QuadVertexBufferPtr = s_Data.QuadVertexBufferBase;
@@ -143,11 +148,12 @@ namespace Ludo {
 
 	void Renderer2D::BeginScene(const EditorCamera& camera)
 	{
-		s_Data.TextureMaterial->GetShader()->Bind();
+		s_Data.TextureShader->Bind();
 
 		DirectX::XMFLOAT4X4 viewProjection = camera.GetViewProjection();
 		DirectX::XMStoreFloat4x4(&viewProjection, DirectX::XMMatrixTranspose(DirectX::XMLoadFloat4x4(&viewProjection)));
-		s_Data.TextureMaterial->GetShader()->SetViewProjectionMatrix(viewProjection);
+		s_Data.CameraBuffer.ViewProjectionMatrix = viewProjection;
+		s_Data.CameraUniformBuffer->SetData(&s_Data.CameraBuffer, sizeof(Renderer2DData::CameraData), 0);
 
 		s_Data.QuadIndexCount = 0;
 		s_Data.QuadVertexBufferPtr = s_Data.QuadVertexBufferBase;
@@ -158,8 +164,9 @@ namespace Ludo {
 	{
 		LD_PROFILE_RENDERER_FUNCTION();
 
-		s_Data.TextureMaterial->GetShader()->Bind();
-		s_Data.TextureMaterial->GetShader()->SetViewProjectionMatrix(camera.GetViewProjectionMatrix());
+		s_Data.TextureShader->Bind();
+		s_Data.CameraBuffer.ViewProjectionMatrix = camera.GetViewProjectionMatrix();
+		s_Data.CameraUniformBuffer->SetData(&s_Data.CameraBuffer, sizeof(Renderer2DData::CameraData), 0);
 
 		s_Data.QuadIndexCount = 0;
 		s_Data.QuadVertexBufferPtr = s_Data.QuadVertexBufferBase;
@@ -288,6 +295,11 @@ namespace Ludo {
 	void LD_SIMD_CALLING_CONVENTION Renderer2D::DrawQuad(const DirectX::XMMATRIX& transform, const Ref<SubTexture2D>& subTexture, const DirectX::XMFLOAT4& color, float tilingFactor)
 	{
 		DrawQuad(-1, transform, subTexture->GetTexture(), subTexture->GetTexCoords(), color, tilingFactor);
+	}
+
+	void LD_SIMD_CALLING_CONVENTION Renderer2D::DrawSprite(const DirectX::XMMATRIX& transform, const SpriteRendererComponent& sprite, int entityID)
+	{
+		DrawQuad(entityID, transform, sprite.Color);
 	}
 
 	void LD_SIMD_CALLING_CONVENTION Renderer2D::DrawQuad(int entityID, const DirectX::XMMATRIX& transform, const Ref<SubTexture2D>& subTexture, const DirectX::XMFLOAT4& color, float tilingFactor)
