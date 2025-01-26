@@ -23,4 +23,16 @@ namespace Ludo {
         return nullptr;
     }
 
+    Ref<ImGuiTexture> ImGuiTexture::Create(const Ref<SubTexture2D>& texture)
+    {
+        switch (RendererAPI::GetAPI())
+        {
+        case RendererAPI::API::None: LD_CORE_ASSERT(false, "None is not yet supported"); return nullptr;
+        case RendererAPI::API::DirectX12: return CreateRef<DirectX12ImGuiTexture>(texture);
+        }
+
+        LD_CORE_ASSERT(false, "Unknown Render API");
+        return nullptr;
+    }
+
 }

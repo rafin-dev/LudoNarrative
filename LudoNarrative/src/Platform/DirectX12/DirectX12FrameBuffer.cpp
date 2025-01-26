@@ -297,12 +297,9 @@ namespace Ludo {
 				D3D12_TEXTURE_COPY_LOCATION dest = {};
 				dest.pResource = m_ReadBacks[i];
 				dest.Type = D3D12_TEXTURE_COPY_TYPE_PLACED_FOOTPRINT;
-				dest.PlacedFootprint.Offset = 0;
-				dest.PlacedFootprint.Footprint.Width = m_Specification.Width;
-				dest.PlacedFootprint.Footprint.Height = m_Specification.Height;
-				dest.PlacedFootprint.Footprint.Depth = 1;
-				dest.PlacedFootprint.Footprint.RowPitch = Align(m_Specification.Width * m_Sizes[i], D3D12_TEXTURE_DATA_PITCH_ALIGNMENT); // Assure the row Pitch is a multiple of 256
-				dest.PlacedFootprint.Footprint.Format = m_Formats[i];
+
+				auto desc = m_ColorAttachments[i]->GetDesc();
+				DirectX12API::Get()->GetDevice()->GetCopyableFootprints(&desc, 0, 1, 0, &dest.PlacedFootprint, nullptr, nullptr, nullptr);
 
 				// Weird code to deal with texture data alignment
 				m_ReadBackAlignment[i] = (dest.PlacedFootprint.Footprint.RowPitch - (dest.PlacedFootprint.Footprint.Width * m_Sizes[i])) / m_Sizes[i];
@@ -442,11 +439,14 @@ namespace Ludo {
 		heapProperties.CreationNodeMask = 0;
 		heapProperties.VisibleNodeMask = 0;
 
+		UINT64 totalSize = 0;
+		auto desc = m_ColorAttachments[index]->GetDesc();
+		DirectX12API::Get()->GetDevice()->GetCopyableFootprints(&desc, 0, 1, 0, nullptr, nullptr, nullptr, &totalSize);
+
 		D3D12_RESOURCE_DESC resourceDescription = {};
 		resourceDescription.Dimension = D3D12_RESOURCE_DIMENSION_BUFFER;
 		resourceDescription.Alignment = D3D12_DEFAULT_RESOURCE_PLACEMENT_ALIGNMENT;
-		float rowPitch = Align(m_Specification.Width * m_Sizes[index], D3D12_TEXTURE_DATA_PITCH_ALIGNMENT);
-		resourceDescription.Width = rowPitch * m_Specification.Height;
+		resourceDescription.Width = totalSize;
 		resourceDescription.Height = 1;
 		resourceDescription.DepthOrArraySize = 1;
 		resourceDescription.MipLevels = 1;

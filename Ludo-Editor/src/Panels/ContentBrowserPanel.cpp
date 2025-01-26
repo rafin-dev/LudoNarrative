@@ -6,8 +6,8 @@ namespace Ludo {
 	{
 		m_CurrentDirectory = m_RootAssetsDirectory;
 	
-		m_FilledDirectoryIcon = ImGuiTexture::Create(Texture2D::Create("assets/incons/contentBrowser/DirectoryIcon.png"));
-		m_TextFileIcon = ImGuiTexture::Create(Texture2D::Create("assets/incons/contentBrowser/FileIcon.png"));
+		m_FilledDirectoryIcon = ImGuiTexture::Create(Texture2D::Create("assets/icons/contentBrowser/DirectoryIcon.png"));
+		m_TextFileIcon = ImGuiTexture::Create(Texture2D::Create("assets/icons/contentBrowser/FileIcon.png"));
 	}
 
 	void ContentBrowserPanel::OnImGuiRender()

@@ -31,6 +31,15 @@ namespace Ludo {
 
 		void SetImGuiDarkTheme();
 
+		void OnScenePlay();
+		void OnSceneStop();
+
+		// UI Toolbar
+		void RenderToolBar();
+
+		Ref<ImGuiTexture> m_PlayButtonIcon;
+		Ref<ImGuiTexture> m_StopButtonIcon;
+
 		EditorCamera m_EditorCamera;
 
 		Ref<FrameBuffer> m_FrameBuffer;
@@ -50,6 +59,14 @@ namespace Ludo {
 		// Panels
 		SceneHierarchyPanel m_SceneHierarchyPanel;
 		ContentBrowserPanel m_ContentBrowserPanel;
+
+		enum class SceneState
+		{
+			Edit = 0,
+			Play = 1
+		};
+
+		SceneState m_SceneState = SceneState::Edit;
 	};
 
 }

@@ -148,11 +148,11 @@ namespace Ludo {
 			
 			auto& spriteRenderer = entity.GetComponent<SpriteRendererComponent>();
 
-			out << YAML::Key << "TexturePath" << YAML::Value << spriteRenderer.SpriteTexturePath.string();
+			out << YAML::Key << "TexturePath" << YAML::Value << spriteRenderer.TexturePath.string();
 
-			out << YAML::Key << "Color" << YAML::Value << spriteRenderer.SpriteColor;
+			out << YAML::Key << "Color" << YAML::Value << spriteRenderer.Color;
 
-			out << YAML::Key << "TilingFactor" << YAML::Value << spriteRenderer.SpriteTilingFactor;
+			out << YAML::Key << "TilingFactor" << YAML::Value << spriteRenderer.TilingFactor;
 
 			out << YAML::EndMap; // SpriteRendererComponent
 		}
@@ -166,13 +166,18 @@ namespace Ludo {
 		out << YAML::BeginMap;
 		out << YAML::Key << "Scene" << YAML::Value << "Untitled Scene";
 		out << YAML::Key << "Entities" << YAML::Value << YAML::BeginSeq;
-		m_Scene->m_Registry.view<entt::entity>().each([&](entt::entity entityID) 
+
+		// Reverse iterate when serializing otherwise the entity order will flip every time it's saved to a file
+		auto view = m_Scene->m_Registry.view<entt::entity>();
+		for (auto entityITE = view.rbegin(); entityITE != view.rend(); entityITE++)
 		{
+			auto entityID = *entityITE;
+
 			Entity entity(entityID, m_Scene.get());
 			if (!entity) { return; }
 
 			SerializeEntity(out, entity);
-		});
+		}
 		out << YAML::EndSeq;
 		out << YAML::EndMap;
 
@@ -264,15 +269,15 @@ namespace Ludo {
 				if (spriteRendererComponentData)
 				{
 					auto& spriteRendererComponent = entity.AddComponent<SpriteRendererComponent>();
-					spriteRendererComponent.SpriteTexturePath = spriteRendererComponentData["TexturePath"].as<std::string>();
+					spriteRendererComponent.TexturePath = spriteRendererComponentData["TexturePath"].as<std::string>();
 
-					if (std::filesystem::exists(spriteRendererComponent.SpriteTexturePath))
+					if (std::filesystem::exists(spriteRendererComponent.TexturePath))
 					{
-						spriteRendererComponent.SpriteTexture = Texture2D::Create(spriteRendererComponent.SpriteTexturePath);
+						spriteRendererComponent.Texture = SubTexture2D::Create(Texture2D::Create(spriteRendererComponent.TexturePath));
 					}
 
-					spriteRendererComponent.SpriteColor = spriteRendererComponentData["Color"].as<DirectX::XMFLOAT4>();
-					spriteRendererComponent.SpriteTilingFactor = spriteRendererComponentData["TilingFactor"].as<float>();
+					spriteRendererComponent.Color = spriteRendererComponentData["Color"].as<DirectX::XMFLOAT4>();
+					spriteRendererComponent.TilingFactor = spriteRendererComponentData["TilingFactor"].as<float>();
 				}
 			}
 		}

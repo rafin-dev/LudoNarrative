@@ -11,7 +11,7 @@ namespace Ludo {
 
 	void SceneHierarchyPanel::SetContext(const Ref<Scene>& context)
 	{
-		m_SelectedEntity = Entity();
+		SetSelectedEntity(Entity());
 		m_Context = context;
 	}
 
@@ -36,7 +36,7 @@ namespace Ludo {
 		{
 			if (ImGui::MenuItem("Create Empty Entity"))
 			{
-				m_SelectedEntity = m_Context->CreateEntity("Empty Entity");
+				SetSelectedEntity(m_Context->CreateEntity("Empty Entity"));
 			}
 
 			ImGui::EndPopup();
@@ -57,23 +57,18 @@ namespace Ludo {
 	void SceneHierarchyPanel::SetSelectedEntity(Entity entity)
 	{
 		m_SelectedEntity = entity;
-		if (!m_SelectedEntity)
+		m_SelectedEntityImGuiTexture = nullptr;
+
+		if (m_SelectedEntity && m_SelectedEntity.HasComponent<SpriteRendererComponent>())
 		{
+			auto& sprite = entity.GetComponent<SpriteRendererComponent>();
+			if (sprite.Texture)
+			{
+				m_SelectedEntityImGuiTexture = ImGuiTexture::Create(sprite.Texture);
+			}
 			return;
 		}
 
-		if (m_SelectedEntity.HasComponent<SpriteRendererComponent>())
-		{
-			auto& sprite = entity.GetComponent<SpriteRendererComponent>();
-			if (sprite.SpriteTexture)
-			{
-				m_SelectedEntityImGuiTexture = ImGuiTexture::Create(sprite.SpriteTexture);
-			}
-			else
-			{
-				m_SelectedEntityImGuiTexture = nullptr;
-			}
-		}
 	}
 
 	void SceneHierarchyPanel::DrawEntityNode(Entity entity)
@@ -313,9 +308,16 @@ namespace Ludo {
 
 		DrawComponent<SpriteRendererComponent>(entity, "Sprite Renderer", true, true, [](Entity entity, SpriteRendererComponent& spriteComponent, SceneHierarchyPanel* panel)
 		{
+			if (ImGui::Button("Remove Texture"))
+			{
+				spriteComponent.Texture = nullptr;
+				spriteComponent.TexturePath = "None";
+				panel->m_SelectedEntityImGuiTexture = nullptr;
+			}
+
 			char buffer[256];
 			memset(buffer, 0, sizeof(buffer));
-			strcpy_s(buffer, sizeof(buffer), spriteComponent.SpriteTexturePath.string().c_str());
+			strcpy_s(buffer, sizeof(buffer), spriteComponent.TexturePath.string().c_str());
 			if (ImGui::InputText("Texture Path", buffer, 256))
 			{
 				panel->SetSelectedEntityTexture(buffer);
@@ -335,17 +337,18 @@ namespace Ludo {
 			if (panel->GetSelectedEntityImGuiTexture())
 			{
 				ImGui::SetCursorPosX((ImGui::GetWindowSize().x - width) * 0.5f);
+				ImGui::SetCursorPosX((ImGui::GetWindowSize().x - width) * 0.5f);
 				auto cursorPos = ImGui::GetCursorPos();
 				ImGui::ColorButton("##IBG", ImVec4(0.1f, 0.1f, 0.1f, 1.0f), ImGuiColorEditFlags_NoTooltip | ImGuiColorEditFlags_NoDragDrop, ImVec2{ width, width });
 
 				ImGui::SetNextItemAllowOverlap();
 				ImGui::SetCursorPos(cursorPos);
-				ImGui::Image(panel->GetSelectedEntityImGuiTexture()->GetImTextureID(), { width, width }, ImVec2(0, 0), ImVec2(1, 1), 
-					ImVec4(spriteComponent.SpriteColor.x, spriteComponent.SpriteColor.y, spriteComponent.SpriteColor.z, spriteComponent.SpriteColor.w));
+				ImGui::Image(panel->GetSelectedEntityImGuiTexture()->GetImTextureID(), { width, width }, ImVec2(0, 1), ImVec2(1, 0), 
+					ImVec4(spriteComponent.Color.x, spriteComponent.Color.y, spriteComponent.Color.z, spriteComponent.Color.w));
 			}
 
-			ImGui::ColorEdit4("Color", (float*)&spriteComponent.SpriteColor);
-			ImGui::InputFloat("Tilign Factor", &spriteComponent.SpriteTilingFactor);
+			ImGui::ColorEdit4("Color", (float*)&spriteComponent.Color);
+			ImGui::DragFloat("Tilign Factor", &spriteComponent.TilingFactor);
 		});
 
 		ImGui::Separator();
@@ -356,9 +359,9 @@ namespace Ludo {
 		if (std::filesystem::exists(path))
 		{
 			auto& sprite = m_SelectedEntity.GetComponent<SpriteRendererComponent>();
-			sprite.SpriteTexturePath = path;
-			sprite.SpriteTexture = Texture2D::Create(path);
-			m_SelectedEntityImGuiTexture = ImGuiTexture::Create(sprite.SpriteTexture);
+			sprite.TexturePath = path;
+			sprite.Texture = SubTexture2D::Create(Texture2D::Create(path));
+			m_SelectedEntityImGuiTexture = ImGuiTexture::Create(sprite.Texture);
 		}
 	}
 

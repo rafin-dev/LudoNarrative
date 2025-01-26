@@ -299,19 +299,13 @@ namespace Ludo {
 
 	void LD_SIMD_CALLING_CONVENTION Renderer2D::DrawSprite(const DirectX::XMMATRIX& transform, const SpriteRendererComponent& sprite, int entityID)
 	{
-		if (sprite.SpriteTexture)
+		if (sprite.Texture)
 		{
-			DirectX::XMFLOAT2 texCoords[] = {
-			{ 0.0f, 0.0f },
-			{ 0.0f, 1.0f },
-			{ 1.0f, 1.0f },
-			{ 1.0f, 0.0f }
-			};
-			DrawQuad(entityID, transform, sprite.SpriteTexture, texCoords, sprite.SpriteColor, sprite.SpriteTilingFactor);
+			DrawQuad(entityID, transform, sprite.Texture->GetTexture(), sprite.Texture->GetTexCoords(), sprite.Color, sprite.TilingFactor);
 		}
 		else
 		{
-			DrawQuad(entityID, transform, sprite.SpriteColor);
+			DrawQuad(entityID, transform, sprite.Color);
 		}
 	}
 

@@ -12,6 +12,11 @@ namespace Ludo {
 		m_TexCoords[3] = { max.x, min.y };
 	}
 
+	Ref<SubTexture2D> SubTexture2D::Create(const Ref<Texture2D>& texture, const DirectX::XMFLOAT2& min, const DirectX::XMFLOAT2& max)
+	{
+		return CreateRef<SubTexture2D>(texture, min, max);
+	}
+
 	Ref<SubTexture2D> SubTexture2D::CreateFromCoords(const Ref<Texture2D>& texture, const DirectX::XMFLOAT2& coords, const DirectX::XMFLOAT2& cellSize, const DirectX::XMFLOAT2& spriteSize)
 	{
 		float atlasWidth = (float)texture->GetWidth();

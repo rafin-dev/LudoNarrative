@@ -20,6 +20,8 @@ namespace Ludo {
 
 		bool Resize(size_t size);
 
+		void* GetMappedBuffer() { return m_Dest; }
+
 		ID3D12Resource2* const &  GetBuffer() { return m_UploadBuffer; }
 		size_t GetSize() { return m_Size; }
 

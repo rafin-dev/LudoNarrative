@@ -92,27 +92,32 @@ namespace Ludo {
 		return m_Height;
 	}
 
-#define Align(x, y) ((int)std::ceil((float)x / (float)y) * (int)y)
-
 	void DirectX12Texture2D::SetData(void* data, uint32_t size)
 	{
 		LD_PROFILE_RENDERER_FUNCTION();
 
 		LD_CORE_ASSERT(size <= m_Height * m_Width * sizeof(uint32_t), "Atempt to write out of texture bounds");
 
-		DX12UploadBuffer uploadBuffer;
-		uploadBuffer.Init(size);
-		uploadBuffer.FillBufferData(data, 0, size);
+		auto desc = m_Texture->GetDesc();
+		UINT64 totalSize = 0;
 
 		D3D12_TEXTURE_COPY_LOCATION src = {};
+		DirectX12API::Get()->GetDevice()->GetCopyableFootprints(&desc, 0, 1, 0, &src.PlacedFootprint, nullptr, nullptr, &totalSize);
+
+		DX12UploadBuffer uploadBuffer;
+		uploadBuffer.Init(totalSize);
+		uint8_t* destPtr = (uint8_t*)uploadBuffer.GetMappedBuffer();
+
+		memset(destPtr, 0, totalSize);
+		size_t rowSize = m_Width * sizeof(uint32_t);
+		for (uint32_t row = 0; row < m_Height; row++)
+		{
+			memcpy(destPtr, (uint8_t*)data + rowSize * row, m_Width * sizeof(uint32_t)); // Copy a single row
+			destPtr += src.PlacedFootprint.Footprint.RowPitch; // Advance the buffer pointer by a row pitch
+		}
+
 		src.pResource = uploadBuffer.GetBuffer();
 		src.Type = D3D12_TEXTURE_COPY_TYPE_PLACED_FOOTPRINT;
-		src.PlacedFootprint.Offset = 0;
-		src.PlacedFootprint.Footprint.Width = m_Width;
-		src.PlacedFootprint.Footprint.Height = m_Height;
-		src.PlacedFootprint.Footprint.Depth = 1;
-		src.PlacedFootprint.Footprint.RowPitch = Align(m_Width * sizeof(uint32_t), D3D12_TEXTURE_DATA_PITCH_ALIGNMENT); // Assure the row Pitch is a multiple of 256
-		src.PlacedFootprint.Footprint.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
 
 		D3D12_TEXTURE_COPY_LOCATION dest = {};
 		dest.pResource = m_Texture;

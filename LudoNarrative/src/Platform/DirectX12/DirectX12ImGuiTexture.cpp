@@ -7,11 +7,32 @@
 namespace Ludo {
 
 	DirectX12ImGuiTexture::DirectX12ImGuiTexture(const Ref<Texture2D>& texture)
+		: m_Texture(SubTexture2D::Create(texture))
+	{
+		LD_PROFILE_FUNCTION();
+
+		CreateImTextureID();
+	}
+
+	DirectX12ImGuiTexture::DirectX12ImGuiTexture(const Ref<SubTexture2D>& texture)
 		: m_Texture(texture)
 	{
 		LD_PROFILE_FUNCTION();
 
-		DirectX12Texture2D* d3d12Texture = dynamic_cast<DirectX12Texture2D*>(m_Texture.get());
+		CreateImTextureID();
+	}
+
+
+	DirectX12ImGuiTexture::~DirectX12ImGuiTexture()
+	{
+		LD_PROFILE_FUNCTION();
+
+		DirectX12API::Get()->GetSRVDescriptorHeap().Free(m_CpuHandle, m_GpuHandle);
+	}
+
+	void DirectX12ImGuiTexture::CreateImTextureID()
+	{
+		DirectX12Texture2D* d3d12Texture = dynamic_cast<DirectX12Texture2D*>(m_Texture->GetTexture().get());
 
 		DirectX12API::Get()->GetSRVDescriptorHeap().Alloc(&m_CpuHandle, &m_GpuHandle);
 
@@ -27,13 +48,6 @@ namespace Ludo {
 		DirectX12API::Get()->GetDevice()->CreateShaderResourceView(d3d12Texture->GetResource(), &srvDesc, m_CpuHandle);
 
 		m_ImTextureID = (ImTextureID)m_GpuHandle.ptr;
-	}
-
-	DirectX12ImGuiTexture::~DirectX12ImGuiTexture()
-	{
-		LD_PROFILE_FUNCTION();
-
-		DirectX12API::Get()->GetSRVDescriptorHeap().Free(m_CpuHandle, m_GpuHandle);
 	}
 	
 }

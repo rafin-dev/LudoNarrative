@@ -36,6 +36,9 @@ namespace Ludo {
 		m_ActiveScene = CreateRef<Scene>();
 
 		m_SceneHierarchyPanel.SetContext(m_ActiveScene);
+
+		m_PlayButtonIcon = ImGuiTexture::Create(Texture2D::Create("assets/icons/PlayButton.png"));
+		m_StopButtonIcon = ImGuiTexture::Create(Texture2D::Create("assets/icons/StopButton.png"));
 	}
 
 	void EditorLayer::OnDetach()
@@ -206,8 +209,12 @@ namespace Ludo {
 		{
 			if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
 			{
-				const wchar_t* path = (const wchar_t*)payload->Data;
-				OpenScene(path);
+				std::filesystem::path path((const wchar_t*)payload->Data);
+
+				if (path.extension() == ".LudoNarrative")
+				{
+					OpenScene(path);
+				}
 			}
 			ImGui::EndDragDropTarget();
 		}
@@ -218,7 +225,7 @@ namespace Ludo {
 
 		ImGui::SetNextItemAllowOverlap();
 		ImGui::SetCursorPos(minPlusPadding);
-		
+
 		ImGui::AlignTextToFramePadding();
 		ImGui::Text("Gizmo");
 		ImGui::SameLine();
@@ -239,6 +246,8 @@ namespace Ludo {
 
 		ImGui::End();
 		ImGui::PopStyleVar();
+
+		RenderToolBar();
 	}
 
 	bool EditorLayer::OnKeyPressed(KeyPressedEvent& event)
@@ -408,6 +417,38 @@ namespace Ludo {
 		
 		ImGuiThemeManager::AddTheme("Dark Theme", theme);
 		ImGuiThemeManager::SetCurrentTheme("Dark Theme");
+	}
+
+	void EditorLayer::OnScenePlay()
+	{
+		m_SceneState = SceneState::Play;
+	}
+
+	void EditorLayer::OnSceneStop()
+	{
+		m_SceneState = SceneState::Edit;
+	}
+
+	void EditorLayer::RenderToolBar()
+	{
+		ImGui::Begin("##toolbar", nullptr, /*ImGuiWindowFlags_NoDecoration |*/ ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse);
+
+		const Ref<ImGuiTexture>& icon = m_SceneState == SceneState::Edit ? m_PlayButtonIcon : m_StopButtonIcon;
+		if (ImGui::ImageButton("##playButton", icon->GetImTextureID(), ImVec2(200.0f, 200.0f)))
+		{
+			switch (m_SceneState)
+			{
+			case Ludo::EditorLayer::SceneState::Edit:
+				OnScenePlay();
+				break;
+
+			case Ludo::EditorLayer::SceneState::Play:
+				OnSceneStop();
+				break;
+			}
+		}
+
+		ImGui::End();
 	}
 
 }

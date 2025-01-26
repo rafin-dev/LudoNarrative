@@ -39,7 +39,7 @@ struct PS_OUTPUT
 
 PS_OUTPUT main(VS_OUTPUT input)
 {
-    float4 texel = Textures[int(input.TexIndex)].Sample(Sampler, input.TexPos * input.TilingFactor);
+    float4 texel = Textures[input.TexIndex].Sample(Sampler, input.TexPos * input.TilingFactor);
     PS_OUTPUT output;
     output.Color = texel * input.Color;
     output.EntityID = input.EntityID;
