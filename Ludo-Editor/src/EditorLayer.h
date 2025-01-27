@@ -45,7 +45,7 @@ namespace Ludo {
 		Ref<FrameBuffer> m_FrameBuffer;
 		Ref<Texture2D> m_Texture;
 	
-		Ref<Scene> m_ActiveScene;
+		Ref<Scene> m_ActiveEditorScene;
 
 		bool m_ViewportActive = false;
 		DirectX::XMFLOAT2 m_ViewportSize = { 0.0f, 0.0f };

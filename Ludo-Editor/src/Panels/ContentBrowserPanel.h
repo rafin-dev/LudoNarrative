@@ -1,7 +1,7 @@
 #pragma once
 
 #include <LudoNarrative.h>
-#include <imgui/imgui.h>
+#include <imgui.h>
 
 #include <filesystem>
 

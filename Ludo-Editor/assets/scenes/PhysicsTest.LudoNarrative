@@ -1,0 +1,63 @@
+Scene: Untitled Scene
+MainCamera: 13140600133157553358
+Entities:
+  - Entity: 13140600133157553358
+    TagComponent:
+      Tag: Camera
+    TransformComponent:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    CameraComponent:
+      Camera:
+        ProjectionType: Orthographic
+        PerspectiveFOV: 45
+        PerspectiveNear: 0.01
+        PerspectiveFar: 1000
+        OrthographicSize: 10
+        OrthographicNear: 0
+        OrthographicFar: 10
+      Primary: true
+      FixedAspectRatio: false
+  - Entity: 14729827201718237215
+    TagComponent:
+      Tag: Dynamic Body
+    TransformComponent:
+      Translation: [0, 2.4, 0]
+      Rotation: [0, 0, 1.5707942]
+      Scale: [1, 1, 1]
+    SpriteRendererComponent:
+      TexturePath: None
+      Color: [1, 1, 1, 1]
+      TilingFactor: 1
+    Rigidbody2D:
+      BodyType: Dynamic
+      FixedRotation: false
+    BoxCollider2D:
+      Offset: [0, 0]
+      Size: [0.5, 0.5]
+      Rotation: 0
+      Density: 1
+      Friction: 0.5
+      Restitution: 0
+  - Entity: 1412385882800605298
+    TagComponent:
+      Tag: Ground
+    TransformComponent:
+      Translation: [0, -2.9, 0]
+      Rotation: [0, 0, 0]
+      Scale: [8.9, 1, 1]
+    SpriteRendererComponent:
+      TexturePath: None
+      Color: [0.115044236, 1, 0, 1]
+      TilingFactor: 1
+    Rigidbody2D:
+      BodyType: Static
+      FixedRotation: false
+    BoxCollider2D:
+      Offset: [0, 0]
+      Size: [0.5, 0.5]
+      Rotation: 0
+      Density: 1
+      Friction: 0.5
+      Restitution: 0

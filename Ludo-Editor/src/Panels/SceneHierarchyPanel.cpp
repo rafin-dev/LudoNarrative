@@ -15,6 +15,11 @@ namespace Ludo {
 		m_Context = context;
 	}
 
+	const Ref<Scene>& SceneHierarchyPanel::GetContext()
+	{
+		return m_Context;
+	}
+
 	void SceneHierarchyPanel::OnImGuiRender()
 	{
 		ImGui::Begin("Scene Hierarchy");
@@ -105,6 +110,68 @@ namespace Ludo {
 				SetSelectedEntity(Entity());
 			}
 		}
+	}
+
+	static void DrawVec2Control(const std::string& label, DirectX::XMFLOAT2& values, float resetValue = 0.0f, float coloumnWidth = 100)
+	{
+		auto fontManager = ImGuiFontManager::Get();
+
+		auto labelHash = std::hash<std::string>{}(label);
+		ImGui::PushID(labelHash++);
+		ImGui::Columns(2);
+		ImGui::SetColumnWidth(0, coloumnWidth);
+		ImGui::PopID();
+
+		ImGui::Text(label.c_str());
+
+		ImGui::NextColumn();
+
+		ImGui::PushMultiItemsWidths(3, ImGui::CalcItemWidth());
+		ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2{ 0.0f, 0.0f });
+
+		float lineHeight = ImGui::GetFont()->FontSize + ImGui::GetStyle().FramePadding.y * 2.0f;
+		ImVec2 buttonSize = { lineHeight + 3.0f, lineHeight };
+
+		ImGui::PushStyleColor(ImGuiCol_Button, ImVec4{ 0.8f, 0.1f, 0.15f, 1.0f });
+		ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4{ 0.9f, 0.2f, 0.2f, 1.0f });
+		ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4{ 0.8f, 0.1f, 0.15f, 1.0f });
+		fontManager->PushDefaultFontBoldStyle();
+		ImGui::PushID(labelHash++);
+		if (ImGui::Button("X", buttonSize))
+		{
+			values.x = resetValue;
+		}
+		ImGui::PopID();
+		fontManager->PopDefaultFontStyle();
+		ImGui::PopStyleColor(3);
+		ImGui::SameLine();
+
+		ImGui::PushID(labelHash++);
+		ImGui::DragFloat("##x", &values.x, 0.1f, 0.0f, 0.0f, "%.2f");
+		ImGui::PopID();
+		ImGui::PopItemWidth();
+		ImGui::SameLine();
+
+		ImGui::PushStyleColor(ImGuiCol_Button, ImVec4{ 0.2f, 0.7f, 0.3f, 1.0f });
+		ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4{ 0.3f, 0.8f, 0.3f, 1.0f });
+		ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4{ 0.2f, 0.7f, 0.3f, 1.0f });
+		fontManager->PushDefaultFontBoldStyle();
+		ImGui::PushID(labelHash++);
+		if (ImGui::Button("Y", buttonSize))
+		{
+			values.y = resetValue;
+		}
+		ImGui::PopID();
+		fontManager->PopDefaultFontStyle();
+		ImGui::PopStyleColor(3);
+		ImGui::SameLine();
+
+		ImGui::PushID(labelHash++);
+		ImGui::DragFloat("##y", &values.y, 0.1f, 0.0f, 0.0f, "%.2f");
+		ImGui::PopID();
+		ImGui::PopItemWidth();
+		ImGui::PopStyleVar(1);
+		ImGui::Columns(1);
 	}
 
 	static void DrawVec3Control(const std::string& label, DirectX::XMFLOAT3& values, float resetValue = 0.0f, float coloumnWidth = 100)
@@ -226,6 +293,20 @@ namespace Ludo {
 					ImGui::CloseCurrentPopup();
 				}
 
+				if (ImGui::MenuItem("Rigidbody2D", nullptr, false, !m_SelectedEntity.HasComponent<Rigidbody2DComponent>()))
+				{
+					m_SelectedEntity.AddComponent<Rigidbody2DComponent>();
+
+					ImGui::CloseCurrentPopup();
+				}
+
+				if (ImGui::MenuItem("Box Collider2D", nullptr, false, !m_SelectedEntity.HasComponent<BoxCollider2DComponent>()))
+				{
+					m_SelectedEntity.AddComponent<BoxCollider2DComponent>();
+
+					ImGui::CloseCurrentPopup();
+				}
+
 				ImGui::EndPopup();
 			}
 			ImGui::PopItemWidth();
@@ -249,11 +330,22 @@ namespace Ludo {
 				ImGui::Spacing();
 			});
 
-		DrawComponent<CameraComponent>(entity, "Camera", true, true, [](Entity entity, CameraComponent& cameraComponent, auto*) 
+		DrawComponent<CameraComponent>(entity, "Camera", true, true, [](Entity entity, CameraComponent& cameraComponent, SceneHierarchyPanel* panel)
 		{
 			auto& camera = cameraComponent.Camera;
 
-			ImGui::Checkbox("Primary", &cameraComponent.Primary);
+			bool isMainCamera = entity.IsMainCamera();
+			if (ImGui::Checkbox("Primary", &isMainCamera))
+			{
+				if (isMainCamera)
+				{
+					entity.SetAsMainCamera();
+				}
+				else
+				{
+					panel->GetContext()->SetMainCamera(Entity());
+				}
+			}
 
 			const char* projectionTypeStrings[] = { "Perspective", "Orthographic" };
 			const char* currentProjectionTypeString = projectionTypeStrings[(int)camera.GetProjectionType()];
@@ -308,13 +400,6 @@ namespace Ludo {
 
 		DrawComponent<SpriteRendererComponent>(entity, "Sprite Renderer", true, true, [](Entity entity, SpriteRendererComponent& spriteComponent, SceneHierarchyPanel* panel)
 		{
-			if (ImGui::Button("Remove Texture"))
-			{
-				spriteComponent.Texture = nullptr;
-				spriteComponent.TexturePath = "None";
-				panel->m_SelectedEntityImGuiTexture = nullptr;
-			}
-
 			char buffer[256];
 			memset(buffer, 0, sizeof(buffer));
 			strcpy_s(buffer, sizeof(buffer), spriteComponent.TexturePath.string().c_str());
@@ -336,6 +421,12 @@ namespace Ludo {
 			auto width = ImGui::GetContentRegionAvail().x / 2;
 			if (panel->GetSelectedEntityImGuiTexture())
 			{
+				bool removeTexture = false;
+				if (ImGui::Button("Remove Texture"))
+				{
+					removeTexture = true;
+				}
+
 				ImGui::SetCursorPosX((ImGui::GetWindowSize().x - width) * 0.5f);
 				ImGui::SetCursorPosX((ImGui::GetWindowSize().x - width) * 0.5f);
 				auto cursorPos = ImGui::GetCursorPos();
@@ -345,11 +436,77 @@ namespace Ludo {
 				ImGui::SetCursorPos(cursorPos);
 				ImGui::Image(panel->GetSelectedEntityImGuiTexture()->GetImTextureID(), { width, width }, ImVec2(0, 1), ImVec2(1, 0), 
 					ImVec4(spriteComponent.Color.x, spriteComponent.Color.y, spriteComponent.Color.z, spriteComponent.Color.w));
+
+				if (ImGui::BeginDragDropTarget())
+				{
+					if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
+					{
+						const wchar_t* path = (const wchar_t*)payload->Data;
+						panel->SetSelectedEntityTexture(path);
+					}
+					ImGui::EndDragDropTarget();
+				}
+
+				if (removeTexture)
+				{
+					spriteComponent.Texture = nullptr;
+					spriteComponent.TexturePath = "None";
+					panel->m_SelectedEntityImGuiTexture = nullptr;
+				}
 			}
 
 			ImGui::ColorEdit4("Color", (float*)&spriteComponent.Color);
 			ImGui::DragFloat("Tilign Factor", &spriteComponent.TilingFactor);
 		});
+
+		DrawComponent<Rigidbody2DComponent>(entity, "Rigidbody2D", true, true, [](Entity entity, Rigidbody2DComponent& rigidbody, SceneHierarchyPanel* panel)
+		{
+			const char* bodyTypeStrings[] = { "Static", "Dynamic", "Kinematic" };
+			const char* currentBodyTypeString = bodyTypeStrings[(int)rigidbody.Type];
+
+			if (ImGui::BeginCombo("Body Type", currentBodyTypeString))
+			{
+				for (int i = 0; i < 3; i++)
+				{
+					bool isSelected = currentBodyTypeString == bodyTypeStrings[i];
+
+					if (ImGui::Selectable(bodyTypeStrings[i], isSelected))
+					{
+						currentBodyTypeString = bodyTypeStrings[i];
+						rigidbody.Type = (Rigidbody2DComponent::BodyType)i;
+					}
+
+					if (isSelected)
+					{
+						ImGui::SetItemDefaultFocus();
+					}
+				}
+
+				ImGui::EndCombo();
+			}
+
+			ImGui::Checkbox("Fixed Rotation", &rigidbody.FixedRotation);
+		});
+
+		DrawComponent<BoxCollider2DComponent>(entity, "Box Collider2D", true, true, [](Entity entity, BoxCollider2DComponent& boxCollider, SceneHierarchyPanel* panel)
+			{
+				if (!entity.HasComponent<Rigidbody2DComponent>())
+				{
+					ImGui::TextColored(ImVec4(1.0f, 0.0f, 0.0f, 1.0f), "Box Collider2D Requires a Rigidbody2D to work!");
+				}
+
+				DrawVec2Control("Offset", boxCollider.Offset);
+				DrawVec2Control("Size", boxCollider.Size);
+				float rotation = DirectX::XMConvertToDegrees(boxCollider.Rotation);
+				if (ImGui::DragFloat("Rotation", &rotation))
+				{
+					boxCollider.Rotation = DirectX::XMConvertToRadians(rotation);
+				}
+
+				ImGui::DragFloat("Density", &boxCollider.Density);
+				ImGui::DragFloat("Friction", &boxCollider.Friction);
+				ImGui::DragFloat("Restitution", &boxCollider.Restitution);
+			});
 
 		ImGui::Separator();
 	}

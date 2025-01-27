@@ -6,11 +6,11 @@
 #include "Platform/DirectX12/DirectX12Context.h"
 #include "Platform/DirectX12/DirectX12Shader.h"
 
-#include <imgui/imgui.h>
-#include <imgui/backends/imgui_impl_dx12.h>
-#include <imgui/backends/imgui_impl_win32.h>
+#include <imgui.h>
+#include <backends/imgui_impl_dx12.h>
+#include <backends/imgui_impl_win32.h>
 
-#include <ImGuizmo/ImGuizmo.h>
+#include <ImGuizmo.h>
 
 namespace Ludo {
 

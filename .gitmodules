@@ -10,3 +10,6 @@
 [submodule "LudoNarrative/vendor/ImGuizmo"]
 	path = LudoNarrative/vendor/ImGuizmo
 	url = https://github.com/CedricGuillemet/ImGuizmo.git
+[submodule "LudoNarrative/vendor/Box2D"]
+	path = LudoNarrative/vendor/Box2D
+	url = https://github.com/erincatto/box2d.git

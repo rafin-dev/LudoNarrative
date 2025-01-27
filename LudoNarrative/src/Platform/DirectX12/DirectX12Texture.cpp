@@ -5,7 +5,7 @@
 #include "Platform/DirectX12/Utils/DX12UploadBuffer.h"
 #include "Platform/DirectX12/DirectX12API.h"
 
-#include <stb_image/stb_image.h>
+#include <stb_image.h>
 
 namespace Ludo {
 

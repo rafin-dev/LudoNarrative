@@ -4,7 +4,7 @@
 #include "Ludo/Renderer/Texture.h"
 #include "Ludo/Renderer/SubTexture2D.h"
 
-#include <imgui/imgui.h>
+#include <imgui.h>
 
 namespace Ludo {
 

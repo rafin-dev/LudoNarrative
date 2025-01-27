@@ -2,7 +2,7 @@
 
 #include "Style/ImGuiThemeManager.h"
 
-#include <ImGuizmo/ImGuizmo.h>
+#include <ImGuizmo.h>
 
 #define _USE_MATH_DEFINES
 #include <cmath>
@@ -33,9 +33,9 @@ namespace Ludo {
 
 		m_EditorCamera = EditorCamera(30.0f, 1.0f, 0.01f, 1000.0f);
 
-		m_ActiveScene = CreateRef<Scene>();
+		m_ActiveEditorScene = CreateRef<Scene>();
 
-		m_SceneHierarchyPanel.SetContext(m_ActiveScene);
+		m_SceneHierarchyPanel.SetContext(m_ActiveEditorScene);
 
 		m_PlayButtonIcon = ImGuiTexture::Create(Texture2D::Create("assets/icons/PlayButton.png"));
 		m_StopButtonIcon = ImGuiTexture::Create(Texture2D::Create("assets/icons/StopButton.png"));
@@ -55,7 +55,7 @@ namespace Ludo {
 			m_ResizeFrameBuffer = false;
 
 			m_FrameBuffer->Resize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
-			m_ActiveScene->OnViewportResize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
+			m_ActiveEditorScene->OnViewportResize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
 			m_EditorCamera.SetViewportSize(m_ViewportSize.x, m_ViewportSize.y);
 		}
 
@@ -68,15 +68,26 @@ namespace Ludo {
 
 		m_FrameBuffer->Bind();
 
-		m_ActiveScene->OnUpdateEditor(ts, m_EditorCamera);
+		switch (m_SceneState)
+		{
+			case Ludo::EditorLayer::SceneState::Edit:
+			{
+				m_ActiveEditorScene->OnUpdateEditor(ts, m_EditorCamera);
+				break;
+			}
+			case Ludo::EditorLayer::SceneState::Play:
+			{
+				m_ActiveEditorScene->OnUpdateRuntime(ts);
+				break;
+			}
+		}
+		m_FrameBuffer->Unbind();
 
 		auto [mx, my] = ImGui::GetMousePos();
 		mx -= m_MinViewportBounds.x;
 		my -= m_MinViewportBounds.y;
 		MouseX = (int)mx;
 		MouseY = (int)my;
-
-		m_FrameBuffer->Unbind();
 	}
 
 	void EditorLayer::OnEvent(Event& event)
@@ -166,7 +177,7 @@ namespace Ludo {
 
 		// Gizmos
 		Entity selectedEntity = m_SceneHierarchyPanel.GetSelectedEntity();
-		if (selectedEntity && m_GizmoType != -1)
+		if (selectedEntity && m_SceneState == SceneState::Edit && m_GizmoType != -1)
 		{
 			ImGuizmo::SetOrthographic(false);
 			ImGuizmo::SetDrawlist();
@@ -322,7 +333,7 @@ namespace Ludo {
 			}
 			else 
 			{
-				m_SceneHierarchyPanel.SetSelectedEntity(Entity((entt::entity)ID, m_ActiveScene.get()));
+				m_SceneHierarchyPanel.SetSelectedEntity(Entity((entt::entity)ID, m_ActiveEditorScene.get()));
 			}
 
 			return true;
@@ -333,9 +344,9 @@ namespace Ludo {
 
 	void EditorLayer::NewScene()
 	{
-		m_ActiveScene = CreateRef<Scene>();
-		m_SceneHierarchyPanel.SetContext(m_ActiveScene);
-		m_ActiveScene->OnViewportResize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
+		m_ActiveEditorScene = CreateRef<Scene>();
+		m_SceneHierarchyPanel.SetContext(m_ActiveEditorScene);
+		m_ActiveEditorScene->OnViewportResize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
 	}
 
 	void EditorLayer::OpenScene()
@@ -343,11 +354,11 @@ namespace Ludo {
 		auto path = FileDialogs::OpenFile("LudoNarrative Scene (*.LudoNarrative)\0*.LudoNarrative\0");
 		if (!path.empty())
 		{
-			m_ActiveScene = CreateRef<Scene>();
-			m_SceneHierarchyPanel.SetContext(m_ActiveScene);
-			m_ActiveScene->OnViewportResize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
+			m_ActiveEditorScene = CreateRef<Scene>();
+			m_SceneHierarchyPanel.SetContext(m_ActiveEditorScene);
+			m_ActiveEditorScene->OnViewportResize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
 
-			SceneSerializer serializer(m_ActiveScene);
+			SceneSerializer serializer(m_ActiveEditorScene);
 			serializer.DeserializeFromYamlFile(path);
 		}
 	}
@@ -356,11 +367,11 @@ namespace Ludo {
 	{
 		LD_CORE_ASSERT(std::filesystem::exists(path), "Scene File Does not exist");
 
-		m_ActiveScene = CreateRef<Scene>();
-		m_SceneHierarchyPanel.SetContext(m_ActiveScene);
-		m_ActiveScene->OnViewportResize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
+		m_ActiveEditorScene = CreateRef<Scene>();
+		m_SceneHierarchyPanel.SetContext(m_ActiveEditorScene);
+		m_ActiveEditorScene->OnViewportResize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
 
-		SceneSerializer serializer(m_ActiveScene);
+		SceneSerializer serializer(m_ActiveEditorScene);
 		serializer.DeserializeFromYamlFile(path);
 	}
 
@@ -369,7 +380,7 @@ namespace Ludo {
 		auto path = FileDialogs::SaveFile("LudoNarrative Scene (*.LudoNarrative)\0*.LudoNarrative\0");
 		if (!path.empty())
 		{
-			SceneSerializer serializer(m_ActiveScene);
+			SceneSerializer serializer(m_ActiveEditorScene);
 			serializer.SerializeToYamlFile(path);
 		}
 	}
@@ -421,20 +432,31 @@ namespace Ludo {
 
 	void EditorLayer::OnScenePlay()
 	{
+		m_ActiveEditorScene->OnRuntimeStart();
 		m_SceneState = SceneState::Play;
 	}
 
 	void EditorLayer::OnSceneStop()
 	{
+		m_ActiveEditorScene->OnRuntimeStop();
 		m_SceneState = SceneState::Edit;
 	}
 
 	void EditorLayer::RenderToolBar()
 	{
-		ImGui::Begin("##toolbar", nullptr, /*ImGuiWindowFlags_NoDecoration |*/ ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse);
+		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 2));
+		ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(0, 2));
+		ImGui::PushStyleVar(ImGuiStyleVar_ItemInnerSpacing, ImVec2(0, 0));
+		ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.0f, 0.0f, 0.0f, 0.0f));
+		ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.3f, 0.305f, 0.31f, 0.5f));
+		ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0.0f, 0.0f, 0.0f, 0.0f));
 
+		ImGui::Begin("##toolbar", nullptr, ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse);
+
+		float size = ImGui::GetWindowHeight() - 4.0f;
 		const Ref<ImGuiTexture>& icon = m_SceneState == SceneState::Edit ? m_PlayButtonIcon : m_StopButtonIcon;
-		if (ImGui::ImageButton("##playButton", icon->GetImTextureID(), ImVec2(200.0f, 200.0f)))
+		ImGui::SetCursorPosX((ImGui::GetWindowContentRegionMax().x * 0.5f) - (size * 0.5f));
+		if (ImGui::ImageButton("##playButton", icon->GetImTextureID(), ImVec2(size, size)))
 		{
 			switch (m_SceneState)
 			{
@@ -448,6 +470,8 @@ namespace Ludo {
 			}
 		}
 
+		ImGui::PopStyleVar(3);
+		ImGui::PopStyleColor(3);
 		ImGui::End();
 	}
 

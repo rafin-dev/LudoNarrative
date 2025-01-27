@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Style/ImGuiFontManager.h"
-#include <imgui/imgui.h>
+#include <imgui.h>
 
 namespace Ludo{
 

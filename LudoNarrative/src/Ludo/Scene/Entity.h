@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Ludo/Scene/Scene.h"
+#include "Ludo/Scene/Components.h"
 
 #include <entt.hpp>
 
@@ -30,7 +31,7 @@ namespace Ludo {
 		}
 
 		template<typename T>
-		bool HasComponent() const
+		bool HasComponent()
 		{
 			return m_Scene->m_Registry.all_of<T>(m_EntityHandle);
 		}
@@ -40,6 +41,21 @@ namespace Ludo {
 		{
 			LD_CORE_ASSERT(HasComponent<T>(), "Entity does not have component");
 			m_Scene->m_Registry.remove<T>(m_EntityHandle);
+		}
+
+		UUID GetUUID()
+		{
+			return GetComponent<IDComponent>().ID;
+		}
+
+		void SetAsMainCamera()
+		{
+			m_Scene->SetMainCamera(*this);
+		}
+
+		bool IsMainCamera()
+		{
+			return m_Scene->GetMainCamera() == *this;
 		}
 
 		operator bool() const { return m_EntityHandle != entt::null && m_Scene->m_Registry.valid(m_EntityHandle); }

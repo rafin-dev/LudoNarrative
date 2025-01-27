@@ -11,6 +11,30 @@
 namespace YAML {
 
 	template<>
+	struct convert<DirectX::XMFLOAT2>
+	{
+		static Node encode(const DirectX::XMFLOAT2& rhs)
+		{
+			Node node;
+			node.push_back(rhs.x);
+			node.push_back(rhs.y);
+			return node;
+		}
+
+		static bool decode(const Node& node, DirectX::XMFLOAT2& rhs)
+		{
+			if (!node.IsSequence() || node.size() != 2)
+			{
+				return false;
+			}
+
+			rhs.x = node[0].as<float>();
+			rhs.y = node[1].as<float>();
+			return true;
+		}
+	};
+
+	template<>
 	struct convert<DirectX::XMFLOAT3>
 	{
 		static Node encode(const DirectX::XMFLOAT3& rhs)
@@ -87,10 +111,84 @@ namespace Ludo {
 		return out;
 	}
 
+	static YAML::Emitter& operator<<(YAML::Emitter& out, const DirectX::XMFLOAT2& vec3)
+	{
+		out << YAML::Flow;
+		out << YAML::BeginSeq << vec3.x << vec3.y << YAML::EndSeq;
+		return out;
+	}
+
+	static std::string GetProjectionTypeName(SceneCamera::ProjectionType type)
+	{
+		switch (type)
+		{
+		case SceneCamera::ProjectionType::Perspective:
+			return "Perspective";
+		case SceneCamera::ProjectionType::Orthographic:
+			return "Orthographic";
+		}
+
+		LD_CORE_ASSERT(false, "Unknown Projection Type");
+		return "Perspective";
+	}
+
+	static SceneCamera::ProjectionType GetProjectionTypeFromName(const std::string& name)
+	{
+		if (name == "Perspective")
+		{
+			return SceneCamera::ProjectionType::Perspective;
+		}
+		else if (name == "Orthographic")
+		{
+			return SceneCamera::ProjectionType::Orthographic;
+		}
+
+		LD_CORE_ASSERT(false, "Unknown Projection Type");
+		return SceneCamera::ProjectionType::Perspective;
+	}
+
+	static std::string GetBodyTypeName(Rigidbody2DComponent::BodyType type)
+	{
+		switch (type)
+		{
+		case Ludo::Rigidbody2DComponent::BodyType::Static:
+			return "Static";
+		case Ludo::Rigidbody2DComponent::BodyType::Dynamic:
+			return "Dynamic";
+		case Ludo::Rigidbody2DComponent::BodyType::Kinematic:
+			return "Kinematic";
+		}
+
+		LD_CORE_ASSERT(false, "Unknown Body Type");
+		return "Static";
+	}
+
+	static Rigidbody2DComponent::BodyType GetBodyTypeFromName(const std::string& name)
+	{
+		if (name == "Static")
+		{
+			return Rigidbody2DComponent::BodyType::Static;
+		}
+		else if (name == "Dynamic")
+		{
+			return Rigidbody2DComponent::BodyType::Dynamic;
+		}
+		else if (name == "Kinematic")
+		{
+			return Rigidbody2DComponent::BodyType::Kinematic;
+		}
+
+		LD_CORE_ASSERT(false, "Unknown Body Type");
+		return Rigidbody2DComponent::BodyType::Static;
+	}
+
 	static void SerializeEntity(YAML::Emitter& out, Entity entity)
 	{
+		LD_CORE_ASSERT(entity.HasComponent<IDComponent>(), "Entity has no UUID");
+
 		out << YAML::BeginMap; // Entity
-		out << YAML::Key << "Entity" << YAML::Value << "1234567"; // TODO: Entity UUID
+
+		out << YAML::Key << "Entity" << YAML::Value << entity.GetUUID();
 
 		if (entity.HasComponent<TagComponent>())
 		{
@@ -128,7 +226,7 @@ namespace Ludo {
 			auto& camera = cameraComponent.Camera;
 
 			out << YAML::Key << "Camera" << YAML::Value << YAML::BeginMap; // Camera
-			out << YAML::Key << "ProjectionType" << YAML::Value << (int)camera.GetProjectionType();
+			out << YAML::Key << "ProjectionType" << YAML::Value << GetProjectionTypeName(camera.GetProjectionType());
 			out << YAML::Key << "PerspectiveFOV" << YAML::Value << DirectX::XMConvertToDegrees(camera.GetPerspectiveVerticalFov());
 			out << YAML::Key << "PerspectiveNear" << YAML::Value << camera.GetPerspectiveNearClip();
 			out << YAML::Key << "PerspectiveFar" << YAML::Value << camera.GetPerspectiveFarClip();
@@ -137,7 +235,6 @@ namespace Ludo {
 			out << YAML::Key << "OrthographicFar" << YAML::Value << camera.GetOrthographicFarClip();
 			out << YAML::EndMap; // Camera
 
-			out << YAML::Key << "Primary" << YAML::Value << cameraComponent.Primary;
 			out << YAML::Key << "FixedAspectRatio" << YAML::Value << cameraComponent.FixedAspectRatio;
 
 			out << YAML::EndMap; // CameraComponent
@@ -156,6 +253,33 @@ namespace Ludo {
 
 			out << YAML::EndMap; // SpriteRendererComponent
 		}
+		if (entity.HasComponent<Rigidbody2DComponent>())
+		{
+			out << YAML::Key << "Rigidbody2D" << YAML::BeginMap; // RigidBody2D
+
+			auto& rigidBody = entity.GetComponent<Rigidbody2DComponent>();
+
+			out << YAML::Key << "BodyType" << YAML::Value << GetBodyTypeName(rigidBody.Type);
+			out << YAML::Key << "FixedRotation" << YAML::Value << rigidBody.FixedRotation;
+
+			out << YAML::EndMap; // RigidBody2D
+		}
+		if (entity.HasComponent<BoxCollider2DComponent>())
+		{
+			out << YAML::Key << "BoxCollider2D" << YAML::BeginMap; // BoxCollider2D
+
+			auto& boxCollider = entity.GetComponent<BoxCollider2DComponent>();
+
+			out << YAML::Key << "Offset" << YAML::Value << boxCollider.Offset;
+			out << YAML::Key << "Size" << YAML::Value << boxCollider.Size;
+			out << YAML::Key << "Rotation" << YAML::Value << DirectX::XMConvertToDegrees(boxCollider.Rotation);
+
+			out << YAML::Key << "Density" << YAML::Value << boxCollider.Density;
+			out << YAML::Key << "Friction" << YAML::Value << boxCollider.Friction;
+			out << YAML::Key << "Restitution" << YAML::Value << boxCollider.Restitution;
+
+			out << YAML::EndMap; // BoxCollider2D
+		}
 
 		out << YAML::EndMap; // Entity
 	}
@@ -165,6 +289,11 @@ namespace Ludo {
 		YAML::Emitter out;
 		out << YAML::BeginMap;
 		out << YAML::Key << "Scene" << YAML::Value << "Untitled Scene";
+
+		UUID cameraID = m_Scene->GetMainCamera() ? m_Scene->GetMainCamera().GetUUID() : UUID(0);
+
+		out << YAML::Key << "MainCamera" << YAML::Value << cameraID;
+
 		out << YAML::Key << "Entities" << YAML::Value << YAML::BeginSeq;
 
 		// Reverse iterate when serializing otherwise the entity order will flip every time it's saved to a file
@@ -217,6 +346,8 @@ namespace Ludo {
 		std::string sceneName = data["Scene"].as<std::string>();
 		LD_CORE_TRACE("Deserializing Scene {0}", sceneName);
 
+		UUID cameraID = data["MainCamera"].as<uint64_t>();
+
 		auto entities = data["Entities"];
 		if (entities)
 		{
@@ -233,7 +364,7 @@ namespace Ludo {
 
 				LD_CORE_TRACE("Deserialized Entity with ID = {0}, name = {1}", uuid, name);
 
-				Entity entity = m_Scene->CreateEntity(name);
+				Entity entity = m_Scene->CreateEntitytWithUUID(uuid, name);
 
 				auto transformComponentData = entityData["TransformComponent"];
 				if (transformComponentData)
@@ -251,7 +382,7 @@ namespace Ludo {
 
 					auto cameraData = cameraComponentData["Camera"];
 					auto& camera = cameraComponent.Camera;
-					camera.SetProjectionType((SceneCamera::ProjectionType)cameraData["ProjectionType"].as<int>());
+					camera.SetProjectionType(GetProjectionTypeFromName(cameraData["ProjectionType"].as<std::string>()));
 
 					camera.SetPerspectiveVerticalFov(DirectX::XMConvertToRadians(cameraData["PerspectiveFOV"].as<float>()));
 					camera.SetPerspectiveNearClip(cameraData["PerspectiveNear"].as<float>());
@@ -261,7 +392,6 @@ namespace Ludo {
 					camera.SetOrthographicNearClip(cameraData["OrthographicNear"].as<float>());
 					camera.SetOrthographicFarClip(cameraData["OrthographicFar"].as<float>());
 					
-					cameraComponent.Primary = cameraComponentData["Primary"].as<bool>();
 					cameraComponent.FixedAspectRatio = cameraComponentData["FixedAspectRatio"].as<bool>();
 				}
 
@@ -278,6 +408,34 @@ namespace Ludo {
 
 					spriteRendererComponent.Color = spriteRendererComponentData["Color"].as<DirectX::XMFLOAT4>();
 					spriteRendererComponent.TilingFactor = spriteRendererComponentData["TilingFactor"].as<float>();
+				}
+
+				auto rigidbody2DData = entityData["Rigidbody2D"];
+				if (rigidbody2DData)
+				{
+					auto& rigidbody2D = entity.AddComponent<Rigidbody2DComponent>();
+
+					rigidbody2D.Type = GetBodyTypeFromName(rigidbody2DData["BodyType"].as<std::string>());
+					rigidbody2D.FixedRotation = rigidbody2DData["FixedRotation"].as<bool>();
+				}
+
+				auto boxCollider2DData = entityData["BoxCollider2D"];
+				if (boxCollider2DData)
+				{
+					auto& boxCollider2D = entity.AddComponent<BoxCollider2DComponent>();
+
+					boxCollider2D.Offset = boxCollider2DData["Offset"].as<DirectX::XMFLOAT2>();
+					boxCollider2D.Size = boxCollider2DData["Size"].as<DirectX::XMFLOAT2>();
+					boxCollider2D.Rotation = DirectX::XMConvertToRadians(boxCollider2DData["Rotation"].as<float>());
+
+					boxCollider2D.Density = boxCollider2DData["Density"].as<float>();
+					boxCollider2D.Friction = boxCollider2DData["Friction"].as<float>();
+					boxCollider2D.Restitution = boxCollider2DData["Restitution"].as<float>();
+				}
+
+				if (uuid == cameraID)
+				{
+					m_Scene->SetMainCamera(entity);
 				}
 			}
 		}

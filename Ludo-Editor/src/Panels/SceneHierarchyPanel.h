@@ -2,7 +2,7 @@
 
 #include <LudoNarrative.h>
 
-#include <imgui/imgui_internal.h>
+#include <imgui_internal.h>
 
 namespace Ludo {
 
@@ -13,6 +13,7 @@ namespace Ludo {
 		SceneHierarchyPanel(const Ref<Scene>& context);
 
 		void SetContext(const Ref<Scene>& context);
+		const Ref<Scene>& GetContext();
 
 		void OnImGuiRender();
 

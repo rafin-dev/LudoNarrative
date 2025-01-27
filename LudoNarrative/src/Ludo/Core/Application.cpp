@@ -14,7 +14,7 @@
 #include "Ludo/Events/Event.h"
 #include "Ludo/Core/KeyCodes.h"
 
-#include "imgui/imgui.h"
+#include <imgui.h>
 
 namespace Ludo {
 

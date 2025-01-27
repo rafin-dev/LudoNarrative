@@ -1,6 +1,6 @@
 workspace "LudoNarrative"
     architecture "x64"
-
+    flags { "MultiProcessorCompile" }
     startproject "Ludo-Editor"
     
     configurations
@@ -13,17 +13,18 @@ workspace "LudoNarrative"
 outputdir = "%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}"
 
 IncludeDir = {}
-IncludeDir["Vendor"] = "%{wks.location}/LudoNarrative/vendor" 
 IncludeDir["ImGui"] = "%{wks.location}/LudoNarrative/vendor/imgui"
 IncludeDir["stb_image"] = "%{wks.location}/LudoNarrative/vendor/stb_image"
 IncludeDir["dxc"] = "%{wks.location}/LudoNarrative/vendor/dxc"
 IncludeDir["entt"] = "%{wks.location}/LudoNarrative/vendor/entt/include"
 IncludeDir["yaml_cpp"] = "%{wks.location}/LudoNarrative/vendor/yaml-cpp/include"
 IncludeDir["ImGuizmo"] = "%{wks.location}/LudoNarrative/vendor/ImGuizmo"
+IncludeDir["Box2D"] = "%{wks.location}/LudoNarrative/vendor/Box2D/include"
 
 group "Dependencies"
 include "imgui_premake5"
 include "yaml-cpp_premake5"
+include "Box2D_Premake5"
 group ""
 
 project "LudoNarrative"
@@ -52,18 +53,19 @@ project "LudoNarrative"
     {
         "%{prj.location}/src",
         "%{prj.location}/vendor/spdlog/include",
-        "%{IncludeDir.Vendor}",
         "%{IncludeDir.ImGui}",
         "%{IncludeDir.stb_image}",
         "%{IncludeDir.entt}",
         "%{IncludeDir.yaml_cpp}",
-        "%{IncludeDir.ImGuizmo}"
+        "%{IncludeDir.ImGuizmo}",
+        "%{IncludeDir.Box2D}"
     }
 
     links
     {
         "ImGui",
-        "yaml-cpp"
+        "yaml-cpp",
+        "Box2D"
     }
 
     defines
@@ -115,9 +117,11 @@ project "Sandbox"
         "%{prj.location}/src",
         "%{wks.location}/LudoNarrative/src",
         "%{wks.location}/LudoNarrative/vendor/spdlog/include",
-        "%{IncludeDir.Vendor}",
+        "%{IncludeDir.ImGui}",
         "%{IncludeDir.entt}",
-        "%{IncludeDir.yaml_cpp}"
+        "%{IncludeDir.yaml_cpp}",
+        "%{IncludeDir.ImGuizmo}",
+        "%{IncludeDir.Box2D}"
     }
 
     defines
@@ -173,10 +177,11 @@ project "Ludo-Editor"
         "%{prj.location}/src",
         "%{wks.location}/LudoNarrative/src",
         "%{wks.location}/LudoNarrative/vendor/spdlog/include",
-        "%{IncludeDir.Vendor}",
+        "%{IncludeDir.ImGui}",
         "%{IncludeDir.entt}",
         "%{IncludeDir.yaml_cpp}",
-        "%{IncludeDir.ImGuizmo}"
+        "%{IncludeDir.ImGuizmo}",
+        "%{IncludeDir.Box2D}"
     }
 
     defines
