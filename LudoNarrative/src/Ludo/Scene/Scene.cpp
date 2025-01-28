@@ -12,6 +12,13 @@
 
 namespace Ludo {
 
+	// Internal components not exposed to the editor, used only to store Box2D IDs
+	struct Rigidbody2DStorageComponent
+	{
+		b2BodyId BodyID;
+	};
+
+
 	Scene::Scene()
 	{
 	}
@@ -22,6 +29,58 @@ namespace Ludo {
 		{
 			b2DestroyWorld(*m_PhysicsWorld2D);
 		}
+	}
+
+	template<typename Component>
+	static void CopyComponents(entt::registry& dest, const entt::registry& src, const std::unordered_map<UUID, entt::entity> enttMap)
+	{
+		auto view = src.view<Component>();
+		for (auto srcE : view)
+		{
+			auto& component = view.get<Component>(srcE);
+			auto& uuid = src.get<IDComponent>(srcE).ID;
+
+			LD_CORE_ASSERT(enttMap.find(uuid) != enttMap.end());
+			dest.emplace_or_replace<Component>(enttMap.at(uuid), component);
+		}
+	}
+
+	Ref<Scene> Scene::Copy(Ref<Scene> other)
+	{
+		Ref<Scene> newScene = CreateRef<Scene>();
+
+		newScene->m_ViewportWidth = other->m_ViewportWidth;
+		newScene->m_ViewportHeight = other->m_ViewportHeight;
+
+		UUID mainCameraUUID = other->GetMainCamera().GetUUID();
+		std::unordered_map<UUID, entt::entity> enttMap;
+		auto view = other->m_Registry.view<entt::entity>();
+		for (auto ite = view.rbegin(); ite != view.rend(); ite++) // reverse iterate to preserve the entity order
+		{
+			Entity entity(*ite, other.get());
+
+			UUID uuid = entity.GetUUID();
+			auto& name = entity.GetName();
+			Entity newEntity = newScene->CreateEntitytWithUUID(uuid, name);
+			if (uuid == mainCameraUUID)
+			{
+				newScene->m_MainCamera = Entity(newEntity);
+			}
+
+			enttMap.insert(std::pair(uuid, *ite));
+		}
+
+		CopyComponents<TransformComponent>(newScene->m_Registry, other->m_Registry, enttMap);
+		CopyComponents<SpriteRendererComponent>(newScene->m_Registry, other->m_Registry, enttMap);
+		CopyComponents<CameraComponent>(newScene->m_Registry, other->m_Registry, enttMap);
+		CopyComponents<NativeScriptComponent>(newScene->m_Registry, other->m_Registry, enttMap);
+		CopyComponents<Rigidbody2DComponent>(newScene->m_Registry, other->m_Registry, enttMap);
+		CopyComponents<BoxCollider2DComponent>(newScene->m_Registry, other->m_Registry, enttMap);
+
+		// Internal Components
+		CopyComponents<Rigidbody2DStorageComponent>(newScene->m_Registry, other->m_Registry, enttMap);
+
+		return newScene;
 	}
 
 	Entity Scene::CreateEntity(const std::string& name)
@@ -48,12 +107,6 @@ namespace Ludo {
 
 		m_Registry.destroy(entity);
 	}
-
-	// Internal components not exposed to the editor, used only to store Box2D IDs
-	struct Rigidbody2DStorageComponent
-	{
-		b2BodyId BodyID;
-	};
 
 	static b2BodyType GetBox2DBodyType(Rigidbody2DComponent::BodyType type)
 	{
@@ -122,7 +175,7 @@ namespace Ludo {
 			{
 				auto [transform, rigidbody, boxCollider] = view.get<TransformComponent, Rigidbody2DStorageComponent, BoxCollider2DComponent>(entityID);
 
-				b2CosSin rot = b2ComputeCosSin(boxCollider.Rotation);
+				b2CosSin rot = b2ComputeCosSin(-boxCollider.Rotation);
 				b2Polygon box = b2MakeOffsetBox(
 					boxCollider.Size.x * transform.Scale.x, boxCollider.Size.y * transform.Scale.y,
 					b2Vec2{ boxCollider.Offset.x, boxCollider.Offset.y },
@@ -184,7 +237,7 @@ namespace Ludo {
 
 				transform.Translation.x = pos.x;
 				transform.Translation.y = pos.y;
-				transform.Rotation.z = std::acosf(rot.c);
+				transform.Rotation.z = std::atan2(rot.s, rot.c);
 			}
 		}
 
@@ -242,6 +295,29 @@ namespace Ludo {
 
 	}
 
+	template<typename Component>
+	static void CopyComponentIfExists(Entity dest, Entity src)
+	{
+		if (src.HasComponent<Component>())
+		{
+			dest.AddOrReplaceComponent<Component>(src.GetComponent<Component>());
+		}
+	}
+
+	Entity Scene::DuplicateEntity(Entity entity)
+	{
+		Entity newEntity = CreateEntity(entity.GetName());
+
+		CopyComponentIfExists<TransformComponent>(newEntity, entity);
+		CopyComponentIfExists<SpriteRendererComponent>(newEntity, entity);
+		CopyComponentIfExists<CameraComponent>(newEntity, entity);
+		CopyComponentIfExists<NativeScriptComponent>(newEntity, entity);
+		CopyComponentIfExists<Rigidbody2DComponent>(newEntity, entity);
+		CopyComponentIfExists<BoxCollider2DComponent>(newEntity, entity);
+
+		return Entity();
+	}
+
 	void Scene::SetMainCamera(Entity camera)
 	{
 		if (camera)
@@ -270,6 +346,10 @@ namespace Ludo {
 			component.Instance = component.InstantiateScript();
 			component.Instance->m_Entity = entity;
 			component.Instance->OnCreate();
+		}
+		else
+		{
+			component.Instance = nullptr;
 		}
 	}
 

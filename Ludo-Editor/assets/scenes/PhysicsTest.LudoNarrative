@@ -5,20 +5,29 @@ Entities:
     TagComponent:
       Tag: Camera
     TransformComponent:
-      Translation: [0, 0, 0]
-      Rotation: [0, 0, 0]
+      Translation: [0, 4.4047737, -24.619291]
+      Rotation: [-0, 0.017453188, -0]
       Scale: [1, 1, 1]
     CameraComponent:
       Camera:
-        ProjectionType: Orthographic
+        ProjectionType: Perspective
         PerspectiveFOV: 45
         PerspectiveNear: 0.01
         PerspectiveFar: 1000
         OrthographicSize: 10
         OrthographicNear: 0
         OrthographicFar: 10
-      Primary: true
       FixedAspectRatio: false
+    Rigidbody2D:
+      BodyType: Dynamic
+      FixedRotation: true
+    BoxCollider2D:
+      Offset: [0, 0]
+      Size: [0.5, 0.5]
+      Rotation: 0
+      Density: 1
+      Friction: 0.5
+      Restitution: 0
   - Entity: 14729827201718237215
     TagComponent:
       Tag: Dynamic Body
@@ -44,9 +53,51 @@ Entities:
     TagComponent:
       Tag: Ground
     TransformComponent:
-      Translation: [0, -2.9, 0]
-      Rotation: [0, 0, 0]
-      Scale: [8.9, 1, 1]
+      Translation: [-11.13178, -15.570223, 0.08053821]
+      Rotation: [-0, 0, -0.62946236]
+      Scale: [17.1836, 1.0000001, 1]
+    SpriteRendererComponent:
+      TexturePath: None
+      Color: [0.115044236, 1, 0, 1]
+      TilingFactor: 1
+    Rigidbody2D:
+      BodyType: Static
+      FixedRotation: false
+    BoxCollider2D:
+      Offset: [0, 0]
+      Size: [0.5, 0.5]
+      Rotation: 0
+      Density: 1
+      Friction: 0.5
+      Restitution: 0
+  - Entity: 17820021191529033468
+    TagComponent:
+      Tag: Ground
+    TransformComponent:
+      Translation: [-7.5386314, -2.7792451, 0]
+      Rotation: [-0, 0, -0.43145365]
+      Scale: [17.183586, 1, 1]
+    SpriteRendererComponent:
+      TexturePath: None
+      Color: [0.115044236, 1, 0, 1]
+      TilingFactor: 1
+    Rigidbody2D:
+      BodyType: Static
+      FixedRotation: false
+    BoxCollider2D:
+      Offset: [0, 0]
+      Size: [0.5, 0.5]
+      Rotation: 0
+      Density: 1
+      Friction: 0.5
+      Restitution: 0
+  - Entity: 13725517160779139219
+    TagComponent:
+      Tag: Ground
+    TransformComponent:
+      Translation: [4.179106, -7.950598, 1.7795305e-06]
+      Rotation: [0, 0, 0.6326589]
+      Scale: [17.1836, 1, 1]
     SpriteRendererComponent:
       TexturePath: None
       Color: [0.115044236, 1, 0, 1]

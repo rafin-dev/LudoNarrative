@@ -19,6 +19,8 @@ namespace Ludo {
 		Scene();
 		~Scene();
 
+		static Ref<Scene> Copy(Ref<Scene> other);
+		
 		Entity CreateEntity(const std::string& name = std::string());
 		Entity CreateEntitytWithUUID(UUID uuid, const std::string& name);
 		void DestroyEntity(Entity entity);
@@ -29,6 +31,8 @@ namespace Ludo {
 		void OnUpdateRuntime(TimeStep ts);
 		void OnUpdateEditor(TimeStep ts, EditorCamera& camera);
 		void OnViewportResize(uint32_t width, uint32_t height);
+
+		Entity DuplicateEntity(Entity entity);
 
 		void SetMainCamera(Entity camera);
 		Entity GetMainCamera();
@@ -57,6 +61,7 @@ namespace Ludo {
 
 		// Friends
 		friend class SceneHierarchyPanel;
+		friend class ScenePanelHierarchy;
 		friend class SceneSerializer;
 		friend class Entity;
 	};

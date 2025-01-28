@@ -1,7 +1,8 @@
 #pragma once
 
-#include "Panels/SceneHierarchyPanel.h"
 #include "Panels/ContentBrowserPanel.h"
+
+#include "EditorPanels/SceneEditorPanels/ScenePanelHierarchy.h"
 
 #include <LudoNarrative.h>
 
@@ -27,12 +28,15 @@ namespace Ludo {
 		void NewScene();
 		void OpenScene();
 		void OpenScene(const std::filesystem::path& path);
+		void SaveScene();
 		void SaveSceneAs();
 
 		void SetImGuiDarkTheme();
 
 		void OnScenePlay();
 		void OnSceneStop();
+
+		void OnDuplicateEntity();
 
 		// UI Toolbar
 		void RenderToolBar();
@@ -45,7 +49,9 @@ namespace Ludo {
 		Ref<FrameBuffer> m_FrameBuffer;
 		Ref<Texture2D> m_Texture;
 	
-		Ref<Scene> m_ActiveEditorScene;
+		std::filesystem::path m_EditorScenePath;
+		Ref<Scene> m_ActiveScene;
+		Ref<Scene> m_EditorScene;
 
 		bool m_ViewportActive = false;
 		DirectX::XMFLOAT2 m_ViewportSize = { 0.0f, 0.0f };
@@ -57,7 +63,7 @@ namespace Ludo {
 		bool m_GizmoHovered = false;
 
 		// Panels
-		SceneHierarchyPanel m_SceneHierarchyPanel;
+		ScenePanelHierarchy m_SceneHierarchyPanel;
 		ContentBrowserPanel m_ContentBrowserPanel;
 
 		enum class SceneState
