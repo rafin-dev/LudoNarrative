@@ -1,14 +1,9 @@
 #kind vertex
-#include "assets/shaders/Header.hlsli"
+#include "assets/shaders/Renderer2D_QuadHeader.hlsli"
 
 cbuffer ViewProjection : register(b0)
 {
     float4x4 ViewProjection;
-};
-
-cbuffer Model : register(b1)
-{
-    float4x4 ModelMatrix;
 };
 
 VS_OUTPUT main(VS_INPUT input)
@@ -26,7 +21,7 @@ VS_OUTPUT main(VS_INPUT input)
 }
 
 #kind pixel
-#include "assets/shaders/Header.hlsli"
+#include "assets/shaders/Renderer2D_QuadHeader.hlsli"
 
 Texture2D<float4> Textures[32] : register(t0);
 SamplerState Sampler : register(s0);

@@ -34,6 +34,11 @@ namespace Ludo {
 			s_RenderAPI->DrawIndexed(vertexArray, indexCount);
 		}
 
+		static inline void DrawLines(const Ref<VertexArray>& vertexArray, uint32_t vertexCount = 0)
+		{
+			s_RenderAPI->DrawLines(vertexArray, vertexCount);
+		}
+
 		static void BeginImGui()
 		{
 			s_RenderAPI->BeginImGui();

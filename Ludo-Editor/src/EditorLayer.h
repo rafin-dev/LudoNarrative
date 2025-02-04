@@ -50,8 +50,12 @@ namespace Ludo {
 		Ref<Texture2D> m_Texture;
 	
 		std::filesystem::path m_EditorScenePath;
+		std::vector<Ref<Scene>> m_OpenScenes;
+		std::vector<std::filesystem::path> m_ScenePaths;
 		Ref<Scene> m_ActiveScene;
 		Ref<Scene> m_EditorScene;
+
+		std::string m_NewSceneName;
 
 		bool m_ViewportActive = false;
 		DirectX::XMFLOAT2 m_ViewportSize = { 0.0f, 0.0f };

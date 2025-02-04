@@ -5,6 +5,7 @@
 #include "Platform/DirectX12/Utils/DX12ShaderCompiler.h"
 #include "Platform/DirectX12/DirectX12Context.h"
 #include "Platform/DirectX12/DirectX12Shader.h"
+#include "Platform/DirectX12/DirectX12FrameBuffer.h"
 
 #include <imgui.h>
 #include <backends/imgui_impl_dx12.h>
@@ -193,9 +194,47 @@ namespace Ludo {
 
         auto& commandList = m_GraphicsCommands.GetCommandList();
 
+        if (DirectX12Shader::s_CurrentShader->m_LineBound)
+        {
+            DirectX12Shader::s_CurrentShader->Bind();
+        }
+
         m_SrvDescriptorHeap.BindToDescriptorTable();
+        vertexArray->Bind();
+        commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
         commandList->DrawIndexedInstanced(indexCount == 0 ? vertexArray->GetIndexBuffer()->GetCount() : indexCount, 1, 0, 0, 0);
     }
+
+    void DirectX12API::DrawLines(const Ref<VertexArray>& vertexArray, uint32_t vertexCount)
+    {
+        LD_PROFILE_RENDERER_FUNCTION();
+
+        auto& commandList = m_GraphicsCommands.GetCommandList();
+
+        if (!DirectX12Shader::s_CurrentShader->m_LineBound)
+        {
+            auto ite = DirectX12Shader::s_CurrentShader->m_LinePipelineStates.find(DirectX12FrameBuffer::s_CurrentBoundFormats);
+
+            ID3D12PipelineState* pipeline = nullptr;
+            if (ite == DirectX12Shader::s_CurrentShader->m_LinePipelineStates.end())
+            {
+                pipeline = DirectX12Shader::s_CurrentShader->CreateLinePSOforFrameBufferFormats(DirectX12FrameBuffer::s_CurrentBoundFormats);
+            }
+            else
+            {
+                pipeline = ite->second;
+            }
+
+            DirectX12Shader::s_CurrentShader->m_LineBound = true;
+            commandList->SetPipelineState(pipeline);
+        }
+
+        m_SrvDescriptorHeap.BindToDescriptorTable();
+        vertexArray->Bind();
+        commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_LINELIST);
+        commandList->DrawInstanced(vertexCount, 1, 0, 0);
+    }
+
 
     void DirectX12API::BeginImGui()
     {

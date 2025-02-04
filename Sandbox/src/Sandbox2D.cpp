@@ -115,7 +115,7 @@ void Sandbox2D::OnImGuiRender()
 	auto stats = Ludo::Renderer2D::GetStats();
 	ImGui::Text("==================");
 	ImGui::Text("Renderer 2D Stats:");
-	ImGui::Text(" Draw Calls: %d", stats.DrawCalls);
+	ImGui::Text(" Draw Calls: %d", stats.TotalDrawCalls);
 	ImGui::Text(" Quads     : %d", stats.QuadCount);
 	ImGui::Text(" Vertices  : %d", stats.GetTotalVertexCount());
 	ImGui::Text(" Indices   : %d", stats.GetTotalIndexCount());

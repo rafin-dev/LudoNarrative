@@ -87,6 +87,15 @@ namespace Ludo {
 		ImGui::DragFloat("Tilign Factor", &spriteComponent.TilingFactor);
 	}
 
+	void ScenePanelHierarchy::OnRenderCircleRendererComponent()
+	{
+		auto& circleRenderer = m_SelectedEntity.GetComponent<CircleRendererComponent>();
+
+		ImGui::ColorEdit4("Color", (float*)&circleRenderer.Color);
+		ImGui::DragFloat("Thickness", &circleRenderer.Thickness, 0.025, 0.0f, 1.0f);
+		ImGui::DragFloat("Fade", &circleRenderer.Fade, 0.00025, 0.0f, 1.0f);
+	}
+
 	void ScenePanelHierarchy::OnRenderCameraComponent()
 	{
 		auto& cameraComponent = m_SelectedEntity.GetComponent<CameraComponent>();

@@ -22,7 +22,7 @@ namespace Ludo {
 
 		void* GetMappedBuffer() { return m_Dest; }
 
-		ID3D12Resource2* const &  GetBuffer() { return m_UploadBuffer; }
+		ID3D12Resource2* const &  GetBuffer() const { return m_UploadBuffer; }
 		size_t GetSize() { return m_Size; }
 
 	private:

@@ -11,6 +11,8 @@ namespace Ludo {
 	IDxcUtils* DirectX12Shader::s_DxCompilerUtils = nullptr;
 	IDxcCompiler3* DirectX12Shader::s_DxCompiler = nullptr;
 
+	DirectX12Shader* DirectX12Shader::s_CurrentShader;
+
 	DirectX12Shader::DirectX12Shader(const std::string& name, void* vertexShaderBuffer, size_t vertexShaderSize, void* pixelShaderBuffer, size_t pixelShaderSize, const BufferLayout& vertexLayout, const BufferLayout& materialDataLayout)
 		: m_Name(name), m_VertexBufferLayout(vertexLayout), m_MaterialLayout(materialDataLayout)
 	{
@@ -22,12 +24,12 @@ namespace Ludo {
 			{ DX12ShaderCompiler::PixelShader, nullptr }
 		};
 
-		HRESULT hr = DX12ShaderCompiler::CreateBlob(vertexShaderSize, &m_Shaders[DX12ShaderCompiler::VertexShader]);
-		CHECK_DX12_HRESULT(hr, "Failed to create Shader Blob");
+		bool result = DX12ShaderCompiler::CreateBlob(vertexShaderSize, &m_Shaders[DX12ShaderCompiler::VertexShader]);
+		CHECK_DX12_HRESULT(HRESULT(result ? S_OK : E_FAIL), "Failed to create Shader Blob");
 		memcpy(m_Shaders[DX12ShaderCompiler::VertexShader]->GetBufferPointer(), vertexShaderBuffer, vertexShaderSize);
 
-		hr = DX12ShaderCompiler::CreateBlob(pixelShaderSize, &m_Shaders[DX12ShaderCompiler::PixelShader]);
-		CHECK_DX12_HRESULT(hr, "Failed to create Shader Blob");
+		result = DX12ShaderCompiler::CreateBlob(pixelShaderSize, &m_Shaders[DX12ShaderCompiler::PixelShader]);
+		CHECK_DX12_HRESULT(HRESULT(result ? S_OK : E_FAIL), "Failed to create Shader Blob");
 		memcpy(m_Shaders[DX12ShaderCompiler::PixelShader]->GetBufferPointer(), pixelShaderBuffer, pixelShaderSize);
 
 		Init(m_Shaders);
@@ -135,7 +137,11 @@ namespace Ludo {
 		{
 			CHECK_AND_RELEASE_COMPTR(shader.second);
 		}
-		for (auto& pso : m_PipelineStates)
+		for (auto& pso : m_TrianglePipelineStates)
+		{
+			CHECK_AND_RELEASE_COMPTR(pso.second);
+		}
+		for (auto& pso : m_LinePipelineStates)
 		{
 			CHECK_AND_RELEASE_COMPTR(pso.second);
 		}
@@ -254,7 +260,7 @@ namespace Ludo {
 		}
 	}
 
-	ID3D12PipelineState* DirectX12Shader::CreatePSOforFrameBufferFormats(std::vector<DXGI_FORMAT>& formats)
+	ID3D12PipelineState* DirectX12Shader::CreateTrianglePSOforFrameBufferFormats(std::vector<DXGI_FORMAT>& formats)
 	{
 		LD_CORE_ASSERT(formats.size() == 9);
 
@@ -387,14 +393,155 @@ namespace Ludo {
 		HRESULT hr = DirectX12API::Get()->GetDevice()->CreateGraphicsPipelineState(&pipelineStateDescription, IID_PPV_ARGS(&pipeline));
 		CHECK_DX12_HRESULT(hr, "Failed to create D3D12 Graphics Pipeline State Object");
 
-		m_PipelineStates.insert(std::pair(formats, pipeline));
+		m_TrianglePipelineStates.insert(std::pair(formats, pipeline));
 	
+		return pipeline;
+	}
+
+	ID3D12PipelineState* DirectX12Shader::CreateLinePSOforFrameBufferFormats(std::vector<DXGI_FORMAT>& formats)
+	{
+		LD_CORE_ASSERT(formats.size() == 9);
+
+		// Pipeline State
+		D3D12_GRAPHICS_PIPELINE_STATE_DESC pipelineStateDescription = {};
+
+		// Root Signature
+		pipelineStateDescription.pRootSignature = s_RootSignature;
+
+		// Input Layout
+		pipelineStateDescription.InputLayout.NumElements = (UINT)m_ElementLayout.size();
+		pipelineStateDescription.InputLayout.pInputElementDescs = m_ElementLayout.data();
+		pipelineStateDescription.IBStripCutValue = D3D12_INDEX_BUFFER_STRIP_CUT_VALUE_DISABLED;
+
+		// Vertex shader
+		auto ite = m_Shaders.find(DX12ShaderCompiler::VertexShader);
+		if (ite != m_Shaders.end())
+		{
+			pipelineStateDescription.VS.BytecodeLength = ite->second->GetBufferSize();
+			pipelineStateDescription.VS.pShaderBytecode = ite->second->GetBufferPointer();
+		}
+
+		// Pixel shader
+		ite = m_Shaders.find(DX12ShaderCompiler::PixelShader);
+		if (ite != m_Shaders.end())
+		{
+			pipelineStateDescription.PS.BytecodeLength = m_Shaders[DX12ShaderCompiler::PixelShader]->GetBufferSize();
+			pipelineStateDescription.PS.pShaderBytecode = m_Shaders[DX12ShaderCompiler::PixelShader]->GetBufferPointer();
+		}
+
+		// Domain shader
+		pipelineStateDescription.DS.BytecodeLength = 0;
+		pipelineStateDescription.DS.pShaderBytecode = nullptr;
+
+		// Hull shader
+		pipelineStateDescription.HS.BytecodeLength = 0;
+		pipelineStateDescription.HS.pShaderBytecode = nullptr;
+
+		// Geometry shader
+		pipelineStateDescription.GS.BytecodeLength = 0;
+		pipelineStateDescription.GS.pShaderBytecode = nullptr;
+
+		// Rasterizer
+		pipelineStateDescription.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_LINE;
+		pipelineStateDescription.RasterizerState.FillMode = D3D12_FILL_MODE_SOLID;
+		pipelineStateDescription.RasterizerState.CullMode = D3D12_CULL_MODE_NONE;
+		pipelineStateDescription.RasterizerState.FrontCounterClockwise = FALSE;
+		pipelineStateDescription.RasterizerState.DepthBias = 0;
+		pipelineStateDescription.RasterizerState.DepthBiasClamp = 0.0f;
+		pipelineStateDescription.RasterizerState.SlopeScaledDepthBias = 0.0f;
+		pipelineStateDescription.RasterizerState.DepthClipEnable = FALSE;
+		pipelineStateDescription.RasterizerState.MultisampleEnable = FALSE;
+		pipelineStateDescription.RasterizerState.AntialiasedLineEnable = FALSE;
+		pipelineStateDescription.RasterizerState.ForcedSampleCount = 0;
+
+		// StreamOutput
+		pipelineStateDescription.StreamOutput.pSODeclaration = nullptr;
+		pipelineStateDescription.StreamOutput.NumEntries = 0;
+		pipelineStateDescription.StreamOutput.pBufferStrides = nullptr;
+		pipelineStateDescription.StreamOutput.NumStrides = 0;
+		pipelineStateDescription.StreamOutput.RasterizedStream = 0;
+
+		// BlendState
+		pipelineStateDescription.BlendState.AlphaToCoverageEnable = FALSE;
+		pipelineStateDescription.BlendState.IndependentBlendEnable = TRUE;
+
+		// NumRenderTargets
+		pipelineStateDescription.NumRenderTargets = 0;
+
+		for (uint32_t i = 0; i < formats.size() - 1; i++)
+		{
+			if (formats[i] == DXGI_FORMAT_UNKNOWN)
+			{
+				break;
+			}
+
+			pipelineStateDescription.NumRenderTargets++;
+			pipelineStateDescription.RTVFormats[i] = formats[i];
+
+			// RenderTarget BlendState
+			pipelineStateDescription.BlendState.RenderTarget[i].BlendEnable = Utils::IsBlendValid(formats[i]) ? TRUE : FALSE;
+			pipelineStateDescription.BlendState.RenderTarget[i].SrcBlend = D3D12_BLEND_SRC_ALPHA;
+			pipelineStateDescription.BlendState.RenderTarget[i].DestBlend = D3D12_BLEND_INV_SRC_ALPHA;
+			pipelineStateDescription.BlendState.RenderTarget[i].BlendOp = D3D12_BLEND_OP_ADD;
+			pipelineStateDescription.BlendState.RenderTarget[i].SrcBlendAlpha = D3D12_BLEND_INV_DEST_ALPHA;
+			pipelineStateDescription.BlendState.RenderTarget[i].DestBlendAlpha = D3D12_BLEND_ONE;
+			pipelineStateDescription.BlendState.RenderTarget[i].BlendOpAlpha = D3D12_BLEND_OP_ADD;
+			pipelineStateDescription.BlendState.RenderTarget[i].LogicOpEnable = FALSE;
+			pipelineStateDescription.BlendState.RenderTarget[i].LogicOp = D3D12_LOGIC_OP_NOOP;
+			pipelineStateDescription.BlendState.RenderTarget[i].RenderTargetWriteMask = D3D12_COLOR_WRITE_ENABLE_ALL;
+		}
+
+		// DSVFormat
+		pipelineStateDescription.DSVFormat = formats.back();
+
+		// DepthStencilState
+		pipelineStateDescription.DepthStencilState.DepthEnable = formats.back() != DXGI_FORMAT_UNKNOWN;
+		pipelineStateDescription.DepthStencilState.DepthFunc = D3D12_COMPARISON_FUNC_LESS_EQUAL;
+		pipelineStateDescription.DepthStencilState.DepthWriteMask = D3D12_DEPTH_WRITE_MASK_ALL;
+		pipelineStateDescription.DepthStencilState.StencilEnable = FALSE;
+		pipelineStateDescription.DepthStencilState.StencilReadMask = 0;
+		pipelineStateDescription.DepthStencilState.StencilWriteMask = 0;
+		pipelineStateDescription.DepthStencilState.FrontFace.StencilFunc = D3D12_COMPARISON_FUNC_ALWAYS;
+		pipelineStateDescription.DepthStencilState.FrontFace.StencilDepthFailOp = D3D12_STENCIL_OP_KEEP;
+		pipelineStateDescription.DepthStencilState.FrontFace.StencilFailOp = D3D12_STENCIL_OP_KEEP;
+		pipelineStateDescription.DepthStencilState.FrontFace.StencilPassOp = D3D12_STENCIL_OP_KEEP;
+		pipelineStateDescription.DepthStencilState.BackFace.StencilFunc = D3D12_COMPARISON_FUNC_ALWAYS;
+		pipelineStateDescription.DepthStencilState.BackFace.StencilDepthFailOp = D3D12_STENCIL_OP_KEEP;
+		pipelineStateDescription.DepthStencilState.BackFace.StencilFailOp = D3D12_STENCIL_OP_KEEP;
+		pipelineStateDescription.DepthStencilState.BackFace.StencilPassOp = D3D12_STENCIL_OP_KEEP;
+
+		// SampleMask
+		pipelineStateDescription.SampleMask = 0xFFFFFFFF;
+
+		// SampleDesc
+		pipelineStateDescription.SampleDesc.Count = 1;
+		pipelineStateDescription.SampleDesc.Quality = 0;
+
+		// NodeMask
+		pipelineStateDescription.NodeMask = 0;
+
+		// Chached PSO
+		pipelineStateDescription.CachedPSO.CachedBlobSizeInBytes = 0;
+		pipelineStateDescription.CachedPSO.pCachedBlob = nullptr;
+
+		// Flags
+		pipelineStateDescription.Flags = D3D12_PIPELINE_STATE_FLAG_NONE;
+
+		ID3D12PipelineState* pipeline = nullptr;
+		HRESULT hr = DirectX12API::Get()->GetDevice()->CreateGraphicsPipelineState(&pipelineStateDescription, IID_PPV_ARGS(&pipeline));
+		CHECK_DX12_HRESULT(hr, "Failed to create D3D12 Graphics Pipeline State Object");
+
+		m_LinePipelineStates.insert(std::pair(formats, pipeline));
+
 		return pipeline;
 	}
 
 	void DirectX12Shader::Bind()
 	{
 		LD_PROFILE_RENDERER_FUNCTION();
+
+		m_LineBound = false;
+		s_CurrentShader = this;
 
 		// TODO:
 		// if (m_CurreentFrame != Application::Get().GetCurrentFrame()
@@ -405,10 +552,10 @@ namespace Ludo {
 		m_CurrentShaderResource = 0;
 
 		ID3D12PipelineState* state = nullptr;
-		auto ite = m_PipelineStates.find(DirectX12FrameBuffer::s_CurrentBoundFormats);
-		if (ite == m_PipelineStates.end())
+		auto ite = m_TrianglePipelineStates.find(DirectX12FrameBuffer::s_CurrentBoundFormats);
+		if (ite == m_TrianglePipelineStates.end())
 		{
-			state = CreatePSOforFrameBufferFormats(DirectX12FrameBuffer::s_CurrentBoundFormats);
+			state = CreateTrianglePSOforFrameBufferFormats(DirectX12FrameBuffer::s_CurrentBoundFormats);
 		}
 		else
 		{
@@ -417,7 +564,6 @@ namespace Ludo {
 
 		auto& commandList = DirectX12API::Get()->GetCommandList();
 
-		commandList->IASetPrimitiveTopology(D3D10_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 		commandList->SetGraphicsRootSignature(s_RootSignature);
 		commandList->SetPipelineState(state);
 	}

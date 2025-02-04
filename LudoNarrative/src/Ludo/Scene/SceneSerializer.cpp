@@ -253,6 +253,20 @@ namespace Ludo {
 
 			out << YAML::EndMap; // SpriteRendererComponent
 		}
+		if (entity.HasComponent<CircleRendererComponent>())
+		{
+			out << YAML::Key << "CircleRendererComponent" << YAML::BeginMap; // CircleRendererComponent
+
+			auto circleRenderer = entity.GetComponent<CircleRendererComponent>();
+
+			out << YAML::Key << "Color" << YAML::Value << circleRenderer.Color;
+
+			out << YAML::Key << "Thickness" << YAML::Value << circleRenderer.Thickness;
+
+			out << YAML::Key << "Fade" << YAML::Value << circleRenderer.Fade;
+
+			out << YAML::EndMap; // CircleRendererComponent
+		}
 		if (entity.HasComponent<Rigidbody2DComponent>())
 		{
 			out << YAML::Key << "Rigidbody2D" << YAML::BeginMap; // RigidBody2D
@@ -408,6 +422,16 @@ namespace Ludo {
 
 					spriteRendererComponent.Color = spriteRendererComponentData["Color"].as<DirectX::XMFLOAT4>();
 					spriteRendererComponent.TilingFactor = spriteRendererComponentData["TilingFactor"].as<float>();
+				}
+
+				auto circleRendererComponentData = entityData["CircleRendererComponent"];
+				if (circleRendererComponentData)
+				{
+					auto& circleRendererComponent = entity.AddComponent<CircleRendererComponent>();
+
+					circleRendererComponent.Color = circleRendererComponentData["Color"].as<DirectX::XMFLOAT4>();
+					circleRendererComponent.Thickness = circleRendererComponentData["Thickness"].as<float>();
+					circleRendererComponent.Fade = circleRendererComponentData["Fade"].as<float>();
 				}
 
 				auto rigidbody2DData = entityData["Rigidbody2D"];

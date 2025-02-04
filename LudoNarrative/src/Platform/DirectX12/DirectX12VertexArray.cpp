@@ -23,7 +23,10 @@ namespace Ludo {
 			((DirectX12VertexBuffer*)m_VertexBuffers[i].get())->ImplBind(i);
 		}
 
-		m_IndexBuffer->Bind();
+		if (m_IndexBuffer)
+		{
+			m_IndexBuffer->Bind();
+		}
 	}
 
 	void DirectX12VertexArray::AddVertexBuffer(const Ref<VertexBuffer>& vb)

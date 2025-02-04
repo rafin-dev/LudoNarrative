@@ -11,6 +11,7 @@ namespace Ludo {
 		m_ComponentPanelRenderers = {
 			BIND_COMPONENT_PANEL_RENDERER(TransformComponent),
 			BIND_COMPONENT_PANEL_RENDERER(SpriteRendererComponent),
+			BIND_COMPONENT_PANEL_RENDERER(CircleRendererComponent),
 			BIND_COMPONENT_PANEL_RENDERER(CameraComponent),
 			BIND_COMPONENT_PANEL_RENDERER(Rigidbody2DComponent),
 			BIND_COMPONENT_PANEL_RENDERER(BoxCollider2DComponent)
@@ -100,6 +101,7 @@ namespace Ludo {
 			{
 				RenderComponentPropertiesIfExists<TransformComponent>("Transform", false);
 				RenderComponentPropertiesIfExists<SpriteRendererComponent>("Sprite Renderer");
+				RenderComponentPropertiesIfExists<CircleRendererComponent>("Circle Renderer");
 				RenderComponentPropertiesIfExists<CameraComponent>("Camera Component");
 				RenderComponentPropertiesIfExists<Rigidbody2DComponent>("Rigidbody2D");
 				RenderComponentPropertiesIfExists<BoxCollider2DComponent>("Box Collider2D");
@@ -176,6 +178,13 @@ namespace Ludo {
 			if (ImGui::MenuItem("Sprite Renderer", nullptr, false, !m_SelectedEntity.HasComponent<SpriteRendererComponent>()))
 			{
 				m_SelectedEntity.AddComponent<SpriteRendererComponent>();
+
+				ImGui::CloseCurrentPopup();
+			}
+
+			if (ImGui::MenuItem("Circle Renderer", nullptr, false, !m_SelectedEntity.HasComponent<CircleRendererComponent>()))
+			{
+				m_SelectedEntity.AddComponent<CircleRendererComponent>();
 
 				ImGui::CloseCurrentPopup();
 			}

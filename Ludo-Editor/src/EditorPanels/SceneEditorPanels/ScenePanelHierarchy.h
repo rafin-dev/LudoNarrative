@@ -14,7 +14,11 @@ namespace Ludo {
 
 		void OnImGuiRender() override;
 
-		void SetContext(const Ref<Scene>& context) override { m_Context = context; }
+		void SetContext(const Ref<Scene>& context) override 
+		{ 
+			m_Context = context;
+			SetSelectedEntity(Entity());
+		}
 		const Ref<Scene>& GetContext() const override { return m_Context; }
 
 		Entity GetSelectedEntity() { return m_SelectedEntity; }
@@ -22,12 +26,17 @@ namespace Ludo {
 
 		void SetSelectedEntityTexture(const std::filesystem::path& path);
 
+		bool IsActive() const override { return m_IsActive; }
+		void SetActive(bool active) override { m_IsActive = active; }
+
 	private:
 		void RenderHierarchyPanel();
 		void RenderPropertiesPanel();
 		
 		void RenderEntityNode(Entity entity);
 		void RenderEntityTagAndComponentOptions();
+
+		bool m_IsActive = true;
 
 		Ref<Scene> m_Context;
 		Entity m_SelectedEntity;
@@ -37,6 +46,7 @@ namespace Ludo {
 
 		void OnRenderTransformComponent();
 		void OnRenderSpriteRendererComponent();
+		void OnRenderCircleRendererComponent();
 		void OnRenderCameraComponent();
 		void OnRenderRigidbody2DComponent();
 		void OnRenderBoxCollider2DComponent();

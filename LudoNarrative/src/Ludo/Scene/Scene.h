@@ -7,7 +7,6 @@
 #include <entt.hpp>
 
 struct b2WorldId;
-struct b2BodyId;
 
 namespace Ludo {
 
@@ -17,6 +16,7 @@ namespace Ludo {
 	{
 	public:
 		Scene();
+		Scene(const std::string& name);
 		~Scene();
 
 		static Ref<Scene> Copy(Ref<Scene> other);
@@ -24,6 +24,8 @@ namespace Ludo {
 		Entity CreateEntity(const std::string& name = std::string());
 		Entity CreateEntitytWithUUID(UUID uuid, const std::string& name);
 		void DestroyEntity(Entity entity);
+
+		Entity GetEntityByUUID(const UUID& uuid);
 
 		void OnRuntimeStart();
 		void OnRuntimeStop();
@@ -37,6 +39,9 @@ namespace Ludo {
 		void SetMainCamera(Entity camera);
 		Entity GetMainCamera();
 
+		const std::string& GetName() { return m_Name; }
+		void SetName(const std::string& name) { m_Name = name; }
+
 	private:
 		bool m_IsRunning = false;
 
@@ -46,8 +51,12 @@ namespace Ludo {
 		entt::registry m_Registry;
 		uint32_t m_ViewportWidth = 0, m_ViewportHeight = 0;
 
+		std::unordered_map<UUID, Entity> m_EntityByUUID;
+
 		// Box2D
 		b2WorldId* m_PhysicsWorld2D = nullptr;
+
+		std::string m_Name;
 
 		// OnComponentAdd and it's specializations
 		template<typename T>

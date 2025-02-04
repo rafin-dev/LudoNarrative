@@ -13,6 +13,8 @@ namespace Ludo {
 
 		void SetData(void* data, size_t size, size_t offset) override;
 
+		void Bind() const override;
+
 	private:
 		size_t m_Size;
 		uint32_t m_Slot;

@@ -23,6 +23,11 @@ namespace Ludo {
 	{
 	}
 
+	Scene::Scene(const std::string& name)
+		: m_Name(name)
+	{
+	}
+
 	Scene::~Scene()
 	{
 		if (m_PhysicsWorld2D != nullptr)
@@ -52,7 +57,7 @@ namespace Ludo {
 		newScene->m_ViewportWidth = other->m_ViewportWidth;
 		newScene->m_ViewportHeight = other->m_ViewportHeight;
 
-		UUID mainCameraUUID = other->GetMainCamera().GetUUID();
+		Entity mainCamera = other->GetMainCamera();
 		std::unordered_map<UUID, entt::entity> enttMap;
 		auto view = other->m_Registry.view<entt::entity>();
 		for (auto ite = view.rbegin(); ite != view.rend(); ite++) // reverse iterate to preserve the entity order
@@ -62,7 +67,7 @@ namespace Ludo {
 			UUID uuid = entity.GetUUID();
 			auto& name = entity.GetName();
 			Entity newEntity = newScene->CreateEntitytWithUUID(uuid, name);
-			if (uuid == mainCameraUUID)
+			if (mainCamera && uuid == mainCamera.GetUUID())
 			{
 				newScene->m_MainCamera = Entity(newEntity);
 			}
@@ -72,6 +77,7 @@ namespace Ludo {
 
 		CopyComponents<TransformComponent>(newScene->m_Registry, other->m_Registry, enttMap);
 		CopyComponents<SpriteRendererComponent>(newScene->m_Registry, other->m_Registry, enttMap);
+		CopyComponents<CircleRendererComponent>(newScene->m_Registry, other->m_Registry, enttMap);
 		CopyComponents<CameraComponent>(newScene->m_Registry, other->m_Registry, enttMap);
 		CopyComponents<NativeScriptComponent>(newScene->m_Registry, other->m_Registry, enttMap);
 		CopyComponents<Rigidbody2DComponent>(newScene->m_Registry, other->m_Registry, enttMap);
@@ -95,6 +101,8 @@ namespace Ludo {
 		entity.AddComponent<TagComponent>(name.empty() ? "Entity" : name);
 		entity.AddComponent<IDComponent>(uuid);
 
+		m_EntityByUUID.insert(std::pair(uuid, entity));
+
 		return entity;
 	}
 
@@ -106,6 +114,13 @@ namespace Ludo {
 		}
 
 		m_Registry.destroy(entity);
+	}
+
+	Entity Scene::GetEntityByUUID(const UUID& uuid)
+	{
+		auto ite = m_EntityByUUID.find(uuid);
+
+		return ite != m_EntityByUUID.end() ? ite->second : Entity();
 	}
 
 	static b2BodyType GetBox2DBodyType(Rigidbody2DComponent::BodyType type)
@@ -241,20 +256,35 @@ namespace Ludo {
 			}
 		}
 
-		// Render 2D Sprites
 		Entity mainCamera(m_MainCamera, this);
 		if (mainCamera)
 		{
 			Renderer2D::BeginScene(mainCamera.GetComponent<CameraComponent>().Camera, mainCamera.GetComponent<TransformComponent>().GetTransform());
 
-			auto group = m_Registry.group<SpriteRendererComponent>(entt::get<TransformComponent>);
-			for (auto entityID : group)
+			// Sprites
 			{
-				auto [transform, sprite] = group.get<TransformComponent, SpriteRendererComponent>(entityID);
-				DirectX::XMMATRIX spriteTransform;
-				transform.GetTransform(&spriteTransform);
+				auto group = m_Registry.group<SpriteRendererComponent>(entt::get<TransformComponent>);
+				for (auto entityID : group)
+				{
+					auto [transform, sprite] = group.get<TransformComponent, SpriteRendererComponent>(entityID);
+					DirectX::XMMATRIX spriteTransform;
+					transform.GetTransform(&spriteTransform);
 
-				Renderer2D::DrawSprite(spriteTransform, sprite, (int)entityID);
+					Renderer2D::DrawSprite(spriteTransform, sprite, (int)entityID);
+				}
+			}
+
+			// Circles
+			{
+				auto group = m_Registry.group<CircleRendererComponent>(entt::get<TransformComponent>);
+				for (auto entityID : group)
+				{
+					auto [transform, circle] = group.get<TransformComponent, CircleRendererComponent>(entityID);
+					DirectX::XMMATRIX circleTransform;
+					transform.GetTransform(&circleTransform);
+
+					Renderer2D::DrawCircle(circleTransform, circle, (int)entityID);
+				}
 			}
 
 			Renderer2D::EndScene();
@@ -265,14 +295,30 @@ namespace Ludo {
 	{
 		Renderer2D::BeginScene(camera);
 
-		auto group = m_Registry.group<SpriteRendererComponent>(entt::get<TransformComponent>);
-		for (auto entity : group)
 		{
-			auto [transform, sprite] = group.get<TransformComponent, SpriteRendererComponent>(entity);
-			DirectX::XMMATRIX spriteTransform;
-			transform.GetTransform(&spriteTransform);
+			// Sprites
+			auto group = m_Registry.group<SpriteRendererComponent>(entt::get<TransformComponent>);
+			for (auto entityID : group)
+			{
+				auto [transform, sprite] = group.get<TransformComponent, SpriteRendererComponent>(entityID);
+				DirectX::XMMATRIX spriteTransform;
+				transform.GetTransform(&spriteTransform);
 
-			Renderer2D::DrawSprite(spriteTransform, sprite, (int)entity);
+				Renderer2D::DrawSprite(spriteTransform, sprite, (int)entityID);
+			}
+		}
+
+		{
+			// Circles
+			auto group = m_Registry.group<CircleRendererComponent>(entt::get<TransformComponent>);
+			for (auto entityID : group)
+			{
+				auto [transform, circle] = group.get<TransformComponent, CircleRendererComponent>(entityID);
+				DirectX::XMMATRIX circleTransform;
+				transform.GetTransform(&circleTransform);
+
+				Renderer2D::DrawCircle(circleTransform, circle, (int)entityID);
+			}
 		}
 
 		Renderer2D::EndScene();

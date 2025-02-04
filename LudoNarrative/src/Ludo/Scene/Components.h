@@ -76,6 +76,16 @@ namespace Ludo {
 			: Color(color), Texture(texture), TilingFactor(tilingFactor) {}
 	};
 
+	struct CircleRendererComponent
+	{
+		DirectX::XMFLOAT4 Color = { 1.0f, 1.0f, 1.0f, 1.0f };
+		float Thickness = 1.0f;
+		float Fade = 0.005f;
+
+		CircleRendererComponent() = default;
+		CircleRendererComponent(const CircleRendererComponent& other) = default;
+	};
+
 	struct CameraComponent
 	{
 		SceneCamera Camera;

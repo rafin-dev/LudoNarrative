@@ -41,7 +41,8 @@ namespace Ludo {
 		bool Init(std::unordered_map<DX12ShaderCompiler::ShaderKind, IDxcBlob*> shaders);
 		void ShutDown();
 
-		ID3D12PipelineState* CreatePSOforFrameBufferFormats(std::vector<DXGI_FORMAT>& formats);
+		ID3D12PipelineState* CreateTrianglePSOforFrameBufferFormats(std::vector<DXGI_FORMAT>& formats);
+		ID3D12PipelineState* CreateLinePSOforFrameBufferFormats(std::vector<DXGI_FORMAT>& formats);
 
 		void ReadFile(const std::filesystem::path& file, std::string& output);
 		void ParseShaders(const std::string& source, std::unordered_map<DX12ShaderCompiler::ShaderKind, std::string>& shadersSrcs);
@@ -49,9 +50,14 @@ namespace Ludo {
 							std::unordered_map<DX12ShaderCompiler::ShaderKind, IDxcBlob*>& output);
 
 		std::unordered_map<DX12ShaderCompiler::ShaderKind, IDxcBlob*> m_Shaders;
-		std::map<std::vector<DXGI_FORMAT>, ID3D12PipelineState*> m_PipelineStates;
 		std::vector<D3D12_INPUT_ELEMENT_DESC> m_ElementLayout;
 
+		std::map<std::vector<DXGI_FORMAT>, ID3D12PipelineState*> m_TrianglePipelineStates;
+		std::map<std::vector<DXGI_FORMAT>, ID3D12PipelineState*> m_LinePipelineStates;
+
+		// To be used by the DirectX12 API
+		bool m_LineBound = false;
+		
 		std::string m_Name = "None";
 
 		std::vector<DX12UploadBuffer> m_ShaderResources;
@@ -66,6 +72,10 @@ namespace Ludo {
 
 		static IDxcUtils* s_DxCompilerUtils;
 		static IDxcCompiler3* s_DxCompiler;
+
+		static DirectX12Shader* s_CurrentShader;
+
+		friend class DirectX12API;
 	};
 
 }

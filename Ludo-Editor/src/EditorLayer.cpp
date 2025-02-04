@@ -2,6 +2,9 @@
 
 #include "Style/ImGuiThemeManager.h"
 
+#include <imgui.h>
+#include <imgui_internal.h>
+
 #include <ImGuizmo.h>
 
 #define _USE_MATH_DEFINES
@@ -40,6 +43,9 @@ namespace Ludo {
 
 		m_PlayButtonIcon = ImGuiTexture::Create(Texture2D::Create("assets/icons/PlayButton.png"));
 		m_StopButtonIcon = ImGuiTexture::Create(Texture2D::Create("assets/icons/StopButton.png"));
+
+		m_OpenScenes.push_back(CreateRef<Scene>());
+		m_ScenePaths.push_back(std::filesystem::path());
 	}
 
 	void EditorLayer::OnDetach()
@@ -141,20 +147,61 @@ namespace Ludo {
 		m_SceneHierarchyPanel.OnImGuiRender();
 		m_ContentBrowserPanel.OnImGuiRender();
 
-		ImGui::Begin("Stats");
-
-		auto stats = Ludo::Renderer2D::GetStats();
-		ImGui::Text("Renderer 2D Stats:");
-		ImGui::Text(" Draw Calls: %d", stats.DrawCalls);
-		ImGui::Text(" Quads     : %d", stats.QuadCount);
-		ImGui::Text(" Vertices  : %d", stats.GetTotalVertexCount());
-		ImGui::Text(" Indices   : %d", stats.GetTotalIndexCount());
-
-		ImGui::End();
-
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2{ 0.0f, 0.0f });
-		ImGui::Begin("Viewport");
-		auto viewportOffset = ImGui::GetCursorPos(); // Includes Tab Bar
+		ImGui::Begin("Viewport", 0, ImGuiWindowFlags_NoTitleBar);
+
+		ImGui::BeginTabBar("Scenes");
+
+		ImGui::PushStyleVar(ImGuiStyleVar_TabRounding, 5.0f);
+
+		int removeID = -1;
+		int counter = 0;
+		for (auto& scene : m_OpenScenes)
+		{
+			bool keepOpen = true;
+			bool isNewScene = m_NewSceneName == scene->GetName();
+
+			if (ImGui::BeginTabItem(scene->GetName().empty() ? "Unnamed" : scene->GetName().c_str(), &keepOpen,
+				isNewScene ? ImGuiTabItemFlags_SetSelected : 0))
+			{
+				if (m_EditorScene->GetName() != scene->GetName() && m_SceneState == SceneState::Edit)
+				{
+					m_EditorScene = scene;
+					m_ActiveScene = m_EditorScene;
+					m_SceneHierarchyPanel.SetContext(m_ActiveScene);
+				}
+
+				ImGui::EndTabItem();
+			}
+
+			if (isNewScene)
+			{
+				m_NewSceneName = std::string();
+			}
+
+			if (!keepOpen)
+			{
+				removeID = counter;
+			}
+
+			counter++;
+		}
+		if (removeID != -1)
+		{
+			m_OpenScenes.erase(m_OpenScenes.begin() + removeID);
+
+			if (m_OpenScenes.size() == 0)
+			{
+				m_OpenScenes.push_back(CreateRef<Scene>());
+			}
+		}
+
+		ImGui::PopStyleVar();
+
+		ImGui::EndTabBar();
+
+		auto viewportOffset = ImGui::GetCursorPos();
+		ImVec2 minPlusPadding = ImGui::GetCursorPos();
 
 		m_ViewportActive = ImGui::IsWindowHovered();
 
@@ -188,7 +235,10 @@ namespace Ludo {
 
 			float snapValues[3] = { snapValue, snapValue, snapValue };
 
-			ImGuizmo::Manipulate((float*)&m_EditorCamera.GetViewMatrix(), (float*)&m_EditorCamera.GetProjection(),
+			const DirectX::XMFLOAT4X4& matrix = m_SceneState == SceneState::Edit ? 
+				m_EditorCamera.GetViewMatrix() : m_ActiveScene->GetMainCamera().GetComponent<CameraComponent>().Camera.GetProjection();
+
+			ImGuizmo::Manipulate((float*)&matrix, (float*)&m_EditorCamera.GetProjection(),
 				(ImGuizmo::OPERATION)m_GizmoType, ImGuizmo::MODE::LOCAL,
 				(float*)&transform, nullptr, snap ? snapValues : nullptr);
 
@@ -227,7 +277,6 @@ namespace Ludo {
 			ImGui::EndDragDropTarget();
 		}
 
-		ImVec2 minPlusPadding = ImGui::GetWindowContentRegionMin();
 		minPlusPadding.x += 5.0f;
 		minPlusPadding.y += 5.0f;
 
@@ -382,7 +431,17 @@ namespace Ludo {
 
 		LD_CORE_ASSERT(std::filesystem::exists(path), "Scene File Does not exist");
 
-		Ref<Scene> newScene = CreateRef<Scene>();
+		for (auto& scene : m_OpenScenes)
+		{
+			if (scene->GetName() == path.stem())
+			{
+				m_NewSceneName = path.stem().string();
+
+				return;
+			}
+		}
+
+		Ref<Scene> newScene = CreateRef<Scene>(path.stem().string());
 		SceneSerializer serializer(newScene);
 		if (serializer.DeserializeFromYamlFile(path))
 		{
@@ -393,14 +452,36 @@ namespace Ludo {
 
 			m_ActiveScene = m_EditorScene;
 		}
-	}
 
+		if (m_OpenScenes[0]->GetName().empty())
+		{
+			m_OpenScenes[0] = m_EditorScene;
+			m_ScenePaths[0] = path;
+		}
+		else
+		{
+			m_OpenScenes.push_back(m_EditorScene);
+			m_ScenePaths.push_back(path);
+		}
+
+		m_NewSceneName = m_EditorScene->GetName();
+	}
+ 
 	void EditorLayer::SaveScene()
 	{
-		if (std::filesystem::exists(m_EditorScenePath))
+		std::filesystem::path path;
+		for (auto p : m_ScenePaths)
+		{
+			if (m_EditorScene->GetName() == p.stem())
+			{
+				path = p;
+			}
+		}
+
+		if (std::filesystem::exists(path))
 		{
 			SceneSerializer serializer(m_EditorScene);
-			serializer.SerializeToYamlFile(m_EditorScenePath);
+			serializer.SerializeToYamlFile(path);
 		}
 		else
 		{
@@ -527,6 +608,7 @@ namespace Ludo {
 
 		ImGui::PopStyleVar(3);
 		ImGui::PopStyleColor(3);
+
 		ImGui::End();
 	}
 

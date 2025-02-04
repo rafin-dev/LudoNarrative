@@ -19,7 +19,10 @@ namespace Ludo {
 	void DirectX12UniformBuffer::SetData(void* data, size_t size, size_t offset)
 	{
 		m_UniformBuffer.FillBufferData(data, offset, size);
+	}
 
+	void DirectX12UniformBuffer::Bind() const
+	{
 		DirectX12API::Get()->GetCommandList()->SetGraphicsRootConstantBufferView(m_Slot, m_UniformBuffer.GetBuffer()->GetGPUVirtualAddress());
 	}
 
