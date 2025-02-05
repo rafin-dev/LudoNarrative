@@ -35,7 +35,7 @@ namespace Ludo {
 		float Fade;
 
 		// Editor only
-		float EntityID;
+		int EntityID;
 	};
 
 	struct LineVertex

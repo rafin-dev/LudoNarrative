@@ -294,6 +294,21 @@ namespace Ludo {
 
 			out << YAML::EndMap; // BoxCollider2D
 		}
+		if (entity.HasComponent<CircleCollider2DComponent>())
+		{
+			out << YAML::Key << "CircleCollider2D" << YAML::BeginMap; // CircleCollider2D
+
+			auto& circleCollider = entity.GetComponent<CircleCollider2DComponent>();
+
+			out << YAML::Key << "Offset" << YAML::Value << circleCollider.Offset;
+			out << YAML::Key << "Radius" << YAML::Value << circleCollider.Radius;
+
+			out << YAML::Key << "Density" << YAML::Value << circleCollider.Density;
+			out << YAML::Key << "Friction" << YAML::Value << circleCollider.Friction;
+			out << YAML::Key << "Restitution" << YAML::Value << circleCollider.Restitution;
+
+			out << YAML::EndMap; // CircleCollider2D
+		}
 
 		out << YAML::EndMap; // Entity
 	}
@@ -380,81 +395,115 @@ namespace Ludo {
 
 				Entity entity = m_Scene->CreateEntitytWithUUID(uuid, name);
 
-				auto transformComponentData = entityData["TransformComponent"];
-				if (transformComponentData)
+				// Transform Component
 				{
-					auto& transformComponent = entity.GetComponent<TransformComponent>();
-					transformComponent.Translation = transformComponentData["Translation"].as<DirectX::XMFLOAT3>();
-					transformComponent.Rotation = transformComponentData["Rotation"].as<DirectX::XMFLOAT3>();
-					transformComponent.Scale = transformComponentData["Scale"].as<DirectX::XMFLOAT3>();
-				}
-
-				auto cameraComponentData = entityData["CameraComponent"];
-				if (cameraComponentData)
-				{
-					auto& cameraComponent = entity.AddComponent<CameraComponent>();
-
-					auto cameraData = cameraComponentData["Camera"];
-					auto& camera = cameraComponent.Camera;
-					camera.SetProjectionType(GetProjectionTypeFromName(cameraData["ProjectionType"].as<std::string>()));
-
-					camera.SetPerspectiveVerticalFov(DirectX::XMConvertToRadians(cameraData["PerspectiveFOV"].as<float>()));
-					camera.SetPerspectiveNearClip(cameraData["PerspectiveNear"].as<float>());
-					camera.SetPerspectiveFarClip(cameraData["PerspectiveFar"].as<float>());
-
-					camera.SetOrthographicSize(cameraData["OrthographicSize"].as<float>());
-					camera.SetOrthographicNearClip(cameraData["OrthographicNear"].as<float>());
-					camera.SetOrthographicFarClip(cameraData["OrthographicFar"].as<float>());
-					
-					cameraComponent.FixedAspectRatio = cameraComponentData["FixedAspectRatio"].as<bool>();
-				}
-
-				auto spriteRendererComponentData = entityData["SpriteRendererComponent"];
-				if (spriteRendererComponentData)
-				{
-					auto& spriteRendererComponent = entity.AddComponent<SpriteRendererComponent>();
-					spriteRendererComponent.TexturePath = spriteRendererComponentData["TexturePath"].as<std::string>();
-
-					if (std::filesystem::exists(spriteRendererComponent.TexturePath))
+					auto transformComponentData = entityData["TransformComponent"];
+					if (transformComponentData)
 					{
-						spriteRendererComponent.Texture = SubTexture2D::Create(Texture2D::Create(spriteRendererComponent.TexturePath));
+						auto& transformComponent = entity.GetComponent<TransformComponent>();
+						transformComponent.Translation = transformComponentData["Translation"].as<DirectX::XMFLOAT3>();
+						transformComponent.Rotation = transformComponentData["Rotation"].as<DirectX::XMFLOAT3>();
+						transformComponent.Scale = transformComponentData["Scale"].as<DirectX::XMFLOAT3>();
 					}
-
-					spriteRendererComponent.Color = spriteRendererComponentData["Color"].as<DirectX::XMFLOAT4>();
-					spriteRendererComponent.TilingFactor = spriteRendererComponentData["TilingFactor"].as<float>();
 				}
 
-				auto circleRendererComponentData = entityData["CircleRendererComponent"];
-				if (circleRendererComponentData)
+				// Camera Component
 				{
-					auto& circleRendererComponent = entity.AddComponent<CircleRendererComponent>();
+					auto cameraComponentData = entityData["CameraComponent"];
+					if (cameraComponentData)
+					{
+						auto& cameraComponent = entity.AddComponent<CameraComponent>();
 
-					circleRendererComponent.Color = circleRendererComponentData["Color"].as<DirectX::XMFLOAT4>();
-					circleRendererComponent.Thickness = circleRendererComponentData["Thickness"].as<float>();
-					circleRendererComponent.Fade = circleRendererComponentData["Fade"].as<float>();
+						auto cameraData = cameraComponentData["Camera"];
+						auto& camera = cameraComponent.Camera;
+						camera.SetProjectionType(GetProjectionTypeFromName(cameraData["ProjectionType"].as<std::string>()));
+
+						camera.SetPerspectiveVerticalFov(DirectX::XMConvertToRadians(cameraData["PerspectiveFOV"].as<float>()));
+						camera.SetPerspectiveNearClip(cameraData["PerspectiveNear"].as<float>());
+						camera.SetPerspectiveFarClip(cameraData["PerspectiveFar"].as<float>());
+
+						camera.SetOrthographicSize(cameraData["OrthographicSize"].as<float>());
+						camera.SetOrthographicNearClip(cameraData["OrthographicNear"].as<float>());
+						camera.SetOrthographicFarClip(cameraData["OrthographicFar"].as<float>());
+
+						cameraComponent.FixedAspectRatio = cameraComponentData["FixedAspectRatio"].as<bool>();
+					}
 				}
 
-				auto rigidbody2DData = entityData["Rigidbody2D"];
-				if (rigidbody2DData)
+				// Sprite Renderer Component
 				{
-					auto& rigidbody2D = entity.AddComponent<Rigidbody2DComponent>();
+					auto spriteRendererComponentData = entityData["SpriteRendererComponent"];
+					if (spriteRendererComponentData)
+					{
+						auto& spriteRendererComponent = entity.AddComponent<SpriteRendererComponent>();
+						spriteRendererComponent.TexturePath = spriteRendererComponentData["TexturePath"].as<std::string>();
 
-					rigidbody2D.Type = GetBodyTypeFromName(rigidbody2DData["BodyType"].as<std::string>());
-					rigidbody2D.FixedRotation = rigidbody2DData["FixedRotation"].as<bool>();
+						if (std::filesystem::exists(spriteRendererComponent.TexturePath))
+						{
+							spriteRendererComponent.Texture = SubTexture2D::Create(Texture2D::Create(spriteRendererComponent.TexturePath));
+						}
+
+						spriteRendererComponent.Color = spriteRendererComponentData["Color"].as<DirectX::XMFLOAT4>();
+						spriteRendererComponent.TilingFactor = spriteRendererComponentData["TilingFactor"].as<float>();
+					}
 				}
 
-				auto boxCollider2DData = entityData["BoxCollider2D"];
-				if (boxCollider2DData)
+				// Circle Renderer Component
 				{
-					auto& boxCollider2D = entity.AddComponent<BoxCollider2DComponent>();
+					auto circleRendererComponentData = entityData["CircleRendererComponent"];
+					if (circleRendererComponentData)
+					{
+						auto& circleRendererComponent = entity.AddComponent<CircleRendererComponent>();
 
-					boxCollider2D.Offset = boxCollider2DData["Offset"].as<DirectX::XMFLOAT2>();
-					boxCollider2D.Size = boxCollider2DData["Size"].as<DirectX::XMFLOAT2>();
-					boxCollider2D.Rotation = DirectX::XMConvertToRadians(boxCollider2DData["Rotation"].as<float>());
+						circleRendererComponent.Color = circleRendererComponentData["Color"].as<DirectX::XMFLOAT4>();
+						circleRendererComponent.Thickness = circleRendererComponentData["Thickness"].as<float>();
+						circleRendererComponent.Fade = circleRendererComponentData["Fade"].as<float>();
+					}
+				}
 
-					boxCollider2D.Density = boxCollider2DData["Density"].as<float>();
-					boxCollider2D.Friction = boxCollider2DData["Friction"].as<float>();
-					boxCollider2D.Restitution = boxCollider2DData["Restitution"].as<float>();
+				// Rigidbody 2D Component
+				{
+					auto rigidbody2DData = entityData["Rigidbody2D"];
+					if (rigidbody2DData)
+					{
+						auto& rigidbody2D = entity.AddComponent<Rigidbody2DComponent>();
+
+						rigidbody2D.Type = GetBodyTypeFromName(rigidbody2DData["BodyType"].as<std::string>());
+						rigidbody2D.FixedRotation = rigidbody2DData["FixedRotation"].as<bool>();
+					}
+				}
+
+				// Box Collider2D Component
+				{
+					auto boxCollider2DData = entityData["BoxCollider2D"];
+					if (boxCollider2DData)
+					{
+						auto& boxCollider2D = entity.AddComponent<BoxCollider2DComponent>();
+
+						boxCollider2D.Offset = boxCollider2DData["Offset"].as<DirectX::XMFLOAT2>();
+						boxCollider2D.Size = boxCollider2DData["Size"].as<DirectX::XMFLOAT2>();
+						boxCollider2D.Rotation = DirectX::XMConvertToRadians(boxCollider2DData["Rotation"].as<float>());
+
+						boxCollider2D.Density = boxCollider2DData["Density"].as<float>();
+						boxCollider2D.Friction = boxCollider2DData["Friction"].as<float>();
+						boxCollider2D.Restitution = boxCollider2DData["Restitution"].as<float>();
+					}
+				}
+
+				// Circle Collider2D Component
+				{
+					auto circleCollider2DData = entityData["CircleCollider2D"];
+					if (circleCollider2DData)
+					{
+						auto& circleCollider2D = entity.AddComponent<CircleCollider2DComponent>();
+
+						circleCollider2D.Offset = circleCollider2DData["Offset"].as<DirectX::XMFLOAT2>();
+						circleCollider2D.Radius = circleCollider2DData["Radius"].as<float>();
+
+						circleCollider2D.Density = circleCollider2DData["Density"].as<float>();
+						circleCollider2D.Friction = circleCollider2DData["Friction"].as<float>();
+						circleCollider2D.Restitution = circleCollider2DData["Restitution"].as<float>();
+					}
 				}
 
 				if (uuid == cameraID)

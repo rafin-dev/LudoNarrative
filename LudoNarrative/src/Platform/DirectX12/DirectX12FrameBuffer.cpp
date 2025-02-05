@@ -340,6 +340,11 @@ namespace Ludo {
 		return pixel;
 	}
 
+	void DirectX12FrameBuffer::ClearDepthAttachment(float clearValue)
+	{
+		DirectX12API::Get()->GetCommandList()->ClearDepthStencilView(m_DepthStencilView, D3D12_CLEAR_FLAG_DEPTH, clearValue, 0, 0, nullptr);
+	}
+
 	ImTextureID DirectX12FrameBuffer::GetImTextureID(uint32_t index)
 	{
 		LD_CORE_ASSERT(index < m_ColorAttachments.size(), "Atempt to bound non existent Color Attachment");

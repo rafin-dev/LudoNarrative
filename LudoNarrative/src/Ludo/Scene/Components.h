@@ -100,8 +100,8 @@ namespace Ludo {
 	{
 		ScriptableEntity* Instance = nullptr;
 
-		ScriptableEntity*(*InstantiateScript)();
-		void(*DestroyScript)(NativeScriptComponent*);
+		ScriptableEntity*(*InstantiateScript)() = nullptr;
+		void(*DestroyScript)(NativeScriptComponent*) = nullptr;
 
 		template<typename T>
 		void Bind()
@@ -134,7 +134,7 @@ namespace Ludo {
 	struct BoxCollider2DComponent
 	{
 		DirectX::XMFLOAT2 Offset = { 0.0f, 0.0f };
-		DirectX::XMFLOAT2 Size = { 0.5f, 0.5f };
+		DirectX::XMFLOAT2 Size = { 1.0f, 1.0f };
 		float Rotation = 0.0f;
 
 		// TODO: Move into physicsMaterial
@@ -144,6 +144,19 @@ namespace Ludo {
 
 		BoxCollider2DComponent() = default;
 		BoxCollider2DComponent(const BoxCollider2DComponent&) = default;
+	};
+
+	struct CircleCollider2DComponent
+	{
+		DirectX::XMFLOAT2 Offset = { 0.0f, 0.0f };
+		float Radius = 0.5f;
+
+		float Density = 1.0f;
+		float Friction = 0.5f;
+		float Restitution = 0.0f;
+
+		CircleCollider2DComponent() = default;
+		CircleCollider2DComponent(const CircleCollider2DComponent&) = default;
 	};
 
 }

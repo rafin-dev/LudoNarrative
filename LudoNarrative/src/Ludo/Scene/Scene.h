@@ -42,6 +42,12 @@ namespace Ludo {
 		const std::string& GetName() { return m_Name; }
 		void SetName(const std::string& name) { m_Name = name; }
 
+		template<typename... Components>
+		auto GetAllEntitiesWith()
+		{
+			return m_Registry.view<Components...>();
+		}
+
 	private:
 		bool m_IsRunning = false;
 

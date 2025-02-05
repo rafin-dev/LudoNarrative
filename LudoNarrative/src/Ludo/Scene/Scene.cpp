@@ -69,7 +69,7 @@ namespace Ludo {
 			Entity newEntity = newScene->CreateEntitytWithUUID(uuid, name);
 			if (mainCamera && uuid == mainCamera.GetUUID())
 			{
-				newScene->m_MainCamera = Entity(newEntity);
+				newScene->m_MainCamera = Entity(newEntity, newScene.get());
 			}
 
 			enttMap.insert(std::pair(uuid, *ite));
@@ -82,6 +82,7 @@ namespace Ludo {
 		CopyComponents<NativeScriptComponent>(newScene->m_Registry, other->m_Registry, enttMap);
 		CopyComponents<Rigidbody2DComponent>(newScene->m_Registry, other->m_Registry, enttMap);
 		CopyComponents<BoxCollider2DComponent>(newScene->m_Registry, other->m_Registry, enttMap);
+		CopyComponents<CircleCollider2DComponent>(newScene->m_Registry, other->m_Registry, enttMap);
 
 		// Internal Components
 		CopyComponents<Rigidbody2DStorageComponent>(newScene->m_Registry, other->m_Registry, enttMap);
@@ -192,7 +193,7 @@ namespace Ludo {
 
 				b2CosSin rot = b2ComputeCosSin(-boxCollider.Rotation);
 				b2Polygon box = b2MakeOffsetBox(
-					boxCollider.Size.x * transform.Scale.x, boxCollider.Size.y * transform.Scale.y,
+					boxCollider.Size.x * transform.Scale.x / 2.0f, boxCollider.Size.y * transform.Scale.y / 2.0f,
 					b2Vec2{ boxCollider.Offset.x, boxCollider.Offset.y },
 					b2Rot{ rot.cosine, rot.sine });
 
@@ -201,6 +202,26 @@ namespace Ludo {
 				shapeDef.friction = boxCollider.Friction;
 				shapeDef.restitution = boxCollider.Restitution;
 				b2CreatePolygonShape(rigidbody.BodyID, &shapeDef, &box);
+			}
+		}
+
+		{
+			auto view = m_Registry.view<TransformComponent, Rigidbody2DStorageComponent, CircleCollider2DComponent>();
+
+			for (auto entityID : view)
+			{
+				auto [transform, rigidbody, circleCollider] = view.get<TransformComponent, Rigidbody2DStorageComponent, CircleCollider2DComponent>(entityID);
+
+				b2Circle circle;
+				circle.center = b2Vec2(circleCollider.Offset.x, circleCollider.Offset.y);
+				circle.radius = circleCollider.Radius * transform.Scale.x;
+
+				b2ShapeDef shapeDef = b2DefaultShapeDef();
+				shapeDef.density = circleCollider.Density;
+				shapeDef.friction = circleCollider.Friction;
+				shapeDef.restitution = circleCollider.Restitution;
+
+				b2CreateCircleShape(rigidbody.BodyID, &shapeDef, &circle);
 			}
 		}
 	}
@@ -360,6 +381,7 @@ namespace Ludo {
 		CopyComponentIfExists<NativeScriptComponent>(newEntity, entity);
 		CopyComponentIfExists<Rigidbody2DComponent>(newEntity, entity);
 		CopyComponentIfExists<BoxCollider2DComponent>(newEntity, entity);
+		CopyComponentIfExists<CircleCollider2DComponent>(newEntity, entity);
 
 		return Entity();
 	}

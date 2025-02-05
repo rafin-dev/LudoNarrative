@@ -50,6 +50,7 @@ namespace Ludo {
 		void OnRenderCameraComponent();
 		void OnRenderRigidbody2DComponent();
 		void OnRenderBoxCollider2DComponent();
+		void OnRenderCircleCollider2DComponent();
 
 		template<typename T>
 		void RenderComponentPropertiesIfExists(const std::string& label, bool removable = true)

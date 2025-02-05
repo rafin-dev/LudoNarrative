@@ -23,7 +23,7 @@ Entities:
       FixedRotation: true
     BoxCollider2D:
       Offset: [0, 0]
-      Size: [0.5, 0.5]
+      Size: [1, 1]
       Rotation: 0
       Density: 1
       Friction: 0.5
@@ -33,7 +33,7 @@ Entities:
       Tag: Dynamic Body
     TransformComponent:
       Translation: [0, 2.4, 0]
-      Rotation: [0, 0, 1.5707942]
+      Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
     SpriteRendererComponent:
       TexturePath: None
@@ -44,7 +44,7 @@ Entities:
       FixedRotation: false
     BoxCollider2D:
       Offset: [0, 0]
-      Size: [0.5, 0.5]
+      Size: [1, 1]
       Rotation: 0
       Density: 1
       Friction: 0.5
@@ -54,18 +54,18 @@ Entities:
       Tag: Ground
     TransformComponent:
       Translation: [-11.13178, -15.570223, 0.08053821]
-      Rotation: [-0, 0, -0.62946236]
+      Rotation: [-0, 0, 0]
       Scale: [17.1836, 1.0000001, 1]
     SpriteRendererComponent:
       TexturePath: None
-      Color: [0.115044236, 1, 0, 1]
+      Color: [1, 1, 1, 1]
       TilingFactor: 1
     Rigidbody2D:
       BodyType: Static
       FixedRotation: false
     BoxCollider2D:
       Offset: [0, 0]
-      Size: [0.5, 0.5]
+      Size: [1, 1]
       Rotation: 0
       Density: 1
       Friction: 0.5
@@ -75,18 +75,18 @@ Entities:
       Tag: Ground
     TransformComponent:
       Translation: [-7.5386314, -2.7792451, 0]
-      Rotation: [-0, 0, -0.43145365]
+      Rotation: [-0, 0, 0]
       Scale: [17.183586, 1, 1]
     SpriteRendererComponent:
       TexturePath: None
-      Color: [0.115044236, 1, 0, 1]
+      Color: [1, 1, 1, 1]
       TilingFactor: 1
     Rigidbody2D:
       BodyType: Static
       FixedRotation: false
     BoxCollider2D:
       Offset: [0, 0]
-      Size: [0.5, 0.5]
+      Size: [1, 1]
       Rotation: 0
       Density: 1
       Friction: 0.5
@@ -96,19 +96,39 @@ Entities:
       Tag: Ground
     TransformComponent:
       Translation: [4.179106, -7.950598, 1.7795305e-06]
-      Rotation: [0, 0, 0.6326589]
+      Rotation: [0, 0, 0]
       Scale: [17.1836, 1, 1]
     SpriteRendererComponent:
       TexturePath: None
-      Color: [0.115044236, 1, 0, 1]
+      Color: [1, 1, 1, 1]
       TilingFactor: 1
     Rigidbody2D:
       BodyType: Static
       FixedRotation: false
     BoxCollider2D:
       Offset: [0, 0]
-      Size: [0.5, 0.5]
+      Size: [1, 1]
       Rotation: 0
+      Density: 1
+      Friction: 0.5
+      Restitution: 0
+  - Entity: 18129532109612655214
+    TagComponent:
+      Tag: Empty Entity
+    TransformComponent:
+      Translation: [0.8, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    CircleRendererComponent:
+      Color: [1, 1, 1, 1]
+      Thickness: 1
+      Fade: 0.005
+    Rigidbody2D:
+      BodyType: Dynamic
+      FixedRotation: false
+    CircleCollider2D:
+      Offset: [0, 0]
+      Radius: 0.5
       Density: 1
       Friction: 0.5
       Restitution: 0

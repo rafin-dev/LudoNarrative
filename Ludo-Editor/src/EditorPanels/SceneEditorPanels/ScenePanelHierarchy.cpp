@@ -14,7 +14,8 @@ namespace Ludo {
 			BIND_COMPONENT_PANEL_RENDERER(CircleRendererComponent),
 			BIND_COMPONENT_PANEL_RENDERER(CameraComponent),
 			BIND_COMPONENT_PANEL_RENDERER(Rigidbody2DComponent),
-			BIND_COMPONENT_PANEL_RENDERER(BoxCollider2DComponent)
+			BIND_COMPONENT_PANEL_RENDERER(BoxCollider2DComponent),
+			BIND_COMPONENT_PANEL_RENDERER(CircleCollider2DComponent)
 		};
 	}
 
@@ -105,6 +106,7 @@ namespace Ludo {
 				RenderComponentPropertiesIfExists<CameraComponent>("Camera Component");
 				RenderComponentPropertiesIfExists<Rigidbody2DComponent>("Rigidbody2D");
 				RenderComponentPropertiesIfExists<BoxCollider2DComponent>("Box Collider2D");
+				RenderComponentPropertiesIfExists<CircleCollider2DComponent>("Circle Collider2D");
 			}
 		}
 
@@ -199,6 +201,13 @@ namespace Ludo {
 			if (ImGui::MenuItem("Box Collider2D", nullptr, false, !m_SelectedEntity.HasComponent<BoxCollider2DComponent>()))
 			{
 				m_SelectedEntity.AddComponent<BoxCollider2DComponent>();
+
+				ImGui::CloseCurrentPopup();
+			}
+
+			if (ImGui::MenuItem("Circle Collider2D", nullptr, false, !m_SelectedEntity.HasComponent<CircleCollider2DComponent>()))
+			{
+				m_SelectedEntity.AddComponent<CircleCollider2DComponent>();
 
 				ImGui::CloseCurrentPopup();
 			}

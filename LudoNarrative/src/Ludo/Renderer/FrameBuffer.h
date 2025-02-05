@@ -65,6 +65,7 @@ namespace Ludo {
 
 		virtual void Resize(uint32_t width, uint32_t height) = 0;
 		virtual int ReadPixel(uint32_t attachmentIndex, uint32_t x, uint32_t y) = 0;
+		virtual void ClearDepthAttachment(float clearValue) = 0;
 
 		virtual ImTextureID GetImTextureID(uint32_t index = 0) = 0;
 

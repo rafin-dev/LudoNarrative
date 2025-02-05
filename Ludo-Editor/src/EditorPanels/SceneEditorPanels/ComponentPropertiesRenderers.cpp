@@ -206,7 +206,7 @@ namespace Ludo {
 		}
 
 		ImGuiItems::DragFloat2("Offset", boxCollider.Offset);
-		ImGuiItems::DragFloat2("Size", boxCollider.Size);
+		ImGuiItems::DragFloat2("Size", boxCollider.Size, 1.0f);
 		float rotation = DirectX::XMConvertToDegrees(boxCollider.Rotation);
 		if (ImGui::DragFloat("Rotation", &rotation))
 		{
@@ -216,6 +216,23 @@ namespace Ludo {
 		ImGui::DragFloat("Density", &boxCollider.Density);
 		ImGui::DragFloat("Friction", &boxCollider.Friction);
 		ImGui::DragFloat("Restitution", &boxCollider.Restitution);
+	}
+
+	void ScenePanelHierarchy::OnRenderCircleCollider2DComponent()
+	{
+		CircleCollider2DComponent& circleCollider = m_SelectedEntity.GetComponent<CircleCollider2DComponent>();
+
+		if (!m_SelectedEntity.HasComponent<Rigidbody2DComponent>())
+		{
+			ImGui::TextColored(ImVec4(1.0f, 0.0f, 0.0f, 1.0f), "Box Collider2D Requires a Rigidbody2D to work!");
+		}
+
+		ImGuiItems::DragFloat2("Offset", circleCollider.Offset);
+		ImGui::DragFloat("Radius", &circleCollider.Radius);
+
+		ImGui::DragFloat("Density", &circleCollider.Density);
+		ImGui::DragFloat("Friction", &circleCollider.Friction);
+		ImGui::DragFloat("Restitution", &circleCollider.Restitution);
 	}
 
 }

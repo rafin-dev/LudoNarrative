@@ -25,6 +25,8 @@ namespace Ludo {
 		bool OnKeyPressed(KeyPressedEvent& event);
 		bool OnMouseButtonReleasedEvent(MouseButtonReleasedEvent& event);
 
+		void OnOverlayRender();
+
 		void NewScene();
 		void OpenScene();
 		void OpenScene(const std::filesystem::path& path);
@@ -65,6 +67,8 @@ namespace Ludo {
 
 		int m_GizmoType = -1;
 		bool m_GizmoHovered = false;
+
+		bool m_ShowPhysicsColliders = true;
 
 		// Panels
 		ScenePanelHierarchy m_SceneHierarchyPanel;

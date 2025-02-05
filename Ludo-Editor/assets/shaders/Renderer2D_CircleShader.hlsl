@@ -10,7 +10,7 @@ VS_OUTPUT main(VS_INPUT input)
 {
     VS_OUTPUT output;
     output.WorldPos = mul(float4(input.WorldPos.xyz, 1.0f), ViewProjection);
-    output.LocalPos = input.LocalPos;
+    output.LocalPos = float2(input.LocalPos.xy);
     output.Color = input.Color;
     output.Thickness = input.Thickness;
     output.Fade = input.Fade;
@@ -25,8 +25,6 @@ VS_OUTPUT main(VS_INPUT input)
 struct PS_OUTPUT
 {
     float4 Color : SV_Target0;
-    
-    // Editor only
     int EntityID : SV_Target1;
 };
 
@@ -36,10 +34,15 @@ PS_OUTPUT main(VS_OUTPUT input)
     float circle = smoothstep(0.0f, input.Fade, distance);
     circle *= smoothstep(input.Thickness + input.Fade, input.Thickness, distance);
     
+    if (circle == 0.0f)
+    {
+        discard;
+    }
+    
     PS_OUTPUT output;
     output.Color = input.Color;
     output.Color.a *= circle;
-    output.EntityID = circle != 0.0f ? input.EntityID : -1;
+    output.EntityID = input.EntityID;
     
     return output;
 }

@@ -19,6 +19,7 @@ namespace Ludo {
 
 		void Resize(uint32_t width, uint32_t height) override;
 		int ReadPixel(uint32_t attachmentIndex, uint32_t x, uint32_t y) override;
+		void ClearDepthAttachment(float clearValue) override;
 
 		ImTextureID GetImTextureID(uint32_t index = 0) override;
 

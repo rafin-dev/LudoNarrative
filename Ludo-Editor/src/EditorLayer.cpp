@@ -88,6 +88,10 @@ namespace Ludo {
 				break;
 			}
 		}
+
+		m_FrameBuffer->ClearDepthAttachment(1.0f);
+		OnOverlayRender();
+
 		m_FrameBuffer->Unbind();
 
 		auto [mx, my] = ImGui::GetMousePos();
@@ -95,6 +99,72 @@ namespace Ludo {
 		my -= m_MinViewportBounds.y;
 		MouseX = (int)mx;
 		MouseY = (int)my;
+	}
+
+	void EditorLayer::OnOverlayRender()
+	{
+		Entity camera = m_ActiveScene->GetMainCamera();
+		if (m_SceneState == SceneState::Play && camera)
+		{
+			Renderer2D::BeginScene(camera.GetComponent<CameraComponent>().Camera, camera.GetComponent<TransformComponent>().GetTransform());
+		}
+		else
+		{
+			Renderer2D::BeginScene(m_EditorCamera);
+		}
+
+		if (m_ShowPhysicsColliders)
+		{
+			// Box Colliders
+			{
+				auto view = m_ActiveScene->GetAllEntitiesWith<TransformComponent, BoxCollider2DComponent>();
+				for (auto entityID : view)
+				{
+					auto [transformComponent, boxCollider] = view.get<TransformComponent, BoxCollider2DComponent>(entityID);
+
+					DirectX::XMMATRIX transform =
+						DirectX::XMMatrixScaling(
+							transformComponent.Scale.x * boxCollider.Size.x,
+							transformComponent.Scale.y * boxCollider.Size.y, 1.0f) *
+						DirectX::XMMatrixRotationZ(boxCollider.Rotation) *
+						DirectX::XMMatrixRotationZ(transformComponent.Rotation.z) *
+						DirectX::XMMatrixTranslation(
+							transformComponent.Translation.x + boxCollider.Offset.x,
+							transformComponent.Translation.y + boxCollider.Offset.y,
+							0.0f);
+
+					Renderer2D::DrawRect(transform, { 0.0f, 1.0f, 0.0f, 1.0f });
+				}
+			}
+
+			// Circle Colliders
+			{
+				auto view = m_ActiveScene->GetAllEntitiesWith<TransformComponent, CircleCollider2DComponent>();
+				for (auto entityID : view)
+				{
+					auto [transformComponent, circleCollider] = view.get<TransformComponent, CircleCollider2DComponent>(entityID);
+
+					DirectX::XMFLOAT3 radiusvec = { circleCollider.Radius, circleCollider.Radius, circleCollider.Radius };
+
+					DirectX::XMFLOAT3 scx = { transformComponent.Scale.x, transformComponent.Scale.x, transformComponent.Scale.x };
+					DirectX::XMVECTOR scale = DirectX::XMVectorMultiply(DirectX::XMLoadFloat3(&scx),
+						DirectX::XMVectorScale(DirectX::XMLoadFloat3(&radiusvec), 2.0f));
+
+					DirectX::XMMATRIX transform =
+						DirectX::XMMatrixScalingFromVector(scale) *
+						DirectX::XMMatrixRotationZ(transformComponent.Rotation.z) *
+						DirectX::XMMatrixTranslation(
+							transformComponent.Translation.x + circleCollider.Offset.x,
+							transformComponent.Translation.y + circleCollider.Offset.y,
+							0.0f);
+
+					Renderer2D::DrawCircle(transform, { 0.0f, 1.0f, 0.0f, 1.0f }, 0.05f, 0.0f);
+
+				}
+			}
+		}
+
+		Renderer2D::EndScene();
 	}
 
 	void EditorLayer::OnEvent(Event& event)
@@ -146,6 +216,12 @@ namespace Ludo {
 
 		m_SceneHierarchyPanel.OnImGuiRender();
 		m_ContentBrowserPanel.OnImGuiRender();
+
+		ImGui::Begin("Settings");
+
+		ImGui::Checkbox("Show Physics Colliders", &m_ShowPhysicsColliders);
+
+		ImGui::End();
 
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2{ 0.0f, 0.0f });
 		ImGui::Begin("Viewport", 0, ImGuiWindowFlags_NoTitleBar);

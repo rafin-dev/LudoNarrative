@@ -3,7 +3,7 @@
 struct VS_INPUT
 {
     float3 WorldPos : WORLDPOS;
-    float2 LocalPos : LOCALPOS;
+    float3 LocalPos : LOCALPOS;
     float4 Color : COLOR;
     float Thickness : THICKNESS;
     float Fade : FADE;
