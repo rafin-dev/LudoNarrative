@@ -38,6 +38,9 @@ namespace Ludo {
 		void OnScenePlay();
 		void OnSceneStop();
 
+		void OnSceneSimulateStart();
+		void OnSceneSimulateStop();
+
 		void OnDuplicateEntity();
 
 		// UI Toolbar
@@ -77,7 +80,8 @@ namespace Ludo {
 		enum class SceneState
 		{
 			Edit = 0,
-			Play = 1
+			Play = 1,
+			Simulate = 2
 		};
 
 		SceneState m_SceneState = SceneState::Edit;

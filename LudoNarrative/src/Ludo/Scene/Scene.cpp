@@ -15,7 +15,7 @@ namespace Ludo {
 	// Internal components not exposed to the editor, used only to store Box2D IDs
 	struct Rigidbody2DStorageComponent
 	{
-		b2BodyId BodyID;
+		b2BodyId BodyID = b2_nullBodyId;
 	};
 
 
@@ -157,73 +157,7 @@ namespace Ludo {
 			}
 		}
 
-		// Initialize Box2D World
-		b2WorldDef worldDef = b2DefaultWorldDef();
-		worldDef.gravity = b2Vec2{ 0.0f, -10.0f };
-
-		m_PhysicsWorld2D = new b2WorldId();
-		*m_PhysicsWorld2D = b2CreateWorld(&worldDef);
-		{
-			auto view = m_Registry.view<TransformComponent, Rigidbody2DComponent, Rigidbody2DStorageComponent>();
-			for (auto entityID : view)
-			{
-				auto [transform, rigidbody, storage] = view.get<TransformComponent, Rigidbody2DComponent, Rigidbody2DStorageComponent>(entityID);
-
-				b2BodyDef bodyDef = b2DefaultBodyDef();
-				bodyDef.type = GetBox2DBodyType(rigidbody.Type);
-				bodyDef.position.x = transform.Translation.x;
-				bodyDef.position.y = transform.Translation.y;
-				auto rot = b2ComputeCosSin(transform.Rotation.z);
-				bodyDef.rotation.c = rot.cosine;
-				bodyDef.rotation.s = rot.sine;
-
-				auto body = b2CreateBody(*m_PhysicsWorld2D, &bodyDef);
-				storage.BodyID = body;
-
-				b2Body_SetFixedRotation(body, rigidbody.FixedRotation);
-			}
-		}
-
-		{
-			auto view = m_Registry.view<TransformComponent, Rigidbody2DStorageComponent, BoxCollider2DComponent>();
-
-			for (auto entityID : view)
-			{
-				auto [transform, rigidbody, boxCollider] = view.get<TransformComponent, Rigidbody2DStorageComponent, BoxCollider2DComponent>(entityID);
-
-				b2CosSin rot = b2ComputeCosSin(-boxCollider.Rotation);
-				b2Polygon box = b2MakeOffsetBox(
-					boxCollider.Size.x * transform.Scale.x / 2.0f, boxCollider.Size.y * transform.Scale.y / 2.0f,
-					b2Vec2{ boxCollider.Offset.x, boxCollider.Offset.y },
-					b2Rot{ rot.cosine, rot.sine });
-
-				b2ShapeDef shapeDef = b2DefaultShapeDef();
-				shapeDef.density = boxCollider.Density;
-				shapeDef.friction = boxCollider.Friction;
-				shapeDef.restitution = boxCollider.Restitution;
-				b2CreatePolygonShape(rigidbody.BodyID, &shapeDef, &box);
-			}
-		}
-
-		{
-			auto view = m_Registry.view<TransformComponent, Rigidbody2DStorageComponent, CircleCollider2DComponent>();
-
-			for (auto entityID : view)
-			{
-				auto [transform, rigidbody, circleCollider] = view.get<TransformComponent, Rigidbody2DStorageComponent, CircleCollider2DComponent>(entityID);
-
-				b2Circle circle;
-				circle.center = b2Vec2(circleCollider.Offset.x, circleCollider.Offset.y);
-				circle.radius = circleCollider.Radius * transform.Scale.x;
-
-				b2ShapeDef shapeDef = b2DefaultShapeDef();
-				shapeDef.density = circleCollider.Density;
-				shapeDef.friction = circleCollider.Friction;
-				shapeDef.restitution = circleCollider.Restitution;
-
-				b2CreateCircleShape(rigidbody.BodyID, &shapeDef, &circle);
-			}
-		}
+		StartPhysics2D();
 	}
 
 	void Scene::OnRuntimeStop()
@@ -240,10 +174,17 @@ namespace Ludo {
 			nativeScript.DestroyScript(&nativeScript);
 		}
 
-		// Destroy Physics world
-		b2DestroyWorld(*m_PhysicsWorld2D);
-		delete m_PhysicsWorld2D;
-		m_PhysicsWorld2D = nullptr;
+		StopPhysics2D();
+	}
+
+	void Scene::OnSimulateStart()
+	{
+		StartPhysics2D();
+	}
+
+	void Scene::OnSimulateStop()
+	{
+		StopPhysics2D();
 	}
 
 	void Scene::OnUpdateRuntime(TimeStep ts)
@@ -345,6 +286,55 @@ namespace Ludo {
 		Renderer2D::EndScene();
 	}
 
+	void Scene::OnUpdateSimulate(TimeStep ts, EditorCamera& camera)
+	{
+		// Physics 2D
+		{
+			b2World_Step(*m_PhysicsWorld2D, ts, 4);
+
+			auto group = m_Registry.group<Rigidbody2DStorageComponent>(entt::get<TransformComponent>);
+			for (auto entityID : group)
+			{
+				auto [storage, transform] = group.get<Rigidbody2DStorageComponent, TransformComponent>(entityID);
+
+				auto pos = b2Body_GetPosition(storage.BodyID);
+				auto rot = b2Body_GetRotation(storage.BodyID);
+
+				transform.Translation.x = pos.x;
+				transform.Translation.y = pos.y;
+				transform.Rotation.z = std::atan2(rot.s, rot.c);
+			}
+		}
+
+		Renderer2D::BeginScene(camera);
+		{
+			// Sprites
+			auto group = m_Registry.group<SpriteRendererComponent>(entt::get<TransformComponent>);
+			for (auto entityID : group)
+			{
+				auto [transform, sprite] = group.get<TransformComponent, SpriteRendererComponent>(entityID);
+				DirectX::XMMATRIX spriteTransform;
+				transform.GetTransform(&spriteTransform);
+
+				Renderer2D::DrawSprite(spriteTransform, sprite, (int)entityID);
+			}
+		}
+
+		{
+			// Circles
+			auto group = m_Registry.group<CircleRendererComponent>(entt::get<TransformComponent>);
+			for (auto entityID : group)
+			{
+				auto [transform, circle] = group.get<TransformComponent, CircleRendererComponent>(entityID);
+				DirectX::XMMATRIX circleTransform;
+				transform.GetTransform(&circleTransform);
+
+				Renderer2D::DrawCircle(circleTransform, circle, (int)entityID);
+			}
+		}
+		Renderer2D::EndScene();
+	}
+
 	void Scene::OnViewportResize(uint32_t width, uint32_t height)
 	{
 		m_ViewportWidth = width;
@@ -398,6 +388,98 @@ namespace Ludo {
 	Entity Scene::GetMainCamera()
 	{
 		return Entity(m_MainCamera, this);
+	}
+
+	void Scene::StartPhysics2D()
+	{
+		// Initialize Box2D World
+		b2WorldDef worldDef = b2DefaultWorldDef();
+		worldDef.gravity = b2Vec2{ 0.0f, -10.0f };
+
+		// Create Rigidbodies
+		m_PhysicsWorld2D = new b2WorldId();
+		*m_PhysicsWorld2D = b2CreateWorld(&worldDef);
+		{
+			auto view = m_Registry.view<TransformComponent, Rigidbody2DComponent, Rigidbody2DStorageComponent>();
+			for (auto entityID : view)
+			{
+				auto [transform, rigidbody, storage] = view.get<TransformComponent, Rigidbody2DComponent, Rigidbody2DStorageComponent>(entityID);
+
+				b2BodyDef bodyDef = b2DefaultBodyDef();
+				bodyDef.type = GetBox2DBodyType(rigidbody.Type);
+				bodyDef.position.x = transform.Translation.x;
+				bodyDef.position.y = transform.Translation.y;
+				auto rot = b2ComputeCosSin(transform.Rotation.z);
+				bodyDef.rotation.c = rot.cosine;
+				bodyDef.rotation.s = rot.sine;
+
+				auto body = b2CreateBody(*m_PhysicsWorld2D, &bodyDef);
+				storage.BodyID = body;
+
+				b2Body_SetFixedRotation(body, rigidbody.FixedRotation);
+			}
+		}
+
+		// Create Box Colliders
+		{
+			auto view = m_Registry.view<TransformComponent, Rigidbody2DStorageComponent, BoxCollider2DComponent>();
+
+			for (auto entityID : view)
+			{
+				auto [transform, rigidbody, boxCollider] = view.get<TransformComponent, Rigidbody2DStorageComponent, BoxCollider2DComponent>(entityID);
+
+				b2CosSin rot = b2ComputeCosSin(-boxCollider.Rotation);
+				b2Polygon box = b2MakeOffsetBox(
+					boxCollider.Size.x * transform.Scale.x / 2.0f, boxCollider.Size.y * transform.Scale.y / 2.0f,
+					b2Vec2{ boxCollider.Offset.x, boxCollider.Offset.y },
+					b2Rot{ rot.cosine, rot.sine });
+
+				b2ShapeDef shapeDef = b2DefaultShapeDef();
+				shapeDef.density = boxCollider.Density;
+				shapeDef.friction = boxCollider.Friction;
+				shapeDef.restitution = boxCollider.Restitution;
+				b2CreatePolygonShape(rigidbody.BodyID, &shapeDef, &box);
+			}
+		}
+
+		// Create Circle Colliders
+		{
+			auto view = m_Registry.view<TransformComponent, Rigidbody2DStorageComponent, CircleCollider2DComponent>();
+
+			for (auto entityID : view)
+			{
+				auto [transform, rigidbody, circleCollider] = view.get<TransformComponent, Rigidbody2DStorageComponent, CircleCollider2DComponent>(entityID);
+
+				b2Circle circle;
+				circle.center = b2Vec2(circleCollider.Offset.x, circleCollider.Offset.y);
+				circle.radius = circleCollider.Radius * transform.Scale.x;
+
+				b2ShapeDef shapeDef = b2DefaultShapeDef();
+				shapeDef.density = circleCollider.Density;
+				shapeDef.friction = circleCollider.Friction;
+				shapeDef.restitution = circleCollider.Restitution;
+
+				b2CreateCircleShape(rigidbody.BodyID, &shapeDef, &circle);
+			}
+		}
+	}
+
+	void Scene::StopPhysics2D()
+	{
+		// Destroy Physics world
+		b2DestroyWorld(*m_PhysicsWorld2D);
+		delete m_PhysicsWorld2D;
+		m_PhysicsWorld2D = nullptr;
+
+		// Delete bodyIDs
+		{
+			auto view = m_Registry.view<Rigidbody2DStorageComponent>();
+
+			for (auto entityID : view)
+			{
+				view.get<Rigidbody2DStorageComponent>(entityID).BodyID = b2_nullBodyId;
+			}
+		}
 	}
 
 	template<>

@@ -30,8 +30,13 @@ namespace Ludo {
 		void OnRuntimeStart();
 		void OnRuntimeStop();
 
+		void OnSimulateStart();
+		void OnSimulateStop();
+
 		void OnUpdateRuntime(TimeStep ts);
 		void OnUpdateEditor(TimeStep ts, EditorCamera& camera);
+		void OnUpdateSimulate(TimeStep ts, EditorCamera& camera);
+
 		void OnViewportResize(uint32_t width, uint32_t height);
 
 		Entity DuplicateEntity(Entity entity);
@@ -49,6 +54,9 @@ namespace Ludo {
 		}
 
 	private:
+		void StartPhysics2D();
+		void StopPhysics2D();
+
 		bool m_IsRunning = false;
 
 		entt::entity m_MainCamera;

@@ -77,14 +77,19 @@ namespace Ludo {
 
 		switch (m_SceneState)
 		{
-			case Ludo::EditorLayer::SceneState::Edit:
+			case SceneState::Edit:
 			{
 				m_ActiveScene->OnUpdateEditor(ts, m_EditorCamera);
 				break;
 			}
-			case Ludo::EditorLayer::SceneState::Play:
+			case SceneState::Play:
 			{
 				m_ActiveScene->OnUpdateRuntime(ts);
+				break;
+			}
+			case SceneState::Simulate:
+			{
+				m_ActiveScene->OnUpdateSimulate(ts, m_EditorCamera);
 				break;
 			}
 		}
@@ -640,6 +645,24 @@ namespace Ludo {
 		m_SceneHierarchyPanel.SetContext(m_ActiveScene);
 	}
 
+	void EditorLayer::OnSceneSimulateStart()
+	{
+		m_SceneState = SceneState::Simulate;
+
+		m_ActiveScene = Scene::Copy(m_EditorScene);
+		m_ActiveScene->OnSimulateStart();
+		m_SceneHierarchyPanel.SetContext(m_ActiveScene);
+	}
+
+	void EditorLayer::OnSceneSimulateStop()
+	{
+		m_SceneState = SceneState::Edit;
+
+		m_ActiveScene->OnSimulateStop();
+		m_ActiveScene = m_EditorScene;
+		m_SceneHierarchyPanel.SetContext(m_ActiveScene);
+	}
+
 	void EditorLayer::OnDuplicateEntity()
 	{
 		if (m_SceneState != SceneState::Edit)
@@ -665,20 +688,44 @@ namespace Ludo {
 
 		ImGui::Begin("##toolbar", nullptr, ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse);
 
-		float size = ImGui::GetWindowHeight() - 4.0f;
-		const Ref<ImGuiTexture>& icon = m_SceneState == SceneState::Edit ? m_PlayButtonIcon : m_StopButtonIcon;
-		ImGui::SetCursorPosX((ImGui::GetWindowContentRegionMax().x * 0.5f) - (size * 0.5f));
-		if (ImGui::ImageButton("##playButton", icon->GetImTextureID(), ImVec2(size, size)))
+		// Play Button
 		{
-			switch (m_SceneState)
+			float size = ImGui::GetWindowHeight() - 4.0f;
+			const Ref<ImGuiTexture>& icon = m_SceneState == SceneState::Play ? m_StopButtonIcon : m_PlayButtonIcon;
+			ImGui::SetCursorPosX((ImGui::GetWindowContentRegionMax().x * 0.5f) - (size * 0.5f));
+			if (ImGui::ImageButton("##playButton", icon->GetImTextureID(), ImVec2(size, size)))
 			{
-			case Ludo::EditorLayer::SceneState::Edit:
-				OnScenePlay();
-				break;
+				switch (m_SceneState)
+				{
+				case Ludo::EditorLayer::SceneState::Edit:
+					OnScenePlay();
+					break;
 
-			case Ludo::EditorLayer::SceneState::Play:
-				OnSceneStop();
-				break;
+				case Ludo::EditorLayer::SceneState::Play:
+					OnSceneStop();
+					break;
+				}
+			}
+		}
+
+		ImGui::SameLine();
+
+		// Simulate Button
+		{
+			float size = ImGui::GetWindowHeight() - 4.0f;
+			const Ref<ImGuiTexture>& icon = m_SceneState == SceneState::Simulate ? m_StopButtonIcon : m_PlayButtonIcon;
+			if (ImGui::ImageButton("##simulateButton", icon->GetImTextureID(), ImVec2(size, size)))
+			{
+				switch (m_SceneState)
+				{
+				case Ludo::EditorLayer::SceneState::Edit:
+					OnSceneSimulateStart();
+					break;
+
+				case Ludo::EditorLayer::SceneState::Simulate:
+					OnSceneSimulateStop();
+					break;
+				}
 			}
 		}
 
