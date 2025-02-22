@@ -29,6 +29,8 @@ namespace Ludo {
 		void SetVsync(bool enabled) override;
 		bool IsVsync() const override;
 
+		void SetTitle(std::string& title) override;
+
 		void SetFullScreen(bool enabled) override;
 
 		HWND GetHandle() const { return m_WindowHandle; }

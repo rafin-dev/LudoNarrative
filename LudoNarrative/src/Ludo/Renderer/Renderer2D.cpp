@@ -105,16 +105,16 @@ namespace Ludo {
 		Ref<UniformBuffer> CameraUniformBuffer;
 	};
 
-	static Renderer2DData s_Data;
+	static Renderer2DData s_ScriptingData;
 
 	void Renderer2D::Init()
 	{
 		LD_PROFILE_FUNCTION();
 
-		uint32_t* Indices = new uint32_t[s_Data.MaxQuadIndices];
+		uint32_t* Indices = new uint32_t[s_ScriptingData.MaxQuadIndices];
 
 		uint32_t offset = 0;
-		for (uint32_t i = 0; i < s_Data.MaxQuadIndices; i += 6)
+		for (uint32_t i = 0; i < s_ScriptingData.MaxQuadIndices; i += 6)
 		{
 			Indices[i + 0] = offset + 0;
 			Indices[i + 1] = offset + 1;
@@ -127,9 +127,9 @@ namespace Ludo {
 			offset += 4;
 		}
 
-		s_Data.CameraUniformBuffer = UniformBuffer::Create(sizeof(Renderer2DData::CameraData), 0);
+		s_ScriptingData.CameraUniformBuffer = UniformBuffer::Create(sizeof(Renderer2DData::CameraData), 0);
 
-		auto indexBuffer = IndexBuffer::Create(Indices, s_Data.MaxQuadIndices);
+		auto indexBuffer = IndexBuffer::Create(Indices, s_ScriptingData.MaxQuadIndices);
 		delete[] Indices;
 
 		// Quads
@@ -144,25 +144,25 @@ namespace Ludo {
 				{ "EntityID",		ShaderDataType::Int		}
 			};
 
-			s_Data.QuadVertexBuffer = VertexBuffer::Create(Renderer2DData::MaxQuadVertices * sizeof(QuadVertex), quadVbLayout, VertexBuffer::DYNAMIC);
-			s_Data.QuadVertexArray = VertexArray::Create();
-			s_Data.QuadVertexArray->AddVertexBuffer(s_Data.QuadVertexBuffer);
-			s_Data.QuadVertexArray->SetIndexBuffer(indexBuffer);
+			s_ScriptingData.QuadVertexBuffer = VertexBuffer::Create(Renderer2DData::MaxQuadVertices * sizeof(QuadVertex), quadVbLayout, VertexBuffer::DYNAMIC);
+			s_ScriptingData.QuadVertexArray = VertexArray::Create();
+			s_ScriptingData.QuadVertexArray->AddVertexBuffer(s_ScriptingData.QuadVertexBuffer);
+			s_ScriptingData.QuadVertexArray->SetIndexBuffer(indexBuffer);
 
-			s_Data.QuadVertexBufferBase = new QuadVertex[Renderer2DData::MaxQuadVertices];
+			s_ScriptingData.QuadVertexBufferBase = new QuadVertex[Renderer2DData::MaxQuadVertices];
 
-			s_Data.QuadShader = Shader::Create("TextureShader", "assets/shaders/Renderer2D_QuadShader.hlsl", quadVbLayout, {});
+			s_ScriptingData.QuadShader = Shader::Create("TextureShader", "assets/shaders/Renderer2D_QuadShader.hlsl", quadVbLayout, {});
 
-			s_Data.WhiteTexture = Texture2D::Create(1, 1);
+			s_ScriptingData.WhiteTexture = Texture2D::Create(1, 1);
 			uint32_t whiteTextureData = 0xffffffff;
-			s_Data.WhiteTexture->SetData(&whiteTextureData, sizeof(whiteTextureData));
+			s_ScriptingData.WhiteTexture->SetData(&whiteTextureData, sizeof(whiteTextureData));
 
-			s_Data.TextureSlots[0] = s_Data.WhiteTexture;
+			s_ScriptingData.TextureSlots[0] = s_ScriptingData.WhiteTexture;
 
-			s_Data.VertexPositions[0] = { -0.50f, -0.50f, 0.0f };
-			s_Data.VertexPositions[1] = { -0.50f,  0.50f, 0.0f };
-			s_Data.VertexPositions[2] = { 0.50f,  0.50f, 0.0f };
-			s_Data.VertexPositions[3] = { 0.50f, -0.50f, 0.0f };
+			s_ScriptingData.VertexPositions[0] = { -0.50f, -0.50f, 0.0f };
+			s_ScriptingData.VertexPositions[1] = { -0.50f,  0.50f, 0.0f };
+			s_ScriptingData.VertexPositions[2] = { 0.50f,  0.50f, 0.0f };
+			s_ScriptingData.VertexPositions[3] = { 0.50f, -0.50f, 0.0f };
 		}
 		
 		// Circles
@@ -176,14 +176,14 @@ namespace Ludo {
 				{ "EntityID",	ShaderDataType::Int		}
 			};
 
-			s_Data.CircleVertexBuffer = VertexBuffer::Create(Renderer2DData::MaxCircleVertices * sizeof(CircleVertex), circleVbLayout, VertexBuffer::DYNAMIC);
-			s_Data.CircleVertexArray = VertexArray::Create();
-			s_Data.CircleVertexArray->AddVertexBuffer(s_Data.CircleVertexBuffer);
-			s_Data.CircleVertexArray->SetIndexBuffer(indexBuffer);
+			s_ScriptingData.CircleVertexBuffer = VertexBuffer::Create(Renderer2DData::MaxCircleVertices * sizeof(CircleVertex), circleVbLayout, VertexBuffer::DYNAMIC);
+			s_ScriptingData.CircleVertexArray = VertexArray::Create();
+			s_ScriptingData.CircleVertexArray->AddVertexBuffer(s_ScriptingData.CircleVertexBuffer);
+			s_ScriptingData.CircleVertexArray->SetIndexBuffer(indexBuffer);
 
-			s_Data.CircleShader = Shader::Create("CircleShader", "assets/shaders/Renderer2D_CircleShader.hlsl", circleVbLayout, {});
+			s_ScriptingData.CircleShader = Shader::Create("CircleShader", "assets/shaders/Renderer2D_CircleShader.hlsl", circleVbLayout, {});
 
-			s_Data.CircleVertexBufferBase = new CircleVertex[Renderer2DData::MaxCircleVertices];
+			s_ScriptingData.CircleVertexBufferBase = new CircleVertex[Renderer2DData::MaxCircleVertices];
 		}
 
 		// Lines
@@ -194,14 +194,14 @@ namespace Ludo {
 				{ "EntityID",	ShaderDataType::Int		}
 			};
 
-			s_Data.LineVertexBuffer = VertexBuffer::Create(Renderer2DData::MaxLinesVertices * sizeof(CircleVertex), lineVbLayout, VertexBuffer::DYNAMIC);
-			s_Data.LineVertexArray = VertexArray::Create();
-			s_Data.LineVertexArray->AddVertexBuffer(s_Data.LineVertexBuffer);
-			s_Data.LineVertexArray->SetIndexBuffer(indexBuffer);
+			s_ScriptingData.LineVertexBuffer = VertexBuffer::Create(Renderer2DData::MaxLinesVertices * sizeof(CircleVertex), lineVbLayout, VertexBuffer::DYNAMIC);
+			s_ScriptingData.LineVertexArray = VertexArray::Create();
+			s_ScriptingData.LineVertexArray->AddVertexBuffer(s_ScriptingData.LineVertexBuffer);
+			s_ScriptingData.LineVertexArray->SetIndexBuffer(indexBuffer);
 
-			s_Data.LineShader = Shader::Create("LineShader", "assets/shaders/Renderer2D_LineShader.hlsl", lineVbLayout, {});
+			s_ScriptingData.LineShader = Shader::Create("LineShader", "assets/shaders/Renderer2D_LineShader.hlsl", lineVbLayout, {});
 
-			s_Data.LineVertexBufferBase = new LineVertex[Renderer2DData::MaxLinesVertices];
+			s_ScriptingData.LineVertexBufferBase = new LineVertex[Renderer2DData::MaxLinesVertices];
 		}
 	}
 	
@@ -215,31 +215,31 @@ namespace Ludo {
 		
 		// Quads
 		{
-			delete[] s_Data.QuadVertexBufferBase;
-			for (auto& texture : s_Data.TextureSlots) { texture = nullptr; }
-			s_Data.QuadVertexArray.reset();
-			s_Data.QuadVertexBuffer.reset();
-			s_Data.QuadShader.reset();
-			s_Data.WhiteTexture.reset();
+			delete[] s_ScriptingData.QuadVertexBufferBase;
+			for (auto& texture : s_ScriptingData.TextureSlots) { texture = nullptr; }
+			s_ScriptingData.QuadVertexArray.reset();
+			s_ScriptingData.QuadVertexBuffer.reset();
+			s_ScriptingData.QuadShader.reset();
+			s_ScriptingData.WhiteTexture.reset();
 		}
 
 		// Circles
 		{
-			delete[] s_Data.CircleVertexBufferBase;
-			s_Data.CircleVertexArray.reset();
-			s_Data.CircleVertexBuffer.reset();
-			s_Data.CircleShader.reset();
+			delete[] s_ScriptingData.CircleVertexBufferBase;
+			s_ScriptingData.CircleVertexArray.reset();
+			s_ScriptingData.CircleVertexBuffer.reset();
+			s_ScriptingData.CircleShader.reset();
 		}
 
 		// Lines
 		{
-			delete[] s_Data.LineVertexBufferBase;
-			s_Data.LineVertexArray.reset();
-			s_Data.LineVertexBuffer.reset();
-			s_Data.LineShader.reset();
+			delete[] s_ScriptingData.LineVertexBufferBase;
+			s_ScriptingData.LineVertexArray.reset();
+			s_ScriptingData.LineVertexBuffer.reset();
+			s_ScriptingData.LineShader.reset();
 		}
 
-		s_Data.CameraUniformBuffer.reset();
+		s_ScriptingData.CameraUniformBuffer.reset();
 	}
 	
 	void Renderer2D::BeginScene(const Camera& camera, const DirectX::XMFLOAT4X4& transform)
@@ -250,8 +250,8 @@ namespace Ludo {
 		DirectX::XMStoreFloat4x4(&viewProjection, DirectX::XMMatrixTranspose(
 			DirectX::XMMatrixInverse(nullptr, DirectX::XMLoadFloat4x4(&transform)) * DirectX::XMLoadFloat4x4(&camera.GetProjection())));
 
-		s_Data.CameraBuffer.ViewProjectionMatrix = viewProjection;
-		s_Data.CameraUniformBuffer->SetData(&s_Data.CameraBuffer, sizeof(Renderer2DData::CameraData), 0);
+		s_ScriptingData.CameraBuffer.ViewProjectionMatrix = viewProjection;
+		s_ScriptingData.CameraUniformBuffer->SetData(&s_ScriptingData.CameraBuffer, sizeof(Renderer2DData::CameraData), 0);
 
 		ClearData();
 	}
@@ -260,8 +260,8 @@ namespace Ludo {
 	{
 		DirectX::XMFLOAT4X4 viewProjection = camera.GetViewProjection();
 		DirectX::XMStoreFloat4x4(&viewProjection, DirectX::XMMatrixTranspose(DirectX::XMLoadFloat4x4(&viewProjection)));
-		s_Data.CameraBuffer.ViewProjectionMatrix = viewProjection;
-		s_Data.CameraUniformBuffer->SetData(&s_Data.CameraBuffer, sizeof(Renderer2DData::CameraData), 0);
+		s_ScriptingData.CameraBuffer.ViewProjectionMatrix = viewProjection;
+		s_ScriptingData.CameraUniformBuffer->SetData(&s_ScriptingData.CameraBuffer, sizeof(Renderer2DData::CameraData), 0);
 
 		ClearData();
 	}
@@ -270,8 +270,8 @@ namespace Ludo {
 	{
 		LD_PROFILE_RENDERER_FUNCTION();
 
-		s_Data.CameraBuffer.ViewProjectionMatrix = camera.GetViewProjectionMatrix();
-		s_Data.CameraUniformBuffer->SetData(&s_Data.CameraBuffer, sizeof(Renderer2DData::CameraData), 0);
+		s_ScriptingData.CameraBuffer.ViewProjectionMatrix = camera.GetViewProjectionMatrix();
+		s_ScriptingData.CameraUniformBuffer->SetData(&s_ScriptingData.CameraBuffer, sizeof(Renderer2DData::CameraData), 0);
 
 		ClearData();
 	}
@@ -287,48 +287,48 @@ namespace Ludo {
 	{
 		LD_PROFILE_RENDERER_FUNCTION();
 
-		if (s_Data.QuadIndexCount)
+		if (s_ScriptingData.QuadIndexCount)
 		{
-			uint32_t dataSize = (uint32_t)((uint8_t*)s_Data.QuadVertexBufferPtr - (uint8_t*)s_Data.QuadVertexBufferBase);
-			s_Data.QuadVertexBuffer->SetData(s_Data.QuadVertexBufferBase, dataSize);
+			uint32_t dataSize = (uint32_t)((uint8_t*)s_ScriptingData.QuadVertexBufferPtr - (uint8_t*)s_ScriptingData.QuadVertexBufferBase);
+			s_ScriptingData.QuadVertexBuffer->SetData(s_ScriptingData.QuadVertexBufferBase, dataSize);
 
-			for (uint32_t i = 0; i < s_Data.TextureSlotIndex; i++)
+			for (uint32_t i = 0; i < s_ScriptingData.TextureSlotIndex; i++)
 			{
-				s_Data.TextureSlots[i]->Bind(i);
+				s_ScriptingData.TextureSlots[i]->Bind(i);
 			}
 
-			s_Data.QuadShader->Bind();
-			s_Data.CameraUniformBuffer->Bind();
-			RenderCommand::DrawIndexed(s_Data.QuadVertexArray, s_Data.QuadIndexCount);
+			s_ScriptingData.QuadShader->Bind();
+			s_ScriptingData.CameraUniformBuffer->Bind();
+			RenderCommand::DrawIndexed(s_ScriptingData.QuadVertexArray, s_ScriptingData.QuadIndexCount);
 		
-			s_Data.Stats.TotalDrawCalls++;
-			s_Data.Stats.QuadDrawCalls++;
+			s_ScriptingData.Stats.TotalDrawCalls++;
+			s_ScriptingData.Stats.QuadDrawCalls++;
 		}
 
-		if (s_Data.CircleIndexCount)
+		if (s_ScriptingData.CircleIndexCount)
 		{
-			uint32_t dataSize = (uint32_t)((uint8_t*)s_Data.CircleVertexBufferPtr - (uint8_t*)s_Data.CircleVertexBufferBase);
-			s_Data.CircleVertexBuffer->SetData(s_Data.CircleVertexBufferBase, dataSize);
+			uint32_t dataSize = (uint32_t)((uint8_t*)s_ScriptingData.CircleVertexBufferPtr - (uint8_t*)s_ScriptingData.CircleVertexBufferBase);
+			s_ScriptingData.CircleVertexBuffer->SetData(s_ScriptingData.CircleVertexBufferBase, dataSize);
 
-			s_Data.CircleShader->Bind();
-			s_Data.CameraUniformBuffer->Bind();
-			RenderCommand::DrawIndexed(s_Data.CircleVertexArray, s_Data.CircleIndexCount);
+			s_ScriptingData.CircleShader->Bind();
+			s_ScriptingData.CameraUniformBuffer->Bind();
+			RenderCommand::DrawIndexed(s_ScriptingData.CircleVertexArray, s_ScriptingData.CircleIndexCount);
 
-			s_Data.Stats.TotalDrawCalls++;
-			s_Data.Stats.CircleDrawCalls++;
+			s_ScriptingData.Stats.TotalDrawCalls++;
+			s_ScriptingData.Stats.CircleDrawCalls++;
 		}
 
-		if (s_Data.LineVertexCount)
+		if (s_ScriptingData.LineVertexCount)
 		{
-			uint32_t dataSize = (uint32_t)((uint8_t*)s_Data.LineVertexBufferPtr - (uint8_t*)s_Data.LineVertexBufferBase);
-			s_Data.LineVertexBuffer->SetData(s_Data.LineVertexBufferBase, dataSize);
+			uint32_t dataSize = (uint32_t)((uint8_t*)s_ScriptingData.LineVertexBufferPtr - (uint8_t*)s_ScriptingData.LineVertexBufferBase);
+			s_ScriptingData.LineVertexBuffer->SetData(s_ScriptingData.LineVertexBufferBase, dataSize);
 
-			s_Data.LineShader->Bind();
-			s_Data.CameraUniformBuffer->Bind();
-			RenderCommand::DrawLines(s_Data.LineVertexArray, s_Data.LineVertexCount);
+			s_ScriptingData.LineShader->Bind();
+			s_ScriptingData.CameraUniformBuffer->Bind();
+			RenderCommand::DrawLines(s_ScriptingData.LineVertexArray, s_ScriptingData.LineVertexCount);
 
-			s_Data.Stats.TotalDrawCalls++;
-			s_Data.Stats.LineDrawCalls++;
+			s_ScriptingData.Stats.TotalDrawCalls++;
+			s_ScriptingData.Stats.LineDrawCalls++;
 		}
 	}
 	
@@ -457,25 +457,25 @@ namespace Ludo {
 	{
 		LD_PROFILE_RENDERER_FUNCTION();
 
-		if (s_Data.LineVertexCount == Renderer2DData::MaxLinesVertices)
+		if (s_ScriptingData.LineVertexCount == Renderer2DData::MaxLinesVertices)
 		{
 			FlushAndReset();
 		}
 
-		s_Data.LineVertexBufferPtr->Position = begin;
-		s_Data.LineVertexBufferPtr->Color = color;
-		s_Data.LineVertexBufferPtr->EntityID = entityID;
-		s_Data.LineVertexBufferPtr++;
+		s_ScriptingData.LineVertexBufferPtr->Position = begin;
+		s_ScriptingData.LineVertexBufferPtr->Color = color;
+		s_ScriptingData.LineVertexBufferPtr->EntityID = entityID;
+		s_ScriptingData.LineVertexBufferPtr++;
 
-		s_Data.LineVertexBufferPtr->Position = end;
-		s_Data.LineVertexBufferPtr->Color = color;
-		s_Data.LineVertexBufferPtr->EntityID = entityID;
-		s_Data.LineVertexBufferPtr++;
+		s_ScriptingData.LineVertexBufferPtr->Position = end;
+		s_ScriptingData.LineVertexBufferPtr->Color = color;
+		s_ScriptingData.LineVertexBufferPtr->EntityID = entityID;
+		s_ScriptingData.LineVertexBufferPtr++;
 
-		s_Data.LineVertexCount += 2;
+		s_ScriptingData.LineVertexCount += 2;
 
-		s_Data.Stats.TotalObjectCount++;
-		s_Data.Stats.LineCount++;
+		s_ScriptingData.Stats.TotalObjectCount++;
+		s_ScriptingData.Stats.LineCount++;
 	}
 
 	void Renderer2D::DrawRect(const DirectX::XMFLOAT3& position, const DirectX::XMFLOAT2& size, const DirectX::XMFLOAT4& color, int entityID)
@@ -498,7 +498,7 @@ namespace Ludo {
 
 		for (uint32_t i = 0; i < 4; i++)
 		{
-			DirectX::XMStoreFloat3(points + i, DirectX::XMVector2Transform(DirectX::XMLoadFloat3(s_Data.VertexPositions + i), transform));
+			DirectX::XMStoreFloat3(points + i, DirectX::XMVector2Transform(DirectX::XMLoadFloat3(s_ScriptingData.VertexPositions + i), transform));
 		}
 
 		for (uint32_t i = 0; i < 4; i++)
@@ -516,7 +516,7 @@ namespace Ludo {
 	{
 		LD_PROFILE_RENDERER_FUNCTION();
 
-		if (s_Data.QuadIndexCount == Renderer2DData::MaxQuadIndices)
+		if (s_ScriptingData.QuadIndexCount == Renderer2DData::MaxQuadIndices)
 		{
 			FlushAndReset();
 		}
@@ -533,35 +533,35 @@ namespace Ludo {
 
 		for (uint32_t i = 0; i < 4; i++)
 		{
-			DirectX::XMStoreFloat3(&s_Data.QuadVertexBufferPtr->Position,
-				DirectX::XMVector2Transform(DirectX::XMLoadFloat3(&s_Data.VertexPositions[i]), transform));
-			s_Data.QuadVertexBufferPtr->Color = color;
-			s_Data.QuadVertexBufferPtr->TexCoord = texCoords[i];
-			s_Data.QuadVertexBufferPtr->TexIndex = whiteTextureIndex;
-			s_Data.QuadVertexBufferPtr->TilingFactor = tilingFactor;
-			s_Data.QuadVertexBufferPtr->EntityID = entityID;
-			s_Data.QuadVertexBufferPtr++;
+			DirectX::XMStoreFloat3(&s_ScriptingData.QuadVertexBufferPtr->Position,
+				DirectX::XMVector2Transform(DirectX::XMLoadFloat3(&s_ScriptingData.VertexPositions[i]), transform));
+			s_ScriptingData.QuadVertexBufferPtr->Color = color;
+			s_ScriptingData.QuadVertexBufferPtr->TexCoord = texCoords[i];
+			s_ScriptingData.QuadVertexBufferPtr->TexIndex = whiteTextureIndex;
+			s_ScriptingData.QuadVertexBufferPtr->TilingFactor = tilingFactor;
+			s_ScriptingData.QuadVertexBufferPtr->EntityID = entityID;
+			s_ScriptingData.QuadVertexBufferPtr++;
 		}
-		s_Data.QuadIndexCount += 6;
+		s_ScriptingData.QuadIndexCount += 6;
 
-		s_Data.Stats.TotalObjectCount++;
-		s_Data.Stats.QuadCount++;
+		s_ScriptingData.Stats.TotalObjectCount++;
+		s_ScriptingData.Stats.QuadCount++;
 	}
 
 	void LD_SIMD_CALLING_CONVENTION Renderer2D::DrawQuad(int entityID, const DirectX::XMMATRIX& transform, const Ref<Texture2D>& texture, const DirectX::XMFLOAT2* texCoords, const DirectX::XMFLOAT4& tintColor, float tilingFactor)
 	{
 		LD_PROFILE_RENDERER_FUNCTION();
 
-		if (s_Data.QuadIndexCount == Renderer2DData::MaxQuadIndices)
+		if (s_ScriptingData.QuadIndexCount == Renderer2DData::MaxQuadIndices)
 		{
 			FlushAndReset();
 		}
 
 		uint32_t textureIndex = 0.0f;
 
-		for (uint32_t i = 1; i < s_Data.TextureSlotIndex; i++)
+		for (uint32_t i = 1; i < s_ScriptingData.TextureSlotIndex; i++)
 		{
-			if (s_Data.TextureSlots[i] == texture)
+			if (s_ScriptingData.TextureSlots[i] == texture)
 			{
 				textureIndex = i;
 				break;
@@ -570,33 +570,33 @@ namespace Ludo {
 
 		if (textureIndex == 0.0f)
 		{
-			textureIndex = s_Data.TextureSlotIndex;
-			s_Data.TextureSlots[s_Data.TextureSlotIndex] = texture;
-			s_Data.TextureSlotIndex++;
+			textureIndex = s_ScriptingData.TextureSlotIndex;
+			s_ScriptingData.TextureSlots[s_ScriptingData.TextureSlotIndex] = texture;
+			s_ScriptingData.TextureSlotIndex++;
 		}
 
 		for (int i = 0; i < 4; i++)
 		{
-			DirectX::XMStoreFloat3(&s_Data.QuadVertexBufferPtr->Position, DirectX::XMVector2Transform(DirectX::XMLoadFloat3(&s_Data.VertexPositions[i]), transform));
-			s_Data.QuadVertexBufferPtr->Color = tintColor;
-			s_Data.QuadVertexBufferPtr->TexCoord = texCoords[i];
-			s_Data.QuadVertexBufferPtr->TexIndex = textureIndex;
-			s_Data.QuadVertexBufferPtr->TilingFactor = tilingFactor;
-			s_Data.QuadVertexBufferPtr->EntityID = entityID;
-			s_Data.QuadVertexBufferPtr++;
+			DirectX::XMStoreFloat3(&s_ScriptingData.QuadVertexBufferPtr->Position, DirectX::XMVector2Transform(DirectX::XMLoadFloat3(&s_ScriptingData.VertexPositions[i]), transform));
+			s_ScriptingData.QuadVertexBufferPtr->Color = tintColor;
+			s_ScriptingData.QuadVertexBufferPtr->TexCoord = texCoords[i];
+			s_ScriptingData.QuadVertexBufferPtr->TexIndex = textureIndex;
+			s_ScriptingData.QuadVertexBufferPtr->TilingFactor = tilingFactor;
+			s_ScriptingData.QuadVertexBufferPtr->EntityID = entityID;
+			s_ScriptingData.QuadVertexBufferPtr++;
 		}
 
-		s_Data.QuadIndexCount += 6;
+		s_ScriptingData.QuadIndexCount += 6;
 
-		s_Data.Stats.TotalObjectCount++;
-		s_Data.Stats.QuadCount++;
+		s_ScriptingData.Stats.TotalObjectCount++;
+		s_ScriptingData.Stats.QuadCount++;
 	}
 
 	void LD_SIMD_CALLING_CONVENTION Renderer2D::DrawCircle(int EntityID, const DirectX::XMMATRIX& transform, const DirectX::XMFLOAT4& color, float thickness, float fade)
 	{
 		LD_PROFILE_FUNCTION();
 
-		if (s_Data.CircleIndexCount == Renderer2DData::MaxCircleIndices)
+		if (s_ScriptingData.CircleIndexCount == Renderer2DData::MaxCircleIndices)
 		{
 			FlushAndReset();
 		}
@@ -604,56 +604,56 @@ namespace Ludo {
 
 		for (uint32_t i = 0; i < 4; i++)
 		{
-			auto vertexPosition = DirectX::XMLoadFloat3(&s_Data.VertexPositions[i]);
+			auto vertexPosition = DirectX::XMLoadFloat3(&s_ScriptingData.VertexPositions[i]);
 
-			DirectX::XMStoreFloat3(&s_Data.CircleVertexBufferPtr->WorldPosition,
+			DirectX::XMStoreFloat3(&s_ScriptingData.CircleVertexBufferPtr->WorldPosition,
 				DirectX::XMVector2Transform(vertexPosition, transform));
 
-			DirectX::XMStoreFloat3(&s_Data.CircleVertexBufferPtr->LocalPosition,
+			DirectX::XMStoreFloat3(&s_ScriptingData.CircleVertexBufferPtr->LocalPosition,
 				DirectX::XMVectorScale(vertexPosition, 2.0f));
 			
-			s_Data.CircleVertexBufferPtr->Color = color;
-			s_Data.CircleVertexBufferPtr->Thickness = thickness;
-			s_Data.CircleVertexBufferPtr->Fade = fade;
-			s_Data.CircleVertexBufferPtr->EntityID = EntityID;
-			s_Data.CircleVertexBufferPtr++;
+			s_ScriptingData.CircleVertexBufferPtr->Color = color;
+			s_ScriptingData.CircleVertexBufferPtr->Thickness = thickness;
+			s_ScriptingData.CircleVertexBufferPtr->Fade = fade;
+			s_ScriptingData.CircleVertexBufferPtr->EntityID = EntityID;
+			s_ScriptingData.CircleVertexBufferPtr++;
 		}
-		s_Data.CircleIndexCount += 6;
+		s_ScriptingData.CircleIndexCount += 6;
 
-		s_Data.Stats.TotalObjectCount++;
-		s_Data.Stats.CircleCount++;
+		s_ScriptingData.Stats.TotalObjectCount++;
+		s_ScriptingData.Stats.CircleCount++;
 	}
 
 	void Renderer2D::ResetStats()
 	{
-		memset(&s_Data.Stats, 0, sizeof(Statistics));
+		memset(&s_ScriptingData.Stats, 0, sizeof(Statistics));
 	}
 
 	Renderer2D::Statistics Renderer2D::GetStats()
 	{
-		return s_Data.Stats;
+		return s_ScriptingData.Stats;
 	}
 
 	void Renderer2D::ClearData()
 	{
-		s_Data.QuadIndexCount = 0;
-		s_Data.QuadVertexBufferPtr = s_Data.QuadVertexBufferBase;
-		s_Data.TextureSlotIndex = 1;
+		s_ScriptingData.QuadIndexCount = 0;
+		s_ScriptingData.QuadVertexBufferPtr = s_ScriptingData.QuadVertexBufferBase;
+		s_ScriptingData.TextureSlotIndex = 1;
 
-		s_Data.CircleIndexCount = 0;
-		s_Data.CircleVertexBufferPtr = s_Data.CircleVertexBufferBase;
+		s_ScriptingData.CircleIndexCount = 0;
+		s_ScriptingData.CircleVertexBufferPtr = s_ScriptingData.CircleVertexBufferBase;
 
-		s_Data.LineVertexCount = 0;
-		s_Data.LineVertexBufferPtr = s_Data.LineVertexBufferBase;
+		s_ScriptingData.LineVertexCount = 0;
+		s_ScriptingData.LineVertexBufferPtr = s_ScriptingData.LineVertexBufferBase;
 	}
 
 	void Renderer2D::FlushAndReset()
 	{
 		EndScene();
 
-		s_Data.QuadIndexCount = 0;
-		s_Data.QuadVertexBufferPtr = s_Data.QuadVertexBufferBase;
-		s_Data.TextureSlotIndex = 1;
+		s_ScriptingData.QuadIndexCount = 0;
+		s_ScriptingData.QuadVertexBufferPtr = s_ScriptingData.QuadVertexBufferBase;
+		s_ScriptingData.TextureSlotIndex = 1;
 	}
 
 }

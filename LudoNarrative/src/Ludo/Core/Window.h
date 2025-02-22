@@ -36,6 +36,8 @@ namespace Ludo {
 		virtual void SetVsync(bool enbaled) = 0;
 		virtual bool IsVsync() const = 0;
 
+		virtual void SetTitle(std::string& title) = 0;
+
 		virtual void SetFullScreen(bool enabled) = 0;
 
 		static Window* Create(bool* ouput = nullptr, const WindowProps& props = WindowProps());

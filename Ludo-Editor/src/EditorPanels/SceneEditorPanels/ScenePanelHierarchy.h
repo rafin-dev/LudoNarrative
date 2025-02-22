@@ -47,6 +47,7 @@ namespace Ludo {
 		void OnRenderTransformComponent();
 		void OnRenderSpriteRendererComponent();
 		void OnRenderCircleRendererComponent();
+		void OnRenderScriptComponent();
 		void OnRenderCameraComponent();
 		void OnRenderRigidbody2DComponent();
 		void OnRenderBoxCollider2DComponent();

@@ -13,3 +13,6 @@
 [submodule "LudoNarrative/vendor/Box2D"]
 	path = LudoNarrative/vendor/Box2D
 	url = https://github.com/erincatto/box2d.git
+[submodule "LudoNarrative/vendor/mono"]
+	path = LudoNarrative/vendor/mono
+	url = https://github.com/mono/mono.git

@@ -53,9 +53,17 @@ namespace Ludo {
 		LD_PROFILE_FUNCTION();
 	}
 
+	static float frameTimes[20] = { 1.0f, 1.0f, 1.0f, 1.0f ,1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f ,1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f };
+	static int currentTime = 0;
+	static float frameTimems = 0.0f;
 	void EditorLayer::OnUpdate(TimeStep ts)
 	{
 		LD_PROFILE_FUNCTION();
+
+		frameTimems = ts.GetMiliseconds();
+		frameTimes[currentTime] = ts;
+		currentTime++;
+		currentTime %= 20;
 
 		if (m_ResizeFrameBuffer)
 		{
@@ -223,6 +231,21 @@ namespace Ludo {
 		m_ContentBrowserPanel.OnImGuiRender();
 
 		ImGui::Begin("Settings");
+
+		float avgft = 0.0f;
+		for (float ft : frameTimes)
+		{
+			avgft += ft;
+		}
+		avgft /= 20.0f;
+		ImGui::Text("Frame Time: %.2fms", frameTimems);
+		ImGui::Text("FPS: %.2f", (1.0f / avgft));
+
+		static bool vsync = true;
+		if (ImGui::Checkbox("Vsync", &vsync))
+		{
+			Application::Get().GetWindow().SetVsync(vsync);
+		}
 
 		ImGui::Checkbox("Show Physics Colliders", &m_ShowPhysicsColliders);
 

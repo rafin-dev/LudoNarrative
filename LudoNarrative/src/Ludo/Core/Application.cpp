@@ -27,19 +27,26 @@ namespace Ludo {
 		LD_CORE_ASSERT(s_Instance == nullptr, "Application was already initialized");
 		s_Instance = this;
 
-		if (!Renderer::Init())
+		// Init Renderer
 		{
-			m_Running = false;
-			return;
+			if (!Renderer::Init())
+			{
+				m_Running = false;
+				return;
+			}
 		}
 
-		bool result;
-		m_Window = Window::Create(&result, WindowProps(name, windowWidth, windowHeight));
-		if (!result)
+		// Create Window
 		{
-			m_Running = false;
-			return;
+			bool result;
+			m_Window = Window::Create(&result, WindowProps(name, windowWidth, windowHeight));
+			if (!result)
+			{
+				m_Running = false;
+				return;
+			}
 		}
+
 		m_Window->SetEventCallBack(LUDO_BIND_EVENT_FN(Application::OnEvent));
 		m_Window->SetVsync(true);
 	}

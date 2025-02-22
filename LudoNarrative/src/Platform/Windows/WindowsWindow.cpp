@@ -67,6 +67,11 @@ namespace Ludo {
 		return m_Data.Vsync;
 	}
 
+	void WindowsWindow::SetTitle(std::string& title)
+	{
+		SetWindowText(m_WindowHandle, std::filesystem::path(title).wstring().c_str());
+	}
+
 	void WindowsWindow::SetFullScreen(bool enabled)
 	{
 		// Window style

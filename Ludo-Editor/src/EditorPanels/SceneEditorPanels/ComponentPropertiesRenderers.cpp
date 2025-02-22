@@ -96,6 +96,11 @@ namespace Ludo {
 		ImGui::DragFloat("Fade", &circleRenderer.Fade, 0.00025, 0.0f, 1.0f);
 	}
 
+	void ScenePanelHierarchy::OnRenderScriptComponent()
+	{
+		
+	}
+
 	void ScenePanelHierarchy::OnRenderCameraComponent()
 	{
 		auto& cameraComponent = m_SelectedEntity.GetComponent<CameraComponent>();

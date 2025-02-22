@@ -25,7 +25,7 @@
 
 #else
 
-#error Unsoported platform
+#error Unsuported platform
 
 #endif
 
