@@ -329,6 +329,7 @@ namespace Ludo {
 		{
 			ImGuizmo::SetOrthographic(false);
 			ImGuizmo::SetDrawlist();
+
 			ImGuizmo::SetRect(ImGui::GetWindowPos().x, ImGui::GetWindowPos().y, ImGui::GetWindowWidth(), ImGui::GetWindowHeight());
 
 			auto& tc = selectedEntity.GetComponent<TransformComponent>();
@@ -342,9 +343,9 @@ namespace Ludo {
 			const DirectX::XMFLOAT4X4& matrix = m_SceneState == SceneState::Edit ? 
 				m_EditorCamera.GetViewMatrix() : m_ActiveScene->GetMainCamera().GetComponent<CameraComponent>().Camera.GetProjection();
 
-			ImGuizmo::Manipulate((float*)&matrix, (float*)&m_EditorCamera.GetProjection(),
+			ImGuizmo::Manipulate(*matrix.m, *m_EditorCamera.GetProjection().m,
 				(ImGuizmo::OPERATION)m_GizmoType, ImGuizmo::MODE::LOCAL,
-				(float*)&transform, nullptr, snap ? snapValues : nullptr);
+				*transform.m, nullptr, snap ? snapValues : nullptr);
 
 			m_GizmoHovered = ImGuizmo::IsOver();
 			if (ImGuizmo::IsUsing())
