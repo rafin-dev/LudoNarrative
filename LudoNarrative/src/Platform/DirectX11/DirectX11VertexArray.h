@@ -1,14 +1,17 @@
 #pragma once
 
 #include "Ludo/Renderer/VertexArray.h"
+#include "DirectX11Buffer.h"
+
+#include "d3d11.h"
 
 namespace Ludo {
 
-	class DirectX12VertexArray : public VertexArray
+	class DirectX11VertexArray : public VertexArray
 	{
 	public:
-		DirectX12VertexArray();
-		virtual ~DirectX12VertexArray() override;
+		DirectX11VertexArray();
+		virtual ~DirectX11VertexArray() override;
 
 		virtual void Bind() override;
 
@@ -21,7 +24,6 @@ namespace Ludo {
 	private:
 		std::vector<Ref<VertexBuffer>> m_VertexBuffers;
 		Ref<IndexBuffer> m_IndexBuffer;
-
 	};
 
 }

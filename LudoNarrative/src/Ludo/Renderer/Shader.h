@@ -17,11 +17,6 @@ namespace Ludo {
 
 		virtual const std::string& GetName() const = 0;
 
-		virtual void SetViewProjectionMatrix(const DirectX::XMFLOAT4X4& matrix) = 0;
-		virtual void SetModelMatrix(const DirectX::XMFLOAT4X4& matrix) = 0;
-
-		virtual void UploadMaterialData(void* data) = 0;
-
 		virtual const BufferLayout& GetVertexBufferLayout() = 0;
 		virtual const BufferLayout& GetMaterialLayout() = 0;
 

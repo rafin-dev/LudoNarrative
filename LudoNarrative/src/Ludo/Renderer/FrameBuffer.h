@@ -1,5 +1,7 @@
 #pragma once
 
+#include "Ludo/Core/Core.h"
+
 #include <imgui.h>
 
 namespace Ludo {

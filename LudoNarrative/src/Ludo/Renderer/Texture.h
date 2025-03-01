@@ -3,6 +3,8 @@
 #include <string>
 #include "Ludo/Core/Core.h"
 
+#include <imgui.h>
+
 namespace Ludo {
 
 	class Texture
@@ -24,6 +26,8 @@ namespace Ludo {
 	public:
 		static Ref<Texture2D> Create(uint32_t width, uint32_t height);
 		static Ref<Texture2D> Create(const std::filesystem::path& path);
+
+		virtual ImTextureID GetImTextureID() = 0;
 
 		virtual bool operator==(const Texture2D& other) const = 0;
 	};

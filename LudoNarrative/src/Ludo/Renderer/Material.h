@@ -19,7 +19,6 @@ namespace Ludo {
 
 		void UploadMaterialData()
 		{
-			m_Shader->UploadMaterialData(m_Buffer);
 		}
 
 		~Material();

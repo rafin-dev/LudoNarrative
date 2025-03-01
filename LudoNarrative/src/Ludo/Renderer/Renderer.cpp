@@ -20,8 +20,6 @@ namespace Ludo {
 	{
 		auto& shader = material->GetShader();
 		shader->Bind();
-		shader->SetViewProjectionMatrix(s_SceneData->ViewProjectionMatrix);
-		shader->SetModelMatrix(transform);
 		material->UploadMaterialData();
 		
 		vertexArray->Bind();

@@ -5,7 +5,7 @@
 
 #ifdef LD_PLATFORM_WINDOWS
 
-#include "Platform/DirectX12/DirectX12UniformBuffer.h"
+#include "Platform/DirectX11/DirectX11UniformBuffer.h"
 
 #endif
 
@@ -16,7 +16,7 @@ namespace Ludo {
         switch (Renderer::GetAPI())
         {
         case RendererAPI::API::None: LD_CORE_ASSERT(false, "RenderAPI::None is currently not supported") return nullptr;
-        case RendererAPI::API::DirectX12: return CreateRef<DirectX12UniformBuffer>(size, slot);
+        case RendererAPI::API::DirectX11: return CreateRef<DirectX11UniformBuffer>(size, slot);
         }
 
         LD_CORE_ASSERT(false, "Unknown RenderAPI specified, please provide a existing RenderAPI!");

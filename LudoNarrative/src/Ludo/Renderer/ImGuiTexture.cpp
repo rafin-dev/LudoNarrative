@@ -5,7 +5,7 @@
 
 #ifdef LD_PLATFORM_WINDOWS
 
-#include "Platform/DirectX12/DirectX12ImGuiTexture.h"
+#include "Platform/DirectX11/DirectX11Texture.h"
 
 #endif
 
@@ -16,7 +16,7 @@ namespace Ludo {
         switch (RendererAPI::GetAPI())
         {
         case RendererAPI::API::None: LD_CORE_ASSERT(false, "None is not yet supported"); return nullptr;
-        case RendererAPI::API::DirectX12: return CreateRef<DirectX12ImGuiTexture>(texture);
+        case RendererAPI::API::DirectX11: return CreateRef<DirectX11ImGuiTexture>(texture);
         }
 
         LD_CORE_ASSERT(false, "Unknown Render API");
@@ -28,7 +28,7 @@ namespace Ludo {
         switch (RendererAPI::GetAPI())
         {
         case RendererAPI::API::None: LD_CORE_ASSERT(false, "None is not yet supported"); return nullptr;
-        case RendererAPI::API::DirectX12: return CreateRef<DirectX12ImGuiTexture>(texture);
+        case RendererAPI::API::DirectX11: return CreateRef<DirectX11ImGuiTexture>(texture);
         }
 
         LD_CORE_ASSERT(false, "Unknown Render API");

@@ -421,6 +421,21 @@ namespace Ludo {
 		bool control = Input::IsKeyPressed(KeyCode::Left_CTRL) || Input::IsKeyPressed(KeyCode::Right_CTRL);
 		bool shift = Input::IsKeyPressed(KeyCode::Left_Shift) || Input::IsKeyPressed(KeyCode::Right_Shift);
 
+		if (event.GetKeyCode() == KeyCode::C)
+		{
+			LD_CORE_TRACE("Searching in viewport");
+			for (uint32_t y = 0; y < m_ViewportSize.y; y++)
+			{
+				for (uint32_t x = 0; x < m_ViewportSize.x; x++)
+				{
+					if (m_FrameBuffer->ReadPixel(1, x, y) != -1)
+					{
+						LD_CORE_INFO("Found one");
+					}
+				}
+			}
+		}
+
 		switch (event.GetKeyCode())
 		{
 		case KeyCode::N:
