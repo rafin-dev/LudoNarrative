@@ -3,6 +3,7 @@
 #include "Ludo/Core/TimeStep.h"
 #include "Ludo/Renderer/EditorCamera.h"
 #include "Ludo/Scene/Components.h"
+#include "Ludo/Assets/Asset.h"
 
 #include <entt.hpp>
 
@@ -12,12 +13,14 @@ namespace Ludo {
 
 	class Entity;
 
-	class Scene
+	class Scene : public Asset
 	{
 	public:
 		Scene();
 		Scene(const std::string& name);
 		~Scene();
+
+		AssetType GetAssetType() const override { return AssetType::Scene; }
 
 		static Ref<Scene> Copy(Ref<Scene> other);
 		
@@ -83,8 +86,7 @@ namespace Ludo {
 		void OnComponentAdded<Rigidbody2DComponent>(Entity entity, Rigidbody2DComponent& component);
 
 		// Friends
-		friend class SceneHierarchyPanel;
-		friend class ScenePanelHierarchy;
+		friend class SceneHierarchyView;
 		friend class SceneSerializer;
 		friend class Entity;
 	};

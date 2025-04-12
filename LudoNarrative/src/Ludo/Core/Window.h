@@ -37,6 +37,7 @@ namespace Ludo {
 		virtual bool IsVsync() const = 0;
 
 		virtual void SetTitle(std::string& title) = 0;
+		virtual void SetSize(uint32_t width, uint32_t height) = 0;
 
 		virtual void SetFullScreen(bool enabled) = 0;
 

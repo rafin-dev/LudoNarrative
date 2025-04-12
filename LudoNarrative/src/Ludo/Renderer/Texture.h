@@ -1,13 +1,15 @@
 #pragma once
 
-#include <string>
 #include "Ludo/Core/Core.h"
+#include "Ludo/Assets/Asset.h"
+
+#include <string>
 
 #include <imgui.h>
 
 namespace Ludo {
 
-	class Texture
+	class Texture : public Asset
 	{
 	public:
 		virtual ~Texture() = default;
@@ -26,6 +28,8 @@ namespace Ludo {
 	public:
 		static Ref<Texture2D> Create(uint32_t width, uint32_t height);
 		static Ref<Texture2D> Create(const std::filesystem::path& path);
+
+		AssetType GetAssetType() const override { return AssetType::Texture2D; }
 
 		virtual ImTextureID GetImTextureID() = 0;
 

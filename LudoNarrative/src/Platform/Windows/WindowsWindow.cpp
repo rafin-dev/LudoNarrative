@@ -72,6 +72,15 @@ namespace Ludo {
 		SetWindowText(m_WindowHandle, std::filesystem::path(title).wstring().c_str());
 	}
 
+	void WindowsWindow::SetSize(uint32_t width, uint32_t height)
+	{
+		RECT windowRect;
+		if (GetWindowRect(m_WindowHandle, &windowRect))
+		{
+			SetWindowPos(m_WindowHandle, nullptr, windowRect.left, windowRect.top, width, height, SWP_NOOWNERZORDER);
+		}
+	}
+
 	void WindowsWindow::SetFullScreen(bool enabled)
 	{
 		// Window style

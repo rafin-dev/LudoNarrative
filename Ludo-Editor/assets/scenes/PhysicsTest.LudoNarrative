@@ -20,7 +20,7 @@ Entities:
       FixedAspectRatio: false
     Rigidbody2D:
       BodyType: Dynamic
-      FixedRotation: true
+      FixedRotation: false
     BoxCollider2D:
       Offset: [0, 0]
       Size: [1, 1]
@@ -54,8 +54,8 @@ Entities:
       Tag: Ground
     TransformComponent:
       Translation: [-11.13178, -15.570223, 0.08053821]
-      Rotation: [-0, 0, 0]
-      Scale: [17.1836, 1.0000001, 1]
+      Rotation: [-0, 0, -0.2914796]
+      Scale: [17.183598, 0.9999999, 1]
     SpriteRendererComponent:
       TexturePath: None
       Color: [1, 1, 1, 1]
@@ -75,8 +75,8 @@ Entities:
       Tag: Ground
     TransformComponent:
       Translation: [-7.5386314, -2.7792451, 0]
-      Rotation: [-0, 0, 0]
-      Scale: [17.183586, 1, 1]
+      Rotation: [-0, 0, -0.54937243]
+      Scale: [17.183588, 0.9999999, 1]
     SpriteRendererComponent:
       TexturePath: None
       Color: [1, 1, 1, 1]
@@ -96,8 +96,8 @@ Entities:
       Tag: Ground
     TransformComponent:
       Translation: [4.179106, -7.950598, 1.7795305e-06]
-      Rotation: [0, 0, 0]
-      Scale: [17.1836, 1, 1]
+      Rotation: [0, 0, 0.47164834]
+      Scale: [17.1836, 0.99999976, 1]
     SpriteRendererComponent:
       TexturePath: None
       Color: [1, 1, 1, 1]

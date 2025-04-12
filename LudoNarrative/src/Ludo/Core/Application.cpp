@@ -47,7 +47,7 @@ namespace Ludo {
 			}
 		}
 
-		m_Window->SetEventCallBack(LUDO_BIND_EVENT_FN(Application::OnEvent));
+		m_Window->SetEventCallBack(LUDO_BIND_EVENT_FN(Application::OnEventInternal));
 		m_Window->SetVsync(true);
 	}
 
@@ -55,7 +55,6 @@ namespace Ludo {
 	{
 		LD_PROFILE_FUNCTION();
 
-		m_LayerStack.Clear();
 		delete m_Window;
 		Renderer::ShutDown();
 	}
@@ -63,6 +62,8 @@ namespace Ludo {
 	void Application::Run()
 	{
 		LD_PROFILE_FUNCTION();
+
+		this->OnAttach();
 
 		while (m_Running)
 		{
@@ -74,33 +75,22 @@ namespace Ludo {
 
 			if (!m_Minimized)
 			{
-				{
-					LD_PROFILE_SCOPE("Layers OnUpdate");
-					for (Layer* layer : m_LayerStack)
-					{
-						layer->OnUpdate(timeStep);
-					}
-				}
+				this->OnUpdate(timeStep);
 
-				{
-					LD_PROFILE_SCOPE("Layers OnImGuiRender");
-					RenderCommand::BeginImGui();
-					for (Layer* l : m_LayerStack)
-					{
-						l->OnImGuiRender();
-					}
-					RenderCommand::EndImGui();
-				}
-
+				RenderCommand::BeginImGui();
+				this->OnImGuiRender();
+				RenderCommand::EndImGui();
 			}
 
 			m_Window->OnUpdate();
 
 			m_FrameCounter++;
 		}
+
+		this->OnDetach();
 	}
 
-	void Application::OnEvent(Event& event)
+	void Application::OnEventInternal(Event& event)
 	{
 		LD_PROFILE_FUNCTION();
 
@@ -115,29 +105,7 @@ namespace Ludo {
 			event.Handled |= event.IsInCategory(EventCategoryKeyboard) & io.WantCaptureKeyboard;
 		}
 
-		for (Layer* layer : m_LayerStack)
-		{
-			if (event.Handled)
-			{
-				break;
-			}
-
-			layer->OnEvent(event);
-		}
-	}
-
-	void Application::PushLayer(Layer* layer)
-	{
-		LD_PROFILE_FUNCTION();
-
-		m_LayerStack.PushLayer(layer);
-	}
-
-	void Application::PushOverlay(Layer* overlay)
-	{
-		LD_PROFILE_FUNCTION();	
-
-		m_LayerStack.PushOverlay(overlay);
+		this->OnEvent(event);
 	}
 
 	bool Application::CloseWindow(WindowCloseEvent& event)

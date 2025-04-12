@@ -7,6 +7,9 @@
 
 #include <Windows.h>
 #include <commdlg.h>
+#include <shlobj.h>
+#include <ShlObj_core.h>
+#include <shlwapi.h>
 
 namespace Ludo {
 
@@ -44,6 +47,52 @@ namespace Ludo {
 			return ofn.lpstrFile;
 		}
 		return std::filesystem::path();
+	}
+
+	std::filesystem::path FileDialogs::GetFolder()
+	{
+		char pathBuffer[MAX_PATH] = {};
+
+		BROWSEINFOA info = {};
+		info.hwndOwner = ((WindowsWindow&)Application::Get().GetWindow()).GetHandle();
+		info.pidlRoot = NULL;
+		info.pszDisplayName = pathBuffer;
+		info.lpszTitle = "Select Project Folder";
+		info.lpfn = NULL;
+		info.ulFlags = BIF_USENEWUI;
+
+		if (LPITEMIDLIST idList = SHBrowseForFolderA(&info))
+		{
+			memset(pathBuffer, 0, sizeof(pathBuffer));
+			if (SHGetPathFromIDListA(idList, pathBuffer))
+			{
+				return info.pszDisplayName;
+			}
+			
+			CoTaskMemFree(idList);
+		}
+
+		return std::filesystem::path();
+	}
+
+	std::filesystem::path FileDialogs::GetDocumentsFolder()
+	{
+		std::string path;
+		PWSTR pPath = NULL;
+		if (SHGetKnownFolderPath(FOLDERID_Documents, KF_FLAG_DEFAULT, NULL, &pPath) == S_OK)
+		{
+			int wlen = lstrlenW(pPath);
+			int len = WideCharToMultiByte(CP_ACP, 0, pPath, wlen, NULL, 0, NULL, NULL);
+			if (len > 0)
+			{
+				path.resize(len + 1);
+				WideCharToMultiByte(CP_ACP, 0, pPath, wlen, &path[0], len, NULL, NULL);
+				path[len] = '\\';
+			}
+			CoTaskMemFree(pPath);
+		}
+
+		return path;
 	}
 
 }

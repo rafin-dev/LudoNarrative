@@ -10,6 +10,9 @@ namespace Ludo {
 		// Returns empty string if cancelled
 		static std::filesystem::path OpenFile(const char* filter);
 		static std::filesystem::path SaveFile(const char* filter);
+		static std::filesystem::path GetFolder();
+
+		static std::filesystem::path GetDocumentsFolder();
 	};
 
 }

@@ -3,9 +3,6 @@
 #include "RenderCommand.h"
 #include "Renderer2D.h"
 #include "Shader.h"
-#include "Material.h"
-
-#include "OrthographicCamera.h"
 
 namespace Ludo {
 
@@ -32,10 +29,10 @@ namespace Ludo {
 			RenderCommand::ShutDown(); 
 		}
 
-		static void BeginScene(OrthographicCamera& camera);
+		static void BeginScene(Camera& camera);
 		static void EndScene();
 
-		static void Submit(const Ref<Material>& material, 
+		static void Submit(const Ref<Shader>& shader, 
 			const Ref<VertexArray>& vertexArray, 
 			const DirectX::XMFLOAT4X4& transform);
 

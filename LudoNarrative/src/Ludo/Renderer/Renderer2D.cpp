@@ -2,9 +2,9 @@
 #include "Renderer2D.h"
 
 #include "VertexArray.h"
-#include "Material.h"
 #include "RenderCommand.h"
 #include "UniformBuffer.h"
+#include "Shader.h"
 
 namespace Ludo {
 
@@ -211,7 +211,7 @@ namespace Ludo {
 
 		// Explicitly remove references to any Renderer Object
 		// Otherwise it will only get deleted after the Renderer has shutdown
-		// Leading to issues with D3D12 COM reference counting
+		// Leading to issues with D3D11 COM reference counting
 		
 		// Quads
 		{
@@ -261,16 +261,6 @@ namespace Ludo {
 		DirectX::XMFLOAT4X4 viewProjection = camera.GetViewProjection();
 		DirectX::XMStoreFloat4x4(&viewProjection, DirectX::XMMatrixTranspose(DirectX::XMLoadFloat4x4(&viewProjection)));
 		s_ScriptingData.CameraBuffer.ViewProjectionMatrix = viewProjection;
-		s_ScriptingData.CameraUniformBuffer->SetData(&s_ScriptingData.CameraBuffer, sizeof(Renderer2DData::CameraData), 0);
-
-		ClearData();
-	}
-
-	void Renderer2D::BeginScene(const OrthographicCamera& camera)
-	{
-		LD_PROFILE_RENDERER_FUNCTION();
-
-		s_ScriptingData.CameraBuffer.ViewProjectionMatrix = camera.GetViewProjectionMatrix();
 		s_ScriptingData.CameraUniformBuffer->SetData(&s_ScriptingData.CameraBuffer, sizeof(Renderer2DData::CameraData), 0);
 
 		ClearData();

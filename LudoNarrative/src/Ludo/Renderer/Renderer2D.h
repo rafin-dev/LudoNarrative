@@ -1,7 +1,6 @@
 #pragma once
 
 #include "Ludo/Core/Core.h"
-#include "Ludo/Renderer/OrthographicCamera.h"
 #include "Ludo/Renderer/Camera.h"
 #include "Ludo/Renderer/Texture.h"
 #include "Ludo/Renderer/SubTexture2D.h"
@@ -25,7 +24,6 @@ namespace Ludo {
 
 		static void BeginScene(const Camera& camera, const DirectX::XMFLOAT4X4& transform);
 		static void BeginScene(const EditorCamera& camera);
-		static void BeginScene(const OrthographicCamera& camera);
 		static void EndScene();
 		// ================================
 

@@ -2,8 +2,6 @@
 
 #include "Ludo/Renderer/Texture.h"
 
-#include "Ludo/Renderer/ImGuiTexture.h"
-
 #include <d3d11.h>
 
 namespace Ludo {
@@ -36,37 +34,6 @@ namespace Ludo {
 		ID3D11Texture2D* m_Texture = nullptr;
 		ID3D11ShaderResourceView* m_ShaderResourceView = nullptr;
 		ID3D11SamplerState* m_SamplerState = nullptr;
-	};
-
-	class DirectX11ImGuiTexture : public ImGuiTexture
-	{
-	public:
-		DirectX11ImGuiTexture(const Ref<Texture2D> texture)
-		{
-			m_Texture = SubTexture2D::Create(texture);
-		}
-		DirectX11ImGuiTexture(const Ref<SubTexture2D> texture)
-		{
-			m_Texture = texture;
-		}
-
-		Ref<SubTexture2D> GetSubTexture() override
-		{
-			return m_Texture;
-		}
-
-		Ref<Texture2D> GetTexture() override
-		{
-			return m_Texture->GetTexture();
-		}
-
-		ImTextureID GetImTextureID()
-		{
-			return m_Texture->GetTexture()->GetImTextureID();
-		}
-
-	private:
-		Ref<SubTexture2D> m_Texture;
 	};
 
 }
