@@ -149,6 +149,14 @@ namespace Ludo {
 			{
 				m_SelectedProject = &pjData;
 			}
+			if (ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left))
+			{
+				Project::Load(pjData.ProjectPath);
+				pjData.LastOpened = std::chrono::system_clock::now();
+				std::sort(m_ProjectList.begin(), m_ProjectList.end(), ProjectSort());
+				EditorApplication::SetPanel(PanelCodes::ProjectEditor);
+			}
+
 			ImGui::PopID();
 
 			bool hovered = ImGui::IsItemHovered();

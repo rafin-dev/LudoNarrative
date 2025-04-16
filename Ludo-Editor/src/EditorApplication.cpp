@@ -11,6 +11,8 @@ namespace Ludo {
 
 	void EditorApplication::OnAttach()
 	{
+		AssetManager::InitEditor();
+
 		m_Panels.emplace(PanelCodes::ProjectSelector, CreateScope<ProjectSelectorPanel>());
 		m_Panels.emplace(PanelCodes::ProjectEditor, CreateScope<ProjectEditorPanel>());
 

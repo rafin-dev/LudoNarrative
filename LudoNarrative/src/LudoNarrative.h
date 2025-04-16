@@ -29,6 +29,11 @@
 
 #include "Ludo/Project/Project.h"
 
+#include "Ludo/Assets/Asset.h"
+#include "Ludo/Assets/AssetImporter.h"
+#include "Ludo/Assets/AssetManager.h"
+#include "Ludo/Assets/AssetMetadata.h"
+
 // ========== Renderer ==========
 #include "Ludo/Renderer/Renderer.h"
 #include "Ludo/Renderer/Renderer2D.h"

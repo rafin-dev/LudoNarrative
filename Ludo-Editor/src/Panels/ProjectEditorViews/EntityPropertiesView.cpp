@@ -8,6 +8,9 @@ namespace Ludo {
 
 	void EntityPropertiesView::OnImGuiRender()
 	{
+		ImGui::Begin("Entity Properties");
+
+		ImGui::End();
 	}
 
 }

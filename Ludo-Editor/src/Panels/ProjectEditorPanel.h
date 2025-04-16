@@ -27,7 +27,9 @@ namespace Ludo {
 		enum class Views
 		{
 			EntityProperties = 0,
-			SceneHierarchy = 1
+			SceneHierarchy,
+			ContentBrowser,
+			AssetManagerStatus
 		};
 
 		std::unordered_map<Views, Ref<ProjectEditorViewBase>> m_Views;

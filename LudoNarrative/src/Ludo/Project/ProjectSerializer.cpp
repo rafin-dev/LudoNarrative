@@ -19,7 +19,8 @@ namespace Ludo {
 		out << YAML::BeginMap;
 
 		out << YAML::Key << "Project" << YAML::Value << m_Project->m_Name;
-		out << YAML::Key << "AssetDirectory" << YAML::Value << m_Project->m_AssetDirectory.string();
+		out << YAML::Key << "AssetDirectory" << "Assets";
+		out << YAML::Key << "MetadataDirectory" << ".LudoNarrative";
 
 		out << YAML::EndMap;
 
@@ -50,7 +51,8 @@ namespace Ludo {
 		}
 
 		m_Project->m_Name = data["Project"].as<std::string>();
-		m_Project->m_AssetDirectory = data["AssetDirectory"].as<std::string>();
+		m_Project->m_AssetDirectory = path.parent_path() / data["AssetDirectory"].as<std::string>();
+		m_Project->m_MetadataDirectory = path.parent_path() / data["MetadataDirectory"].as<std::string>();
 
 		return true;
 	}

@@ -41,7 +41,7 @@ namespace Ludo {
 #define LD_CORE_ERROR(...) 
 #define LD_CORE_WARN(...)  
 #define LD_CORE_INFO(...)  
-#define LD_CORE_TRACE(...) 
+#define LD_CORE_TRACE(...)
 
 #define LD_ERROR(...) 
 #define LD_WARN(...)  

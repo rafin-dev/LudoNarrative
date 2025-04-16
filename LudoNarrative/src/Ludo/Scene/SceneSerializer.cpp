@@ -522,4 +522,10 @@ namespace Ludo {
 		return false;
 	}
 
+	void SceneSerializer::CreateEmptySceneAt(const std::filesystem::path& path)
+	{
+		SceneSerializer serializer(CreateRef<Scene>());
+		serializer.SerializeToYamlFile(path);
+	}
+
 }

@@ -14,6 +14,8 @@
 #include "Ludo/Events/Event.h"
 #include "Ludo/Core/KeyCodes.h"
 
+#include "Ludo/Assets/AssetManager.h"
+
 #include <imgui.h>
 
 namespace Ludo {
@@ -49,11 +51,15 @@ namespace Ludo {
 
 		m_Window->SetEventCallBack(LUDO_BIND_EVENT_FN(Application::OnEventInternal));
 		m_Window->SetVsync(true);
+
+		AssetManager::InitRuntime();
 	}
 
 	Application::~Application()
 	{
 		LD_PROFILE_FUNCTION();
+
+		AssetManager::Shutdown();
 
 		delete m_Window;
 		Renderer::ShutDown();

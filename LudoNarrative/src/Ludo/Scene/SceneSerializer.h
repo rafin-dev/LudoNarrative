@@ -18,6 +18,8 @@ namespace Ludo {
 		bool DeserializeFromYamlFile(const std::filesystem::path& filePath);
 		bool DeserializeBinaryFromFile(const std::filesystem::path& filePath);
 
+		static void CreateEmptySceneAt(const std::filesystem::path& path);
+
 	private:
 		Ref<Scene> m_Scene;
 	};
