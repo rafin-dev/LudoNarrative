@@ -9,8 +9,17 @@ namespace Ludo {
 	class AssetManager
 	{
 	public:
+		static bool IsAssetLoaded(const UUID& uuid);
+		
 		static AssetHandle LoadAsset(const UUID& uuid);
-		static Ref<Asset> GetAsset(const AssetHandle& handle);
+
+		template <typename T>
+		static Ref<T> GetAsset(const AssetHandle& handle)
+		{
+			static_assert(std::is_base_of<Asset, T>::value);
+
+			return std::dynamic_pointer_cast<T>(s_AssetManager->GetAsset(handle));
+		}
 
 	private:
 		static void AddHandleRef(const UUID& assetHandle);

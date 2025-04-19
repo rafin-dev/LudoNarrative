@@ -20,13 +20,18 @@ namespace Ludo {
 		static AssetMetadata CreateNewSceneMetadata();
 		static AssetMetadata CreateNewTexture2DMetadata();
 
+		static AssetMetadata GetAssetMetadata(const std::filesystem::path& rawFilePath); // Path relative to Asset Folder
 		static AssetMetadata GetAssetMetadata(const UUID& uuid);
 
 	private:
+		static void AddMetadata(AssetMetadata& metadata);
 		static void UpdateProjectAssetMetadataList();
 
+		static inline std::unordered_map<std::filesystem::path, UUID> s_FileToUUID;
 		static inline std::unordered_map<UUID, AssetMetadata> s_MetadataList;
-		friend class EditorAssetManager;
+
+		friend class AssetImporterStatusView;
+		friend class TexturePickerPopUp;
 	};
 
 }

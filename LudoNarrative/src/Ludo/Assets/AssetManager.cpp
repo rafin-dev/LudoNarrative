@@ -6,23 +6,33 @@
 
 namespace Ludo {
 
+    bool AssetManager::IsAssetLoaded(const UUID& uuid)
+    {
+        return s_AssetManager->IsAssetLoaded(uuid);
+    }
+    
     AssetHandle AssetManager::LoadAsset(const UUID& uuid)
     {
         return s_AssetManager->LoadAsset(uuid);
     }
 
-    Ref<Asset> AssetManager::GetAsset(const AssetHandle& handle)
-    {
-        return s_AssetManager->GetAsset(handle);
-    }
-
     void AssetManager::AddHandleRef(const UUID& assetHandle)
     {
+        if (assetHandle == 0)
+        {
+            return;
+        }
+
         s_AssetManager->AddHandleRef(assetHandle);
     }
 
     void AssetManager::RemoveHandleRef(const UUID& assetHandle)
     {
+        if (assetHandle == 0)
+        {
+            return;
+        }
+
         s_AssetManager->RemoveHandleRef(assetHandle);
     }
 

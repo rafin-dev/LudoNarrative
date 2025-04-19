@@ -35,22 +35,32 @@ namespace Ludo {
 			return AssetHandle(0);
 		}
 
-		std::string relativepath = std::filesystem::relative(metadata.RawFilePath, Project::GetAssetDirectory()).string();
-		relativepath.replace(relativepath.find('.'), 1, "-");
-		relativepath += ".ldMetadata";
+		std::filesystem::path metadataAbsolutePath = Project::GetMetadataDirectory() / metadata.MetadataFilePath;
 
-		metadata.MetadataFilePath = Project::GetMetadataDirectory() / relativepath;
+		if (!std::filesystem::exists(metadataAbsolutePath.parent_path()))
+		{
+			std::filesystem::create_directories(metadataAbsolutePath);
+		}
 
 		metadata.Serialize(metadata.MetadataFilePath);
 
-		AssetImporter::s_MetadataList.insert(std::pair<UUID, AssetMetadata>(metadata.AssetUUID, metadata));
-
 		return LoadAsset(metadata.AssetUUID);
+	}
+
+	bool EditorAssetManager::IsAssetLoaded(const UUID& uuid)
+	{
+		return m_LoadedAssets.find(uuid) != m_LoadedAssets.end();
 	}
 
 	AssetHandle EditorAssetManager::LoadAsset(const UUID& uuid)
 	{
 		LD_PROFILE_FUNCTION();
+
+		auto ite = m_LoadedAssets.find(uuid);
+		if (ite != m_LoadedAssets.end())
+		{
+			return ite->second.second->GetHandle();
+		}
 
 		AssetMetadata metadata = AssetImporter::GetAssetMetadata(uuid);
 		if (metadata.Type == AssetType::None)
@@ -58,6 +68,8 @@ namespace Ludo {
 			LD_CORE_ERROR("UUID '{0}' is not a valid Asset", (uint64_t)uuid);
 			return AssetHandle(0);
 		}
+
+		LD_CORE_TRACE("Loading Asset {0}: {1}", AssetTypeToString(metadata.Type).data(), (uint64_t)metadata.AssetUUID);
 
 		Ref<Asset> asset;
 		switch (metadata.Type)
@@ -67,7 +79,7 @@ namespace Ludo {
 				Ref<Scene> scene = CreateRef<Scene>();
 
 				SceneSerializer serializer(scene);
-				serializer.DeserializeFromYamlFile(metadata.RawFilePath);
+				serializer.DeserializeFromYamlFile(Project::GetAssetDirectory() / metadata.RawFilePath);
 
 				asset = scene;
 
@@ -75,7 +87,7 @@ namespace Ludo {
 			}
 			case AssetType::Texture2D:
 			{
-				Ref<Texture2D> texture = Texture2D::Create(metadata.RawFilePath);
+				Ref<Texture2D> texture = Texture2D::Create(Project::GetAssetDirectory() / metadata.RawFilePath);
 
 				asset = texture;
 
@@ -100,7 +112,11 @@ namespace Ludo {
 	void EditorAssetManager::AddHandleRef(const UUID& assetHandle)
 	{
 		auto ite = m_LoadedAssets.find(assetHandle);
-		LD_CORE_ASSERT(ite != m_LoadedAssets.end(), "Creation of invalid AssetHandle");
+
+		if (ite == m_LoadedAssets.end())
+		{
+			LD_CORE_ERROR("Invalid Asset UUID: {0}", (uint64_t)ite->first);
+		}
 
 		ite->second.first++;
 	}
@@ -108,12 +124,17 @@ namespace Ludo {
 	void EditorAssetManager::RemoveHandleRef(const UUID& assetHandle)
 	{
 		auto ite = m_LoadedAssets.find(assetHandle);
-		LD_CORE_ASSERT(ite != m_LoadedAssets.end(), "Invalid Asset Handle");
+
+		if (ite == m_LoadedAssets.end())
+		{
+			LD_CORE_ERROR("Invalid Asset UUID: {0}", (uint64_t)ite->first);
+		}
 
 		ite->second.first--;
 
 		if (ite->second.first == 0)
 		{
+			LD_CORE_TRACE("Unloading Asset {0}: {1}", AssetTypeToString(ite->second.second->GetAssetType()), (uint64_t)ite->first);
 			m_LoadedAssets.erase(assetHandle);
 		}
 	}

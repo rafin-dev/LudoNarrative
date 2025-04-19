@@ -8,47 +8,43 @@ namespace Ludo {
     AssetHandle::AssetHandle(const UUID& uuid)
         : m_AssetID(uuid)
     {
-        if (m_AssetID != 0)
-        {
-            AssetManager::AddHandleRef(m_AssetID);
-        }
+        AssetManager::AddHandleRef(m_AssetID);
+    }
+
+    AssetHandle::AssetHandle(const AssetHandle& handle)
+    {
+        m_AssetID = handle.m_AssetID;
+        AssetManager::AddHandleRef(m_AssetID);
     }
 
     AssetHandle::~AssetHandle()
     {
-        if (m_AssetID != 0)
-        {
-            AssetManager::RemoveHandleRef(m_AssetID);
-        }
-    }
-
-    AssetHandle AssetHandle::operator=(const AssetHandle& handle)
-    {
-        UUID id = m_AssetID;
-        AssetHandle newhandle(handle.GetUUID());
-        AssetManager::RemoveHandleRef(id);
-
-        return newhandle;
-    }
-
-    AssetHandle AssetHandle::operator=(const UUID& uuid)
-    {
-        UUID id = m_AssetID;
-        AssetHandle newhandle(uuid);
         AssetManager::RemoveHandleRef(m_AssetID);
-        return newhandle;
+    }
+
+    AssetHandle& AssetHandle::operator=(const AssetHandle& handle)
+    {
+        AssetManager::AddHandleRef(handle.GetUUID());
+        AssetManager::RemoveHandleRef(m_AssetID);
+
+        m_AssetID = handle.GetUUID();
+
+        return *this;
+    }
+
+    AssetHandle& AssetHandle::operator=(const UUID& uuid)
+    {
+        AssetManager::AddHandleRef(uuid);
+        AssetManager::RemoveHandleRef(m_AssetID);
+
+        m_AssetID = uuid;
+
+        return *this;
     }
 
     AssetType AssetHandle::GetType() const
     {
-        return GetAsset<Asset>()->GetAssetType();
-    }
-
-    template<typename T>
-    inline Ref<T> AssetHandle::GetAsset() const
-    {
-        Ref<Asset> asset = AssetManager::GetAsset(*this);
-        return std::dynamic_pointer_cast<T>(asset);
+        return AssetManager::GetAsset<Asset>(m_AssetID)->GetAssetType();
     }
 
     std::string_view AssetTypeToString(AssetType type)

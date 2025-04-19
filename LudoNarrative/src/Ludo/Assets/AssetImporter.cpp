@@ -39,6 +39,7 @@ namespace Ludo {
             AssetMetadata metadata;
             metadata.Deserialize(metadataData.as<std::string>());
 
+            s_FileToUUID.insert(std::pair(metadata.RawFilePath, metadata.AssetUUID));
             s_MetadataList.insert(std::pair(metadata.AssetUUID, metadata));
         }
     }
@@ -52,8 +53,10 @@ namespace Ludo {
         LD_CORE_ASSERT(assetManager, "Atempt to import Asset with runtime AssetManager");
 
         AssetMetadata mtd = metadata;
+
+        AddMetadata(mtd);
+
         AssetHandle handle = assetManager->ImportAsset(mtd);
-        UpdateProjectAssetMetadataList();
 
         return handle;
     }
@@ -74,6 +77,18 @@ namespace Ludo {
         return metadata;
     }
 
+    AssetMetadata AssetImporter::GetAssetMetadata(const std::filesystem::path& rawFilePath)
+    {
+        auto relative = std::filesystem::relative(rawFilePath, Project::GetAssetDirectory());
+        auto ite = s_FileToUUID.find(relative);
+        if (ite == s_FileToUUID.end())
+        {
+            return AssetMetadata();
+        }
+
+        return s_MetadataList[ite->second];
+    }
+
     AssetMetadata AssetImporter::GetAssetMetadata(const UUID& uuid)
     {
         LD_PROFILE_FUNCTION();
@@ -86,6 +101,20 @@ namespace Ludo {
         }
 
         return AssetMetadata();
+    }
+
+    void AssetImporter::AddMetadata(AssetMetadata& metadata)
+    {
+        std::string relativepath = metadata.RawFilePath.string();
+        relativepath.replace(relativepath.find('.'), 1, "-");
+        relativepath += ".ldMetadata";
+
+        metadata.MetadataFilePath = relativepath;
+
+        s_FileToUUID.insert(std::pair(metadata.RawFilePath, metadata.AssetUUID));
+        s_MetadataList.insert(std::pair(metadata.AssetUUID, metadata));
+
+        UpdateProjectAssetMetadataList();
     }
 
     void AssetImporter::UpdateProjectAssetMetadataList()

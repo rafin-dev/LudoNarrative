@@ -4,6 +4,8 @@
 
 #include "LudoNarrative.h"
 
+#include "misc/OpenAndSelectedsManager.h"
+
 #include <filesystem>
 
 namespace Ludo {
@@ -11,12 +13,18 @@ namespace Ludo {
 	class ContentBrowserView : public ProjectEditorViewBase
 	{
 	public:
-		ContentBrowserView();
+		ContentBrowserView(const Ref<OpenAndSelectedsManager>& oas);
 		~ContentBrowserView() override;
 
 		void OnImGuiRender() override;
 
+		bool OnEvent(Event& event);
+
 	private:
+		bool OnFileDropped(FileDroppedEvent& event);
+
+		Ref<OpenAndSelectedsManager> m_OpenAndSelecteds;
+		
 		std::filesystem::path m_AssetDirectory;
 		std::filesystem::path m_CurrentDirectory;
 

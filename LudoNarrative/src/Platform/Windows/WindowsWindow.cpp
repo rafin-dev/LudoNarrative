@@ -10,6 +10,8 @@
 
 #include "backends/imgui_impl_win32.h"
 
+#include "shellapi.h"
+
 extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
 namespace Ludo {
@@ -182,6 +184,8 @@ namespace Ludo {
 
 		ShowWindow(m_WindowHandle, SW_NORMAL);
 
+		DragAcceptFiles(m_WindowHandle, TRUE);
+
 		LD_CORE_INFO("Created Window: {0} [{1}, {2}]", m_Data.Title, m_Data.Width, m_Data.Height);
 
 		{
@@ -214,8 +218,8 @@ namespace Ludo {
 	std::unordered_map<UINT, WindowsWindow::WinMsgCallBackFn> WindowsWindow::s_MsgCallBacks
 	{
 		// Window
-		{ WM_SIZE, MSGlambda {	
-			WindowsWindow* wnd = ((WindowsWindow*)GetWindowLongPtr(hwnd, GWLP_USERDATA));
+		{ WM_SIZE, MSGlambda {
+			WindowsWindow * wnd = ((WindowsWindow*)GetWindowLongPtr(hwnd, GWLP_USERDATA));
 			if (lParam != 0 && (LOWORD(lParam) != wnd->GetWidth() || HIWORD(lParam) != wnd->GetHeight()))
 			{
 				wnd->m_ShouldResize = true;
@@ -223,7 +227,7 @@ namespace Ludo {
 				wnd->m_Data.Height = HIWORD(lParam);
 			}
 			s_EventCallBack((Event&)(WindowResizeEvent(LOWORD(lParam), HIWORD(lParam))));
-			return false; 
+			return false;
 	} },
 		{ WM_CLOSE, ThrowEventAndHandle(WindowCloseEvent()) },
 		{ WM_QUIT, ThrowEventAndHandle(WindowCloseEvent()) },
@@ -245,12 +249,21 @@ namespace Ludo {
 		{ WM_RBUTTONUP, ThrowEvent(MouseButtonReleasedEvent(MouseButtonCode::Right)) },
 
 		{ WM_MBUTTONDOWN, ThrowEvent(MouseButtonPressedEvent(MouseButtonCode::Middle)) },
-		{ WM_MBUTTONUP, ThrowEvent(MouseButtonReleasedEvent(MouseButtonCode::Middle)) }
+		{ WM_MBUTTONUP, ThrowEvent(MouseButtonReleasedEvent(MouseButtonCode::Middle)) },
+
+		{ WM_DROPFILES, MSGlambda {
+			char buffer[256] = {};
+			DragQueryFileA((HDROP)wParam, 0, buffer, 256);
+			s_EventCallBack((Event&)FileDroppedEvent(std::filesystem::path(buffer)));
+			return false;
+		} }
 	};
 
 	void WindowsWindow::InitializeWinAPI()
 	{
 		s_WindowClass = {};
+
+		
 
 		s_WindowClass.lpfnWndProc = WindowsWindow::WindowProc;
 		s_WindowClass.hInstance = GetModuleHandle(NULL);

@@ -95,4 +95,9 @@ namespace Ludo {
 		return path;
 	}
 
+	void FileDialogs::CopyFile_(const std::filesystem::path& existingFile, const std::filesystem::path& newFile)
+	{
+		CopyFileW(existingFile.c_str(), newFile.c_str(), FALSE);
+	}
+
 }

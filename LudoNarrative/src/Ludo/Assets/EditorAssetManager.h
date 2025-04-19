@@ -17,6 +17,7 @@ namespace Ludo {
 
 		AssetHandle ImportAsset(AssetMetadata& metadata);
 
+		bool IsAssetLoaded(const UUID& uuid) override;
 		AssetHandle LoadAsset(const UUID& uuid) override;
 		Ref<Asset> GetAsset(const AssetHandle& handle) override;
 

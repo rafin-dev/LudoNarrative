@@ -6,6 +6,8 @@
 #include "UniformBuffer.h"
 #include "Shader.h"
 
+#include "Ludo/Assets/AssetManager.h"
+
 namespace Ludo {
 
 	// Operator to make Texture2D comparison synatx look a bit nicer
@@ -428,9 +430,16 @@ namespace Ludo {
 
 	void LD_SIMD_CALLING_CONVENTION Renderer2D::DrawSprite(const DirectX::XMMATRIX& transform, const SpriteRendererComponent& sprite, int entityID)
 	{
-		if (sprite.Texture)
+		DirectX::XMFLOAT2 texCoords[] = {
+			{ 0.0f, 0.0f },
+			{ 0.0f, 1.0f },
+			{ 1.0f, 1.0f },
+			{ 1.0f, 0.0f }
+		};
+
+		if (sprite.Texture.IsValid())
 		{
-			DrawQuad(entityID, transform, sprite.Texture->GetTexture(), sprite.Texture->GetTexCoords(), sprite.Color, sprite.TilingFactor);
+			DrawQuad(entityID, transform, AssetManager::GetAsset<Texture2D>(sprite.Texture), texCoords, sprite.Color, sprite.TilingFactor);
 		}
 		else
 		{

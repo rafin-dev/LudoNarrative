@@ -25,9 +25,11 @@ namespace Ludo {
 		AssetType Type = AssetType::None;
 		UUID AssetUUID; // UUID innstead of AssetHandle as to not interfere with ref counting
 		
+		// Relative to the asset directory
 		std::filesystem::path RawFilePath; // Path to the asset's original file (.png, .obg, .wav ...)
 		std::chrono::time_point<std::chrono::system_clock> RawFileLastUpdated; // If this != std::filesystem::last_write_time() reimport asset
 		
+		// Relatie to the Metadata directory
 		std::filesystem::path MetadataFilePath;
 
 		// Only the type matching metadata struct will be filled

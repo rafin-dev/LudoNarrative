@@ -9,6 +9,7 @@ namespace Ludo {
 	public:
 		~RuntimeAssetManager() override {}
 
+		bool IsAssetLoaded(const UUID& uuid) override { return false; }
 		AssetHandle	LoadAsset(const UUID& uuid) override { return AssetHandle(0); }
 		Ref<Asset> GetAsset(const AssetHandle& handle) override { return nullptr; }
 

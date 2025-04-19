@@ -13,6 +13,9 @@ namespace Ludo {
 		static std::filesystem::path GetFolder();
 
 		static std::filesystem::path GetDocumentsFolder();
+
+		// I hae win32's lack of something to not mess up naming
+		static void CopyFile_(const std::filesystem::path& existingFile, const std::filesystem::path& newFile);
 	};
 
 }

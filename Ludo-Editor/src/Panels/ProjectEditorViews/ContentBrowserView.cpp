@@ -1,11 +1,13 @@
 #include "ContentBrowserView.h"
 
 #include "EditorApplication.h"
+#include "PopUps/ProjectEditorPopUps/FolderCreationPopup.h"
 #include "PopUps/ProjectEditorPopUps/SceneCreationPopup.h"
 
 namespace Ludo {
 
-	ContentBrowserView::ContentBrowserView()
+	ContentBrowserView::ContentBrowserView(const Ref<OpenAndSelectedsManager>& oas)
+		: m_OpenAndSelecteds(oas)
 	{
 		Ref<Texture2D> dirIcon = Texture2D::Create("Assets/icons/ContentBrowser/DirectoryIcon.png");
 		Ref<Texture2D> fileIcon = Texture2D::Create("Assets/icons/ContentBrowser/FileIcon.png");
@@ -73,6 +75,10 @@ namespace Ludo {
 				case EntryType::Directory:
 					m_CurrentDirectory = entryPath;
 					break;
+
+				case EntryType::Scene:
+					m_OpenAndSelecteds->SetFocusedScene(AssetManager::LoadAsset(AssetImporter::GetAssetMetadata(entryPath).AssetUUID));
+					break;
 				}
 			}
 			ImGui::PopStyleColor();
@@ -81,6 +87,7 @@ namespace Ludo {
 			{
 				const wchar_t* itemPath = entryPath.c_str();
 				ImGui::SetDragDropPayload("CONTENT_BROWSER_ITEM", itemPath, (wcslen(itemPath) + 1) * sizeof(wchar_t));
+				ImGui::EndDragDropSource();
 			}
 			ImGui::TextWrapped(filename.c_str());
 
@@ -89,13 +96,20 @@ namespace Ludo {
 			ImGui::NextColumn();
 		}
 
-		if (!ImGui::IsAnyItemHovered() && ImGui::IsMouseClicked(ImGuiMouseButton_Right))
+		if (ImGui::IsWindowHovered(ImGuiHoveredFlags_None) && !ImGui::IsAnyItemHovered() && ImGui::IsMouseClicked(ImGuiMouseButton_Right))
 		{
 			ImGui::OpenPopup("Content Browser Options");
 		}
 
 		if (ImGui::BeginPopup("Content Browser Options"))
 		{
+			if (ImGui::MenuItem("New Folder"))
+			{
+				EditorApplication::CreatePopUp<FolderCreationPopUp>(m_CurrentDirectory);
+			
+				ImGui::CloseCurrentPopup();
+			}
+
 			if (ImGui::MenuItem("New Scene"))
 			{
 				EditorApplication::CreatePopUp<SceneCreationPopup>(m_CurrentDirectory);
@@ -107,6 +121,31 @@ namespace Ludo {
 		}
 
 		ImGui::End();
+	}
+
+	bool ContentBrowserView::OnEvent(Event& event)
+	{
+		EventDispatcher dispatcher(event);
+		dispatcher.Dispatch<FileDroppedEvent>(LUDO_BIND_EVENT_FN(OnFileDropped));
+
+		return false;
+	}
+
+	bool ContentBrowserView::OnFileDropped(FileDroppedEvent& event)
+	{
+		auto extension = event.GetPath().extension();
+		if (extension == ".png" || extension == ".jpg")
+		{
+			std::filesystem::path newFilePath = m_CurrentDirectory / event.GetPath().filename();
+			FileDialogs::CopyFile_(event.GetPath(), newFilePath);
+
+			AssetMetadata metadata = AssetImporter::CreateNewTexture2DMetadata();
+			metadata.RawFilePath = std::filesystem::relative(newFilePath, Project::GetAssetDirectory());
+
+			AssetImporter::ImportAsset(metadata);
+		}
+
+		return false;
 	}
 
 }

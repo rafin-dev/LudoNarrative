@@ -38,31 +38,18 @@ namespace Ludo {
 		EVENT_CLASS_CATEGORY(EventCategoryApplication)
 	};
 
-	class AppTickEvent : public Event
+	class FileDroppedEvent : public Event
 	{
 	public:
-		AppTickEvent() {}
+		FileDroppedEvent(const std::filesystem::path& path)
+			: m_Path(path) { }
 
-		EVENT_CLASS_TYPE(AppTick)
+		const std::filesystem::path& GetPath() { return m_Path; }
+
+		EVENT_CLASS_TYPE(FileDropped)
 		EVENT_CLASS_CATEGORY(EventCategoryApplication)
-	};
-
-	class AppUpdateEvent : public Event
-	{
-	public:
-		AppUpdateEvent() {}
-
-		EVENT_CLASS_TYPE(AppUpdate)
-		EVENT_CLASS_CATEGORY(EventCategoryApplication)
-	};
-
-	class AppRenderEvent : public Event
-	{
-	public:
-		AppRenderEvent() {}
-
-		EVENT_CLASS_TYPE(AppRender)
-		EVENT_CLASS_CATEGORY(EventCategoryApplication)
+	private:
+		std::filesystem::path m_Path;
 	};
 
 }

@@ -14,17 +14,28 @@ namespace Ludo {
 	class AssetHandle
 	{
 	public:
+		AssetHandle() { m_AssetID = 0; }
+		AssetHandle(const AssetHandle& handle);
 		~AssetHandle();
 
-		AssetHandle operator=(const AssetHandle& handle);
-		AssetHandle operator=(const UUID& uuid);
+		AssetHandle& operator=(const AssetHandle& handle);
+		AssetHandle& operator=(const UUID& uuid);
 
-		template<typename T>
-		Ref<T> GetAsset() const;
 		AssetType GetType() const;
 
 		const UUID& GetUUID() const { return m_AssetID; }
 		bool IsValid() const { return m_AssetID != 0; }
+
+		bool operator==(const AssetHandle& other) const
+		{
+			return m_AssetID == other.m_AssetID;
+		}
+
+		operator bool()
+		{
+			return IsValid();
+		}
+
 	private:
 		AssetHandle(const UUID& uuid);
 		UUID m_AssetID;

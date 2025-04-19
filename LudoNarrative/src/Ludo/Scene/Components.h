@@ -5,6 +5,7 @@
 #include "Ludo/Core/TimeStep.h"
 #include "Ludo/Renderer/SubTexture2D.h"
 #include "Ludo/Core/UUID.h"
+#include "Ludo/Assets/Asset.h"
 
 #include <DirectXMath.h>
 
@@ -62,7 +63,7 @@ namespace Ludo {
 
 	struct SpriteRendererComponent
 	{
-		Ref<SubTexture2D> Texture;
+		AssetHandle Texture;
 		DirectX::XMFLOAT4 Color = { 1.0f, 1.0f, 1.0f, 1.0f };
 		float TilingFactor = 1.0f;
 		std::filesystem::path TexturePath = "None";
@@ -72,7 +73,7 @@ namespace Ludo {
 		SpriteRendererComponent(const DirectX::XMFLOAT4& color)
 			: Color(color) {
 		}
-		SpriteRendererComponent(const Ref<SubTexture2D>& texture, const DirectX::XMFLOAT4& color = { 1.0f, 1.0f, 1.0f, 1.0f }, float tilingFactor = 1.0f)
+		SpriteRendererComponent(const AssetHandle& texture, const DirectX::XMFLOAT4& color = { 1.0f, 1.0f, 1.0f, 1.0f }, float tilingFactor = 1.0f)
 			: Color(color), Texture(texture), TilingFactor(tilingFactor) {}
 	};
 

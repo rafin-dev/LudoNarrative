@@ -4,13 +4,13 @@ namespace Ludo {
 
 	void SceneCreationPopup::OnImGuiRender()
 	{
-		ImGui::Begin("New Project");
+		ImGui::Begin("New Scene");
 
-		ImGui::Text("Scene Name: ");
-		ImGui::SameLine();
 		ImGui::InputText("##sceneName", m_SceneName, sizeof(m_SceneName));
 
-		if (ImGui::Button("Create Scene"))
+		ImGui::SameLine();
+
+		if (ImGui::Button("Create Scene") || ImGui::IsKeyPressed(ImGuiKey_Enter))
 		{
 			m_ShouldClose = true;
 
@@ -19,9 +19,15 @@ namespace Ludo {
 			SceneSerializer::CreateEmptySceneAt(scenePath);
 
 			AssetMetadata scenemtdtd = AssetImporter::CreateNewSceneMetadata();
-			scenemtdtd.RawFilePath = scenePath;
+			scenemtdtd.SceneData.StartEntityCount = 0;
+			scenemtdtd.RawFilePath = std::filesystem::relative(scenePath, Project::GetAssetDirectory());
 
 			AssetImporter::ImportAsset(scenemtdtd);
+		}
+
+		if ((!ImGui::IsWindowHovered(ImGuiHoveredFlags_AllowWhenBlockedByActiveItem) && ImGui::IsMouseClicked(ImGuiMouseButton_Left)) || ImGui::IsKeyPressed(ImGuiKey_Escape))
+		{
+			m_ShouldClose = true;
 		}
 
 		ImGui::End();

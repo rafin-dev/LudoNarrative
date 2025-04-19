@@ -23,7 +23,7 @@ namespace Ludo {
 		inline float GetDistance() const { return m_Distance; }
 		inline void SetDistance(float distance) { m_Distance = distance; }
 
-		inline void SetViewportSize(float width, float height) { m_ViewportWidth = width; m_ViewportHeight = height; UpdateProjection(); }
+		inline void SetViewportSize(float width, float height) { m_ViewportWidth = width; m_ViewportHeight = height; UpdateProjection(); UpdateView(); }
 
 		const DirectX::XMFLOAT4X4& GetViewMatrix() const { return m_ViewMatrix; }
 		DirectX::XMFLOAT4X4 GetViewProjection() const;
@@ -58,7 +58,7 @@ namespace Ludo {
 		float m_NearClip = 0.1f;
 		float m_FarClip = 1000.0f;
 
-		DirectX::XMFLOAT4X4 m_ViewMatrix;
+		DirectX::XMFLOAT4X4 m_ViewMatrix = {};
 		DirectX::XMFLOAT3 m_Position = { 0.0f, 0.0f, -10.0f };
 		DirectX::XMFLOAT3 m_FocalPoint = { 0.0f, 0.0f, 0.0f };
 

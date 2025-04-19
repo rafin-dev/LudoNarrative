@@ -9,6 +9,7 @@ namespace Ludo {
 	public:
 		virtual ~AssetManagerBase() = default;
 
+		virtual bool IsAssetLoaded(const UUID& uuid) = 0;
 		virtual AssetHandle LoadAsset(const UUID& uuid) = 0;
 		virtual Ref<Asset> GetAsset(const AssetHandle& handle) = 0;
 

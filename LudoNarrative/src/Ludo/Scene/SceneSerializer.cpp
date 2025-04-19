@@ -3,6 +3,7 @@
 
 #include "Ludo/Scene/Entity.h"
 #include "Ludo/Scene/Components.h"
+#include "Ludo/Assets/AssetManager.h"
 
 #include <yaml-cpp/yaml.h>
 
@@ -245,7 +246,7 @@ namespace Ludo {
 			
 			auto& spriteRenderer = entity.GetComponent<SpriteRendererComponent>();
 
-			out << YAML::Key << "TexturePath" << YAML::Value << spriteRenderer.TexturePath.string();
+			out << YAML::Key << "Texture" << YAML::Value << (uint64_t)spriteRenderer.Texture.GetUUID();
 
 			out << YAML::Key << "Color" << YAML::Value << spriteRenderer.Color;
 
@@ -317,7 +318,7 @@ namespace Ludo {
 	{
 		YAML::Emitter out;
 		out << YAML::BeginMap;
-		out << YAML::Key << "Scene" << YAML::Value << "Untitled Scene";
+		out << YAML::Key << "Scene" << YAML::Value << m_Scene->m_Name;
 
 		UUID cameraID = m_Scene->GetMainCamera() ? m_Scene->GetMainCamera().GetUUID() : UUID(0);
 
@@ -358,6 +359,7 @@ namespace Ludo {
 	{
 		if (!std::filesystem::exists(filePath))
 		{
+			LD_CORE_WARN("Failed to load scene: File '{0}' does not exist");
 			return false;
 		}
 
@@ -373,6 +375,7 @@ namespace Ludo {
 		}
 
 		std::string sceneName = data["Scene"].as<std::string>();
+		m_Scene->m_Name = sceneName;
 		LD_CORE_TRACE("Deserializing Scene {0}", sceneName);
 
 		UUID cameraID = data["MainCamera"].as<uint64_t>();
@@ -436,11 +439,12 @@ namespace Ludo {
 					if (spriteRendererComponentData)
 					{
 						auto& spriteRendererComponent = entity.AddComponent<SpriteRendererComponent>();
-						spriteRendererComponent.TexturePath = spriteRendererComponentData["TexturePath"].as<std::string>();
 
-						if (std::filesystem::exists(spriteRendererComponent.TexturePath))
+						if (spriteRendererComponentData["Texture"])
 						{
-							spriteRendererComponent.Texture = SubTexture2D::Create(Texture2D::Create(spriteRendererComponent.TexturePath));
+							UUID txUUID = spriteRendererComponentData["Texture"].as<uint64_t>();
+
+							spriteRendererComponent.Texture = AssetManager::LoadAsset(txUUID);
 						}
 
 						spriteRendererComponent.Color = spriteRendererComponentData["Color"].as<DirectX::XMFLOAT4>();
@@ -524,7 +528,11 @@ namespace Ludo {
 
 	void SceneSerializer::CreateEmptySceneAt(const std::filesystem::path& path)
 	{
-		SceneSerializer serializer(CreateRef<Scene>());
+		auto scene = CreateRef<Scene>();
+
+		scene->SetName(path.stem().string());
+
+		SceneSerializer serializer(scene);
 		serializer.SerializeToYamlFile(path);
 	}
 

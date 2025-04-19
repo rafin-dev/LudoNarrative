@@ -29,7 +29,9 @@ namespace Ludo {
 			EntityProperties = 0,
 			SceneHierarchy,
 			ContentBrowser,
-			AssetManagerStatus
+			SceneViewer,
+			AssetManagerStatus,
+			AssetImporterStatus
 		};
 
 		std::unordered_map<Views, Ref<ProjectEditorViewBase>> m_Views;

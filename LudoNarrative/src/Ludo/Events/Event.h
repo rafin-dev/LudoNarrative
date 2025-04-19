@@ -11,7 +11,7 @@ namespace Ludo {
 	enum class EventType
 	{
 		None = 0,
-		WindowClose, WindowResize, WindowFocus, WindowLostFocus, WindowMoved,
+		WindowClose, WindowResize, WindowFocus, WindowLostFocus, WindowMoved, FileDropped,
 		AppTick, AppUpdate, AppRender,
 		KeyPressed, KeyReleased, CharTyped,
 		MouseButtonPressed, MouseButtonReleased, MouseMoved, MouseScrolled
